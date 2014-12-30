@@ -33,24 +33,24 @@ module Crabfarm
       cmd << "--webdriver=#{@port}"
       cmd << "--ssl-protocol=#{@config[:ssl]}" unless @config[:ssl].nil?
       cmd << "--ignore-ssl-errors=true"
-      cmd << "--webdriver-loglevel=NONE" # TODO: remove when log path is choosen
+      cmd << "--webdriver-loglevel=WARN"
       # cmd << "--webdriver-logfile=/path/to/log/phantom.log"
       cmd.join(' ')
     end
 
     def find_available_port
       with_lock do
-        server = TCPServer.new('127.0.0.1', 0)
-        @port = server.addr[1]
-        server.close
+        socket = Socket.new(:INET, :STREAM, 0)
+        socket.bind(Addrinfo.tcp("127.0.0.1", 0))
+        @port = socket.local_address.ip_port
+        socket.close
       end
     end
 
     def wait_for_server
       loop do
         begin
-          # TODO: generate a valid request to prevent warnings
-          Net::HTTP.get_response(URI.parse("http://127.0.0.1:#{@port}"))
+          Net::HTTP.get_response(URI.parse("http://127.0.0.1:#{@port}/status"))
           break
         rescue
         end
