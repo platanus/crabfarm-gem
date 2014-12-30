@@ -7,12 +7,12 @@ Gem::Specification.new do |spec|
   spec.name          = "crabfarm"
   spec.version       = Crabfarm::VERSION
   spec.authors       = ["Ignacio Baixas"]
-  spec.email         = ["iobaixas@gmail.com"]
-  spec.summary       = "Crabfarm service toolbelt"
-  spec.homepage      = ""
+  spec.email         = ["ignacio@platan.us"]
+  spec.summary       = "Crabfarm crawler creation framework"
+  spec.homepage      = "https://github.com/platanus/crabfarm-gem"
   spec.license       = "MIT"
 
-  spec.files         = `git ls-files -z`.split("\x0")
+  spec.files         = Dir['lib/**/*'] + Dir['bin/**/*']
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
