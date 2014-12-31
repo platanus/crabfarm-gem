@@ -20,7 +20,7 @@ module Crabfarm
           unless @context.nil?
             puts "Reloading crawler source".color(:green)
             @context.release
-            @loader.unload
+            @loader.reload_source
           end
 
           @context = @loader.load_context
@@ -56,29 +56,23 @@ module Crabfarm
         alias :r :reset
       end
 
-      def self.console_loop
+      def self.start(_loader)
+        dsl = ConsoleDsl.new(_loader)
 
-        if defined? CF_LOADER
-          # TODO: generated app should load itself
-          dsl = ConsoleDsl.new(CF_LOADER)
-
-          loop do
-            begin
-              dsl.instance_eval Readline.readline("> ", true)
-            rescue SyntaxError => se
-              puts "Syntax error: #{se.message}".color(:red)
-            rescue SystemExit, Interrupt
-              break
-            rescue => e
-              puts "Unknown command".color(:red)
-            end
+        loop do
+          begin
+            dsl.instance_eval Readline.readline("> ", true)
+          rescue SyntaxError => se
+            puts "Syntax error: #{se.message}".color(:red)
+          rescue SystemExit, Interrupt
+            break
+          rescue => e
+            puts "Unknown command".color(:red)
           end
-
-          puts "Releasing crawling context".color(:green)
-          dsl.context.release
-        else
-          puts "This command can only be run inside a crabfarm application".color(:red)
         end
+
+        puts "Releasing crawling context".color(:green)
+        dsl.context.release
       end
 
     end

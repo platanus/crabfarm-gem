@@ -1,3 +1,2 @@
-self.default_dsl = :surfer
-self.driver_name = :firefox
-# self.phantom_enabled = true
+set_driver :phantomjs
+set_default_dsl :surfer

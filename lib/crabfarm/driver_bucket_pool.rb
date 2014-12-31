@@ -29,14 +29,14 @@ module Crabfarm
   private
 
     def init_phantom_if_required
-      if @module.settings.phantom_enabled?
+      if @module.settings.phantom_mode_enabled?
         @phantom = PhantomRunner.new @module.settings.phantom_config
         @phantom.start
       end
     end
 
     def build_driver_factory
-      if @module.settings.phantom_enabled?
+      if @module.settings.phantom_mode_enabled?
         PhantomDriverFactory.new @phantom, @module.settings.driver_config
       else
         return @module.settings.driver_factory if @module.settings.driver_factory

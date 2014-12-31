@@ -1,4 +1,5 @@
 require 'gli'
+require 'crabfarm/support/gli'
 
 module Crabfarm
   class CLI
@@ -6,16 +7,17 @@ module Crabfarm
 
     program_desc 'Crabfarm toolbelt'
 
-    pre do |global_options,command,options,args|
-      # Things to do before
-      true
-    end
-
     desc "Starts the crawler in console mode"
     command [:console, :c] do |c|
+
+      Support::GLI.generate_options c
+
       c.action do |global_options,options,args|
+        next puts "This command can only be run inside a crabfarm application" unless defined? CF_LOADER
+
         require "crabfarm/modes/console"
-        Crabfarm::Modes::Console.console_loop
+        CF_LOADER.load Support::GLI.parse_options options
+        Crabfarm::Modes::Console.start CF_LOADER
       end
     end
 
@@ -30,13 +32,19 @@ module Crabfarm
       c.desc "Set the server min and max threads, defaults to 0:16"
       c.flag [:t,:threads]
 
+      Support::GLI.generate_options c
+
       c.action do |global_options,options,args|
+        next puts "This command can only be run inside a crabfarm application" unless defined? CF_LOADER
+
         require "crabfarm/modes/server"
         server_options = {}
         server_options[:Host] = options[:host] unless options[:host].nil?
         server_options[:Port] = options[:port] || 3100
         server_options[:Threads] = options[:threads] unless options[:threads].nil?
-        Crabfarm::Modes::Server.start server_options
+
+        CF_LOADER.load Support::GLI.parse_options options
+        Crabfarm::Modes::Server.start CF_LOADER, options
       end
     end
 

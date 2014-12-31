@@ -7,7 +7,7 @@ module Crabfarm
     def_delegators :@pool, :driver
 
     def initialize(_module)
-      @module = ModuleHelper.new _module
+      @module = _module
       @pool = DriverBucketPool.new @module
       @store = StateStore.new @module
     end
