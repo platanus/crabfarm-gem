@@ -7,6 +7,7 @@ module Crabfarm
     OPTIONS = [
       [:default_dsl, :string, 'Default dsl used by parsers and states'],
       [:driver_factory, :mixed, 'Driver factory, disabled if phantom_mode is used'],
+      [:log_path, :string, 'Path where logs should be stored'],
 
       # Default driver configuration parameters
       [:driver, ['chrome', 'firefox', 'phantomjs', 'remote'], 'Webdriver to be user, common options: chrome, firefox, phantomjs, remote.'],
@@ -40,6 +41,7 @@ module Crabfarm
       @values = {
         default_dsl: :surfer,
         driver_factory: nil,
+        log_path: 'logs',
 
         driver: 'phantomjs',
         driver_capabilities: Selenium::WebDriver::Remote::Capabilities.firefox,
@@ -89,7 +91,8 @@ module Crabfarm
         proxy: phantom_proxy,
         ssl: phantom_ssl,
         bin_path: phantom_bin_path,
-        lock_file: phantom_lock_file
+        lock_file: phantom_lock_file,
+        log_file: log_path ? File.join(log_path, 'phantom.log') : nil
       }
     end
 
