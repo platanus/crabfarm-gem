@@ -2,13 +2,24 @@ require 'spec_helper'
 
 describe Crabfarm::Context do
 
-  let(:helper) { Crabfarm::ModuleHelper.new Crabfarm::Mock }
+  let(:mod) {
+    Module.new do
+      class MockState < Crabfarm::BaseState
+      end
+
+      class MockParser < Crabfarm::BaseParser
+      end
+    end
+  }
+
+  let(:config) { Crabfarm::Configuration.new }
+
+  let(:helper) { Crabfarm::ModuleHelper.new mod, config }
 
   describe "load_state" do
 
     it "should return a state class with the given name" do
-      expect(helper.load_state(:state)).to be(Crabfarm::Mock::State)
-      expect(helper.load_state(:other_state)).to be(Crabfarm::Mock::OtherState)
+      expect(helper.load_state(:mock_state)).to be(mod.const_get(:MockState))
     end
 
     it "should fail if a class with the given name does not exist" do
@@ -16,7 +27,7 @@ describe Crabfarm::Context do
     end
 
     it "should fail if a class with the given name is not a state" do
-      expect { helper.load_state(:parser) }.to raise_error(Crabfarm::EntityNotFoundError)
+      expect { helper.load_state(:mock_parser) }.to raise_error(Crabfarm::EntityNotFoundError)
     end
 
   end
@@ -24,8 +35,7 @@ describe Crabfarm::Context do
   describe "load_parser" do
 
     it "should return a parser class with the given name" do
-      expect(helper.load_parser(:parser)).to be(Crabfarm::Mock::Parser)
-      expect(helper.load_parser(:other_parser)).to be(Crabfarm::Mock::OtherParser)
+      expect(helper.load_parser(:mock_parser)).to be(mod.const_get(:MockParser))
     end
 
     it "should fail if a class with the given name does not exist" do
@@ -33,7 +43,7 @@ describe Crabfarm::Context do
     end
 
     it "should fail if a class with the given name is not a parser" do
-      expect { helper.load_parser(:state) }.to raise_error(Crabfarm::EntityNotFoundError)
+      expect { helper.load_parser(:mock_state) }.to raise_error(Crabfarm::EntityNotFoundError)
     end
   end
 

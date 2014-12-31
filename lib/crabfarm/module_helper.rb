@@ -5,12 +5,13 @@ module Crabfarm
 
     attr_reader :dsl
 
-    def initialize(_module)
+    def initialize(_module, _config=nil)
       @module = _module
+      @config = _config || @module::CF_CONFIG
     end
 
     def settings
-      @module::CF_CONFIG
+      @config
     end
 
     def load_state(_name)
