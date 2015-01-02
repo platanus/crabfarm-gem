@@ -8,7 +8,7 @@ module Crabfarm
 
       class API < Grape::API
 
-        MAX_WAIT = 60.0 * 5
+        DEFAULT_WAIT = 60.0 * 5
 
         format :json
         prefix :api
@@ -27,9 +27,7 @@ module Crabfarm
           end
 
           def wait
-            if params.has_key? :wait
-              [params[:wait].to_f, MAX_WAIT].min
-            else MAX_WAIT end
+            params.fetch(:wait, DEFAULT_WAIT)
           end
 
           def print_state(_state)
