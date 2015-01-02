@@ -44,7 +44,7 @@ module Crabfarm
         server_options[:Threads] = options[:threads] unless options[:threads].nil?
 
         CF_LOADER.load Support::GLI.parse_options options
-        Crabfarm::Modes::Server.start CF_LOADER, options
+        Crabfarm::Modes::Server.start CF_LOADER, server_options
       end
     end
 
