@@ -3,7 +3,7 @@ require 'bundler'
 # Load gems listed in the Gemfile.
 
 ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../Gemfile', __FILE__)
-Bundler.require :default
+Bundler.require
 
 # Run code loader
 
