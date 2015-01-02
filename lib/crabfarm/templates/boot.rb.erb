@@ -1,11 +1,9 @@
-# Load gems listed in the Gemfile.
-
 require 'bundler'
 
-ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../Gemfile', __FILE__)
-require 'bundler/setup' if File.exist?(ENV['BUNDLE_GEMFILE'])
+# Load gems listed in the Gemfile.
 
-Bundler.require
+ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../Gemfile', __FILE__)
+Bundler.require :default
 
 # Run code loader
 
