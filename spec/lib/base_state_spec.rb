@@ -23,9 +23,10 @@ describe Crabfarm::BaseState do
 
   describe "output" do
 
-    it "should expose a Jbuilder object" do
-      expect(state_a.output).to be_instance_of(Jbuilder)
+    it "should expose a hash object by default" do
+      expect(state_a.output).to be_instance_of(Hash)
     end
 
   end
+
 end

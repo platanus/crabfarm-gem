@@ -1,14 +1,21 @@
+require 'thwait'
+require 'crabfarm/forked_state'
+
 module Crabfarm
   class BaseState
     extend Forwardable
 
-    attr_reader :params
+    attr_reader :params, :output
 
     def_delegators :@pool, :driver
     def_delegators :@store, :get, :fetch
 
     def self.browser_dsl(_dsl)
-      @class_dsl = _dsl
+      @class_browser_dsl = _dsl
+    end
+
+    def self.output_builder(_builder)
+      @class_output_builder = _builder
     end
 
     def initialize(_module, _pool, _store, _params)
@@ -16,8 +23,9 @@ module Crabfarm
       @pool = _pool
       @store = _store
       @params = _params
-      @output = Jbuilder.new
-      @dsl = Adapters.load_from_dsl_name(class_dsl || @module.settings.default_dsl)
+
+      @dsl = Strategies.load(:browser_dsl, class_browser_dsl || @module.settings.browser_dsl)
+      @builder = Strategies.load(:output_builder, class_output_builder || @module.settings.output_builder)
     end
 
     def browser(_name=nil)
@@ -25,7 +33,11 @@ module Crabfarm
     end
 
     def output
-      @output ||= Jbuilder.new
+      @output ||= @builder.prepare
+    end
+
+    def output_as_json
+      @builder.serialize @output
     end
 
     def crawl
@@ -34,8 +46,12 @@ module Crabfarm
 
   private
 
-    def class_dsl
-      self.class.instance_variable_get :@class_dsl
+    def class_browser_dsl
+      self.class.instance_variable_get :@class_browser_dsl
+    end
+
+    def class_output_builder
+      self.class.instance_variable_get :@class_output_builder
     end
   end
 end

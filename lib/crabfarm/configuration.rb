@@ -5,7 +5,8 @@ module Crabfarm
     class Option < Struct.new(:name, :type, :text); end
 
     OPTIONS = [
-      [:default_dsl, :string, 'Default dsl used by parsers and states'],
+      [:browser_dsl, :string, 'Default browser dsl used by parsers and states'],
+      [:output_builder, :string, 'Default json output builder used by states'],
       [:driver_factory, :mixed, 'Driver factory, disabled if phantom_mode is used'],
       [:log_path, :string, 'Path where logs should be stored'],
 
@@ -39,7 +40,8 @@ module Crabfarm
 
     def initialize
       @values = {
-        default_dsl: :surfer,
+        browser_dsl: :surfer,
+        output_builder: :hash,
         driver_factory: nil,
         log_path: 'logs',
 

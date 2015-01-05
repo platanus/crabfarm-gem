@@ -77,8 +77,7 @@ module Crabfarm
         while @running
           if @working
             begin
-              last_state = @context.run_state @next_state_name, @next_state_params
-              @doc = last_state.output.attributes!
+              @doc = @context.run_state(@next_state_name, @next_state_params).output_as_json
               @error = nil
             rescue Exception => e
               @doc = nil

@@ -24,7 +24,8 @@ module Surimi
 
   def self.build_fake_env(_module=nil, _config={})
     config = Crabfarm::Configuration.new
-    config.set_default_dsl :surimi
+    config.set_driver :firefox
+    config.set_browser_dsl :surimi
     config.set_driver_factory DriverFactory
 
     return Crabfarm::ModuleHelper.new _module, config
@@ -32,5 +33,5 @@ module Surimi
 
 end
 
-Crabfarm::Adapters.register_dsl :surimi, Surimi::DslAdapter
-Crabfarm::Adapters.register_dsl :surimi_2, Surimi::DslAdapter2
+Crabfarm::Strategies.register :browser_dsl, :surimi, Surimi::DslAdapter
+Crabfarm::Strategies.register :browser_dsl, :surimi_2, Surimi::DslAdapter2

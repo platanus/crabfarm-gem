@@ -3,7 +3,8 @@ require 'bundler'
 # Load gems listed in the Gemfile.
 
 ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../Gemfile', __FILE__)
-Bundler.require
+Bundler.setup
+require 'crabfarm'
 
 # Run code loader
 

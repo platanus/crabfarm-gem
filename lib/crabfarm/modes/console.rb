@@ -33,8 +33,8 @@ module Crabfarm
           end
 
           begin
-            state = @context.run_state _name, _params
-            puts JSON.pretty_generate(state.output.attributes!).color(:green)
+            doc = @context.run_state(_name, _params).output_as_json
+            puts JSON.pretty_generate(doc).color(:green)
           rescue EntityNotFoundError => e
             puts "#{e.to_s}".color(:red)
           rescue => e
