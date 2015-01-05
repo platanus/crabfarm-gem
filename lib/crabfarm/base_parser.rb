@@ -1,5 +1,5 @@
 module Crabfarm
-  class BaseParser
+  class BaseParser < Delegator
 
     attr_reader :browser, :params
 
@@ -11,10 +11,20 @@ module Crabfarm
       dsl_class = Strategies.load(:browser_dsl, class_browser_dsl || _module.settings.browser_dsl)
       @browser = dsl_class.wrap _driver
       @params = _params
+
+      super @browser
     end
 
-    def parse(_params)
+    def parse
       raise NotImplementedError.new
+    end
+
+    def __getobj__
+      @browser
+    end
+
+    def __setobj__(obj)
+      @browser = obj
     end
 
   private
