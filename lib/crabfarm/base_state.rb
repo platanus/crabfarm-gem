@@ -44,6 +44,16 @@ module Crabfarm
       raise NotImplementedError.new
     end
 
+    def fork_each(_enumerator, &_block)
+      session_id = 0
+      mutex = Mutex.new
+      ths = _enumerator.map do |value|
+        session_id += 1
+        start_forked_state("th_session_#{session_id}", value, _block, mutex)
+      end
+      ThreadsWait.all_waits(*ths)
+    end
+
   private
 
     def class_browser_dsl
@@ -52,6 +62,17 @@ module Crabfarm
 
     def class_output_builder
       self.class.instance_variable_get :@class_output_builder
+    end
+
+    def start_forked_state(_name, _value, _block, _mutex)
+      Thread.new {
+        sub_state = ForkedState.new self, _name, _mutex
+        begin
+          sub_state.instance_exec _value, &_block
+        ensure
+          sub_state.driver.reset
+        end
+      }
     end
   end
 end
