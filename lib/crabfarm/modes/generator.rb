@@ -77,18 +77,16 @@ module Crabfarm
         self
       end
 
-
-
   private
 
       def generate_dir(_path, _silent)
         path = File.join(*_path)
         dir = Pathname.new path
         unless dir.exist?
-          puts "Generating #{path}".color(:green)
+          render_op "mkdir", path, :green
           dir.mkpath
         else
-          puts "Skipping #{path}".color(:yellow) unless _silent
+          render_op "skip", path, :yellow unless _silent
         end
       end
 
@@ -97,13 +95,13 @@ module Crabfarm
         output = File.join(*_path)
 
         unless Pathname.new(output).exist?
-          puts "Rendering #{output}".color(:green)
+          render_op "render", output, :green
           File.open(output, "w") do |f|
             f.write eval_template_with_hash(template, _binding)
             f.chmod(_mod) unless _mod.nil?
           end
         else
-          puts "Skipping #{output}, already exists".color(:yellow)
+          render_op "skip", output, :yellow
         end
       end
 
@@ -114,6 +112,10 @@ module Crabfarm
 
       def template_dir
         File.expand_path('../../templates', __FILE__)
+      end
+
+      def render_op(_op, _message, _color)
+        puts _op.rjust(10).color(_color) + '  ' + _message
       end
     end
   end
