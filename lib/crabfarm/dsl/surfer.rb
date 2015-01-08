@@ -11,7 +11,7 @@ module Crabfarm
         def initialize(_message, _ctx)
           super _message
           @ctx = _ctx
-          @source = _ctx.root_context.page_source rescue nil # cache page source for future reference
+          @source = _ctx.root.page_source rescue nil # cache page source for future reference
         end
       end
 

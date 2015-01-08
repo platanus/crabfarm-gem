@@ -2,14 +2,21 @@ module Crabfarm
   module Dsl
     module Surfer
       class SurfContext < SearchContext
-        extend Forwardable
 
         def_delegators :@bucket, :parse, :setup
         def_delegators 'driver.navigate', :back, :forward, :refresh
 
         def initialize(_bucket)
-          super nil, nil
+          super nil, self
           @bucket = _bucket
+        end
+
+        def root
+          self
+        end
+
+        def elements
+          [driver]
         end
 
         def driver
@@ -45,13 +52,6 @@ module Crabfarm
             end
           end
         end
-
-      private
-
-        def context
-          [driver]
-        end
-
       end
     end
   end

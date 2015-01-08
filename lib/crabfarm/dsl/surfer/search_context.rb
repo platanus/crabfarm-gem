@@ -7,31 +7,46 @@ module Crabfarm
 
         TIMEOUT = 10.0 # Default timeout for waiting operations
 
+        attr_accessor :elements, :parent
+
+        def_delegators :elements, :length, :count, :empty?
+
         def initialize(_elements, _parent)
           @elements = _elements
           @parent = _parent
         end
 
-        # return the context's root context
-        def root_context
-          return @parent.root_context if @parent
-          self
+        def root
+          @parent.root
         end
 
-        # return the context's parent context
-        def parent_context
-          @parent
+        def each
+          elements.each { |el| yield child_context [el] }
         end
 
-        # forward read-only array methods to context
-        def_delegators :context, :each, :[], :length, :count, :empty?, :first, :last
-
-        # yield individual SearchContext for each element contained in this result
-        def explode(&_block)
-          return enum_for(__method__) if _block.nil?
-          context.each do |el|
-            _block.call SearchContext.new([el], self)
+        def [](*args)
+          if args[0].is_a? String or args[0].is_a? Symbol
+            attribute args[0]
+          else
+            child_context Array(elements.send(:[],*args))
           end
+        end
+
+        def first
+          if elements.first.nil? then nil else child_context [elements.first] end
+        end
+
+        def last
+          if elements.last.nil? then nil else child_context [elements.last] end
+        end
+
+        def element!
+          raise EmptySetError.new("This set is empty", self) if empty?
+          elements.first
+        end
+
+        def classes
+          wrap_errors { (element!['class'] || '').split(' ') }
         end
 
         # searches for elements that match a given selector
@@ -46,34 +61,35 @@ module Crabfarm
             timeout = TIMEOUT if timeout.nil?
 
             # use a selenium timeout
-            wait = Selenium::WebDriver::Wait.new(timeout: timeout)
-            wait.until do
-              new_elements = search_elements _options
+            wrap_errors do
+              wait = Selenium::WebDriver::Wait.new(timeout: timeout)
+              wait.until do
+                new_elements = search_elements _options
 
-              # test wait condition
-              ok = case wait_mode
-              when :present then (new_elements.length > 0)
-              when :visible then (new_elements.length > 0 and new_elements.first.displayed?)
-              when :enabled then (new_elements.length > 0 and new_elements.first.displayed? and new_elements.first.enabled?)
-              when :not_present then (new_elements.length == 0)
-              when :not_visible then (not new_elements.any? { |e| e.displayed? })
-              else
-                raise SetupError.new "Invalid wait mode '#{wait_mode}'"
+                # test wait condition
+                ok = case wait_mode
+                when :present then (new_elements.length > 0)
+                when :visible then (new_elements.length > 0 and new_elements.first.displayed?)
+                when :enabled then (new_elements.length > 0 and new_elements.first.displayed? and new_elements.first.enabled?)
+                when :not_present then (new_elements.length == 0)
+                when :not_visible then (not new_elements.any? { |e| e.displayed? })
+                else
+                  raise SetupError.new "Invalid wait mode '#{wait_mode}'"
+                end
+
+                child_context new_elements if ok
               end
-
-              SearchContext.new new_elements, self if ok
             end
           else
-            SearchContext.new search_elements(_options), self
+            child_context search_elements(_options)
           end
         end
 
         # clears and sends_keys to this context main element
         def fill(_value)
-          raise EmptySetError.new('Cannot call \'fill\' on an empty set', self) if empty?
           wrap_errors do
-            context.first.clear
-            context.first.send_keys _value
+            element!.clear
+            element!.send_keys _value
           end
         end
 
@@ -83,10 +99,9 @@ module Crabfarm
             m = /^(.*)_all$/.match _method.to_s
             if m then
               return [] if empty?
-              context.map { |e| e.send(m[1], *_args, &_block) }
+              elements.map { |e| e.send(m[1], *_args, &_block) }
             else
-              raise EmptySetError.new("Cannot call '#{_method}' on an empty set", self) if empty?
-              context.first.send(_method, *_args, &_block)
+              element!.send(_method, *_args, &_block)
             end
           end
         end
@@ -96,16 +111,19 @@ module Crabfarm
           m = /^.*_all$/.match _method.to_s
           if m then
             return true if empty?
-            context.first.respond_to? m[1], _include_all
+            elements.first.respond_to? m[1], _include_all
           else
             return true if empty?
-            context.first.respond_to? _method, _include_all
+            elements.first.respond_to? _method, _include_all
           end
         end
 
       private
 
-        # wrap every selenium errors that happen inside block.
+        def child_context(_elements)
+          SearchContext.new _elements, self
+        end
+
         def wrap_errors
           begin
             yield
@@ -114,18 +132,12 @@ module Crabfarm
           end
         end
 
-        # base filtering method, expands current context
         def search_elements(_options)
           wrap_errors do
-            context.inject([]) do |r, element|
+            elements.inject([]) do |r, element|
               r + element.find_elements(_options)
             end
           end
-        end
-
-        # returns the current context
-        def context
-          @elements
         end
 
       end
