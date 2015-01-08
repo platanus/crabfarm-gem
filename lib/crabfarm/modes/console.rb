@@ -1,3 +1,4 @@
+require 'benchmark'
 require 'readline'
 require 'rainbow'
 require 'rainbow/ext/string'
@@ -33,8 +34,14 @@ module Crabfarm
           end
 
           begin
-            doc = @context.run_state(_name, _params).output_as_json
-            puts JSON.pretty_generate(doc).color(:green)
+            elapsed = Benchmark.measure do
+              puts "Transitioning to #{_name.to_s.camelize} state"
+              doc = @context.run_state(_name, _params).output_as_json
+
+              puts "State changed, generated document:"
+              puts JSON.pretty_generate(doc).color(:green).gsub(/(^|\\n)/, '  ')
+            end
+            puts "Completed in #{elapsed.real} s"
           rescue EntityNotFoundError => e
             puts "#{e.to_s}".color(:red)
           rescue => e
