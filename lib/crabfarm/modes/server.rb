@@ -34,7 +34,8 @@ module Crabfarm
             {
               name: _state.name,
               params: _state.params,
-              doc: _state.doc
+              doc: _state.doc,
+              elapsed: _state.elapsed
             }
           end
         end

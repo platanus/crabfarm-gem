@@ -1,3 +1,4 @@
+require 'benchmark'
 require 'ostruct'
 
 module Crabfarm
@@ -69,20 +70,23 @@ module Crabfarm
         OpenStruct.new({
           name: @state_name,
           params: @state_params,
-          doc: @doc
+          doc: @doc,
+          elapsed: @elapsed
         })
       end
 
       def crawl_loop
         while @running
           if @working
-            begin
-              @doc = @context.run_state(@next_state_name, @next_state_params).output_as_json
-              @error = nil
-            rescue Exception => e
-              @doc = nil
-              @error = e
-            end
+            @elapsed = Benchmark.measure do
+              begin
+                @doc = @context.run_state(@next_state_name, @next_state_params).output_as_json
+                @error = nil
+              rescue Exception => e
+                @doc = nil
+                @error = e
+              end
+            end.real
 
             @state_name = @next_state_name
             @state_params = @next_state_params
