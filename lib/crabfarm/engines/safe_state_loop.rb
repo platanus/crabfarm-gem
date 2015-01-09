@@ -81,6 +81,7 @@ module Crabfarm
           if @working
             @elapsed = Benchmark.measure do
               begin
+                ActiveSupport::Dependencies.clear
                 @doc = @context.run_state(@next_state_name, @next_state_params).output_as_json
                 @error = nil
               rescue Exception => e
