@@ -12,8 +12,7 @@ module Crabfarm
 
         attr_reader :context
 
-        def initialize(_loader)
-          @loader = _loader
+        def initialize
           reload!
         end
 
@@ -21,10 +20,10 @@ module Crabfarm
           unless @context.nil?
             puts "Reloading crawler source".color(:green)
             @context.release
-            @loader.reload_source
+            ActiveSupport::Dependencies.clear
           end
 
-          @context = @loader.load_context
+          @context = Crabfarm::Context.new
         end
 
         def transition(_name=nil, _params={})
@@ -63,8 +62,8 @@ module Crabfarm
         alias :r :reset
       end
 
-      def self.start(_loader)
-        dsl = ConsoleDsl.new(_loader)
+      def self.start
+        dsl = ConsoleDsl.new
 
         loop do
           begin

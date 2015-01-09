@@ -62,8 +62,8 @@ module Crabfarm
         @@evaluator
       end
 
-      def self.start(_loader, _options)
-        @@evaluator = Engines::SafeStateLoop.new _loader
+      def self.start(_options)
+        @@evaluator = Engines::SafeStateLoop.new
         begin
           Support::CustomPuma.run API, _options
         ensure

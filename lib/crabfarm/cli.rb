@@ -13,11 +13,11 @@ module Crabfarm
       Support::GLI.generate_options c
 
       c.action do |global_options,options,args|
-        next puts "This command can only be run inside a crabfarm application" unless defined? CF_LOADER
+        next puts "This command can only be run inside a crabfarm application" unless defined? CF_PATH
 
         require "crabfarm/modes/console"
-        CF_LOADER.load Support::GLI.parse_options options
-        Crabfarm::Modes::Console.start CF_LOADER
+        Crabfarm.config.set Support::GLI.parse_options options
+        Crabfarm::Modes::Console.start
       end
     end
 
@@ -35,7 +35,7 @@ module Crabfarm
       Support::GLI.generate_options c
 
       c.action do |global_options,options,args|
-        next puts "This command can only be run inside a crabfarm application" unless defined? CF_LOADER
+        next puts "This command can only be run inside a crabfarm application" unless defined? CF_PATH
 
         require "crabfarm/modes/server"
         server_options = {}
@@ -43,8 +43,8 @@ module Crabfarm
         server_options[:Port] = options[:port] || 3100
         server_options[:Threads] = options[:threads] unless options[:threads].nil?
 
-        CF_LOADER.load Support::GLI.parse_options options
-        Crabfarm::Modes::Server.start CF_LOADER, server_options
+        Crabfarm.config.set Support::GLI.parse_options options
+        Crabfarm::Modes::Server.start server_options
       end
     end
 

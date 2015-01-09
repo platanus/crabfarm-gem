@@ -2,14 +2,18 @@ require 'spec_helper'
 
 describe Crabfarm::BaseState do
 
-  let(:env) { Surimi.build_fake_env }
-  let(:pool) { Crabfarm::DriverBucketPool.new env }
+  before {
+    Crabfarm.config.set_browser_dsl :surimi
+    Crabfarm.config.set_driver :noop # prevent phantomjs from starting
+  }
+
+  let(:pool) { Crabfarm::DriverBucketPool.new }
 
   let(:state_class_a) { Class.new(Crabfarm::BaseState) }
   let(:state_class_b) { Class.new(Crabfarm::BaseState) { browser_dsl :surimi_2 } }
 
-  let(:state_a) { state_class_a.new env, pool, nil, { arg: 'imateapot' } }
-  let(:state_b) { state_class_b.new env, pool, nil, { } }
+  let(:state_a) { state_class_a.new pool, nil, { arg: 'imateapot' } }
+  let(:state_b) { state_class_b.new pool, nil, { } }
 
   describe "browser" do
     it 'should provide the dsl specified in context' do

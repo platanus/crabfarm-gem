@@ -1,8 +1,7 @@
 module Crabfarm
   class DriverBucketPool
 
-    def initialize(_module)
-      @module = _module
+    def initialize
       @buckets = Hash.new
       @phantom = nil
 
@@ -12,7 +11,7 @@ module Crabfarm
     def driver(_session_id=nil)
       _session_id ||= :default_driver
       bucket = @buckets[_session_id.to_sym]
-      bucket = @buckets[_session_id.to_sym] = DriverBucket.new(@module, _session_id, build_driver_factory) if bucket.nil?
+      bucket = @buckets[_session_id.to_sym] = DriverBucket.new(_session_id, build_driver_factory) if bucket.nil?
       bucket
     end
 
@@ -29,19 +28,23 @@ module Crabfarm
   private
 
     def init_phantom_if_required
-      if @module.settings.phantom_mode_enabled?
-        @phantom = PhantomRunner.new @module.settings.phantom_config
+      if config.phantom_mode_enabled?
+        @phantom = PhantomRunner.new config.phantom_config
         @phantom.start
       end
     end
 
     def build_driver_factory
-      if @module.settings.phantom_mode_enabled?
-        PhantomDriverFactory.new @phantom, @module.settings.driver_config
+      if config.phantom_mode_enabled?
+        PhantomDriverFactory.new @phantom, config.driver_config
       else
-        return @module.settings.driver_factory if @module.settings.driver_factory
-        DefaultDriverFactory.new @module.settings.driver_config
+        return config.driver_factory if config.driver_factory
+        DefaultDriverFactory.new config.driver_config
       end
+    end
+
+    def config
+      Crabfarm.config
     end
 
   end

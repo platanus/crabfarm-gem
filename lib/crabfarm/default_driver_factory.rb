@@ -11,6 +11,9 @@ module Crabfarm
       raise ConfigurationError.new 'must provide a webdriver type' if driver_name.nil?
 
       case driver_name
+      when :noop
+        require "crabfarm/mocks/noop_driver"
+        driver = Crabfarm::Mocks::NoopDriver.new # TODO: improve dummy driver...
       when :remote
         # setup a custom client to use longer timeouts
         client = Selenium::WebDriver::Remote::Http::Default.new

@@ -6,14 +6,13 @@ module Crabfarm
 
     def_delegators :@pool, :driver
 
-    def initialize(_module)
-      @module = _module
-      @pool = DriverBucketPool.new @module
-      @store = StateStore.new @module
+    def initialize
+      @pool = DriverBucketPool.new
+      @store = StateStore.new
     end
 
     def run_state(_name, _params={})
-      state = @module.load_state(_name).new @module, @pool, @store, _params
+      state = LoaderService.load_state(_name).new @pool, @store, _params
       state.crawl
       state
     end

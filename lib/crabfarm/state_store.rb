@@ -3,7 +3,7 @@ require 'active_support'
 module Crabfarm
   class StateStore
 
-    def initialize(_module)
+    def initialize
       reset
     end
 

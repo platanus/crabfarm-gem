@@ -5,7 +5,7 @@ require "selenium-webdriver"
 require "crabfarm/version"
 require "crabfarm/errors"
 require "crabfarm/configuration"
-require "crabfarm/module_helper"
+require "crabfarm/loader_service"
 require "crabfarm/driver_bucket"
 require "crabfarm/driver_bucket_pool"
 require "crabfarm/default_driver_factory"
@@ -16,9 +16,19 @@ require "crabfarm/context"
 require "crabfarm/base_state"
 require "crabfarm/base_parser"
 require "crabfarm/strategies"
-require "crabfarm/loader"
 
 module Crabfarm
+
+  @@config = Configuration.new
+
+  def self.config
+    @@config
+  end
+
+  def self.read_crabfile(_path)
+    @@config.instance_eval File.read _path
+  end
+
   module Strategies
     # bundled browser dsl adapters
     register :browser_dsl, :surfer, 'Crabfarm::SurferBrowserDsl', 'crabfarm/adapters/browser/surfer'

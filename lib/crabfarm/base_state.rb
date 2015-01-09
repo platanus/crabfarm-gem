@@ -18,14 +18,13 @@ module Crabfarm
       @class_output_builder = _builder
     end
 
-    def initialize(_module, _pool, _store, _params)
-      @module = _module
+    def initialize(_pool, _store, _params)
       @pool = _pool
       @store = _store
       @params = _params
 
-      @dsl = Strategies.load(:browser_dsl, class_browser_dsl || @module.settings.browser_dsl)
-      @builder = Strategies.load(:output_builder, class_output_builder || @module.settings.output_builder)
+      @dsl = Strategies.load(:browser_dsl, class_browser_dsl || Crabfarm.config.browser_dsl)
+      @builder = Strategies.load(:output_builder, class_output_builder || Crabfarm.config.output_builder)
     end
 
     def browser(_name=nil)

@@ -39,6 +39,10 @@ module Crabfarm
     end
 
     def initialize
+      reset
+    end
+
+    def reset
       @values = {
         browser_dsl: :surfer,
         output_builder: :hash,

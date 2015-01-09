@@ -2,14 +2,17 @@ require 'spec_helper'
 
 describe Crabfarm::BaseParser do
 
-  let(:env) { Surimi.build_fake_env }
+  before {
+    Crabfarm.config.set_browser_dsl :surimi
+  }
+
   let(:bucket) { Object.new }
 
   let(:parser_class_a) { Class.new(Crabfarm::BaseParser) }
   let(:parser_class_b) { Class.new(Crabfarm::BaseParser) { browser_dsl :surimi_2 } }
 
-  let(:parser_a) { parser_class_a.new env, bucket, { arg: 'imateapot' } }
-  let(:parser_b) { parser_class_b.new env, bucket, { } }
+  let(:parser_a) { parser_class_a.new bucket, { arg: 'imateapot' } }
+  let(:parser_b) { parser_class_b.new bucket, { } }
 
   describe "browser" do
     it 'should be fed with driver bucket on initialization' do

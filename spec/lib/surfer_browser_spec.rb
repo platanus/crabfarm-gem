@@ -4,8 +4,7 @@ require 'crabfarm/dsl/surfer'
 describe Crabfarm::Dsl::Surfer do
 
   before(:context) {
-    env = Crabfarm::ModuleHelper.new nil, Crabfarm::Configuration.new
-    @pool = Crabfarm::DriverBucketPool.new env
+    @pool = Crabfarm::DriverBucketPool.new
   }
 
   after(:example) { @pool.reset }

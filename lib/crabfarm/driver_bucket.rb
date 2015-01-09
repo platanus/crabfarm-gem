@@ -3,8 +3,7 @@ module Crabfarm
 
     attr_reader :session_id
 
-    def initialize(_module, _session_id, _factory)
-      @module = _module
+    def initialize(_session_id, _factory)
       @session_id = _session_id
       @factory = _factory
       @driver = nil
@@ -16,8 +15,8 @@ module Crabfarm
     end
 
     def parse(_parser_class, _options={})
-      _parser_class = @module.load_parser(_parser_class) if _parser_class.is_a? String or _parser_class.is_a? Symbol
-      parser = _parser_class.new @module, self, _options
+      _parser_class = LoaderService.load_parser(_parser_class) if _parser_class.is_a? String or _parser_class.is_a? Symbol
+      parser = _parser_class.new self, _options
       parser.parse
       return parser
     end

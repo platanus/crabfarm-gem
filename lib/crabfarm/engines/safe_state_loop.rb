@@ -5,8 +5,8 @@ module Crabfarm
   module Engines
     class SafeStateLoop
 
-      def initialize(_loader)
-        @context = _loader.load_context
+      def initialize
+        @context = Crabfarm::Context.new
         @running = true
         @working = false
         @lock = Mutex.new
@@ -22,6 +22,7 @@ module Crabfarm
       def change_state(_name, _params={}, _wait=nil)
         @lock.synchronize {
           raise StillWorkingError.new if @working
+          # TODO: test class reloading here?
           @next_state_name = _name
           @next_state_params = _params
           @working = true

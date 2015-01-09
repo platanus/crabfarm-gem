@@ -2,25 +2,26 @@ require 'spec_helper'
 
 describe Crabfarm::Context do
 
-  let(:mock_module) {
-    Module.new do
-      class MockState < Crabfarm::BaseState
-        attr_accessor :crawl_called
+  before {
+    Crabfarm.config.set_driver :noop
+  }
 
-        def crawl
-          @crawl_called = true
-        end
+  let(:mock_class) {
+    Class.new(Crabfarm::BaseState) do
+      attr_accessor :crawl_called
+
+      def crawl
+        @crawl_called = true
       end
     end
   }
 
-  let(:env) { Surimi.build_fake_env mock_module }
-  let(:context) { Crabfarm::Context.new env }
+  let(:context) { Crabfarm::Context.new }
 
   describe "run_state" do
 
     it "should load and call crawl on the loaded state" do
-      state = context.run_state(:mock_state)
+      state = context.run_state mock_class
       expect(state.crawl_called).to be(true)
     end
   end

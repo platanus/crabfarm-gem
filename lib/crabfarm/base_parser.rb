@@ -7,8 +7,8 @@ module Crabfarm
       @browser_dsl = _dsl
     end
 
-    def initialize(_module, _driver, _params)
-      dsl_class = Strategies.load(:browser_dsl, class_browser_dsl || _module.settings.browser_dsl)
+    def initialize(_driver, _params)
+      dsl_class = Strategies.load(:browser_dsl, class_browser_dsl || Crabfarm.config.browser_dsl)
       @browser = dsl_class.wrap _driver
       @params = _params
 
