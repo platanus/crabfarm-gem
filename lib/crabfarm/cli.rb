@@ -32,6 +32,9 @@ module Crabfarm
       c.desc "Set the server min and max threads, defaults to 0:16"
       c.flag [:t,:threads]
 
+      c.desc "Activate code reload before every request"
+      c.switch :reload, :default_value => true
+
       Support::GLI.generate_options c
 
       c.action do |global_options,options,args|
@@ -43,6 +46,7 @@ module Crabfarm
         server_options[:Port] = options[:port] || 3100
         server_options[:Threads] = options[:threads] unless options[:threads].nil?
 
+        ActiveSupport::Dependencies.mechanism = :require unless options[:reload]
         Crabfarm.config.set Support::GLI.parse_options options
         Crabfarm::Modes::Server.start server_options
       end
