@@ -32,6 +32,9 @@ module Crabfarm
       c.desc "Set the server min and max threads, defaults to 0:16"
       c.flag [:t,:threads]
 
+      c.desc "Start the server in verbose mode"
+      c.switch :verbose, :default_value => false
+
       c.desc "Activate code reload before every request"
       c.switch :reload, :default_value => true
 
@@ -45,6 +48,7 @@ module Crabfarm
         server_options[:Host] = options[:host] unless options[:host].nil?
         server_options[:Port] = options[:port] || 3100
         server_options[:Threads] = options[:threads] unless options[:threads].nil?
+        server_options[:Verbose] = options[:verbose]
 
         ActiveSupport::Dependencies.mechanism = :require unless options[:reload]
         Crabfarm.config.set Support::GLI.parse_options options
