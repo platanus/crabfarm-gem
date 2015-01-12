@@ -37,7 +37,7 @@ module Crabfarm
       {
         exception: @exc,
         backtrace: @trace
-      }
+      }.to_json
     end
   end
 

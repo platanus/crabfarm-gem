@@ -21,13 +21,18 @@ module Crabfarm
 
       def change_state(_name, _params={}, _wait=nil)
         @lock.synchronize {
-          raise StillWorkingError.new if @working
-          # TODO: test class reloading here?
-          @next_state_name = _name
-          @next_state_params = _params
-          @working = true
+          if @working
+            raise StillWorkingError.new unless matches_next_state? _name, _params
+            wait_and_load_struct _wait
+          elsif matches_current_state? _name, _params
+            state_as_struct
+          else
+            @next_state_name = _name
+            @next_state_params = _params
+            @working = true
 
-          wait_and_load_struct _wait
+            wait_and_load_struct _wait
+          end
         }
       end
 
@@ -49,6 +54,14 @@ module Crabfarm
       end
 
     private
+
+      def matches_current_state?(_name, _params)
+        _name == @state_name and _params == @state_params
+      end
+
+      def matches_next_state?(_name, _params)
+        _name == @next_state_name and _params == @next_state_params
+      end
 
       def wait_and_load_struct(_wait)
         # need to use this method because mutex are not reentrant and monitors are slow.
@@ -90,9 +103,11 @@ module Crabfarm
               end
             end.real
 
-            @state_name = @next_state_name
-            @state_params = @next_state_params
-            @working = false
+            @lock.synchronize {
+              @state_name = @next_state_name
+              @state_params = @next_state_params
+              @working = false
+            }
           else sleep 0.2 end
         end
       end

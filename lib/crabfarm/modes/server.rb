@@ -18,7 +18,7 @@ module Crabfarm
         end
 
         rescue_from Crabfarm::ApiError do |e|
-          rack_response(e.to_json.to_json, e.code)
+          rack_response(e.to_json, e.code)
         end
 
         helpers do
