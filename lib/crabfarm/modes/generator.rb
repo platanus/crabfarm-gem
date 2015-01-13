@@ -20,6 +20,7 @@ module Crabfarm
           path(_name, 'Gemfile').render('Gemfile', binding)
           path(_name, 'Crabfile').render('Crabfile', binding)
           path(_name, '.rspec').render('dot_rspec', binding)
+          path(_name, '.crabfarm').render('dot_crabfarm', binding)
           path(_name, 'boot.rb').render('boot.rb', binding)
           path(_name, 'bin', 'crabfarm').render('crabfarm_bin', binding, 0755)
           path(_name, 'app', 'parsers', '.gitkeep').render('dot_gitkeep')

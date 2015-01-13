@@ -1,0 +1,9 @@
+host: 'http://www.crabfarm.pow'
+name: 'demo'
+files:
+- Crabfile
+- Gemfile
+- Gemfile.lock
+- boot.rb
+- app/**/*.*
+- bin/**/*.*

@@ -86,7 +86,16 @@ module Crabfarm
 
     command :publish do |c|
       c.action do |global_options,options,args|
+        next puts "This command can only be run inside a crabfarm application" unless defined? CF_PATH
 
+        c.desc "Just list the files that are beign packaged"
+        c.switch :dry, :default_value => false
+
+        c.desc "Don't check for pending changes"
+        c.switch :unsafe, :default_value => false
+
+        require "crabfarm/modes/publisher"
+        Crabfarm::Modes::Publisher.publish CF_PATH, options
       end
     end
 
