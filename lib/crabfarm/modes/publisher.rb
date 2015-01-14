@@ -5,6 +5,7 @@ require 'rubygems/package'
 require 'net/http/post/multipart'
 require 'rainbow'
 require 'rainbow/ext/string'
+require 'digest/sha1'
 
 module Crabfarm
   module Modes
@@ -31,10 +32,10 @@ module Crabfarm
         end
 
         build_package
-        unless _options.fetch(:dry, false)
-          compress_package
-          send_package
-        end
+        compress_package
+        generate_signature
+
+        send_package unless _options.fetch(:dry, false)
       end
 
     private
@@ -77,9 +78,9 @@ module Crabfarm
 
       def load_files_from_git
         @git.chdir do
-          @sha = @git.log.first.sha
-          puts "Packaging files from current HEAD (#{@sha}):".color(:green)
-          entries = @git.gtree(@sha).full_tree.map &:split
+          @ref = @git.log.first.sha
+          puts "Packaging files from current HEAD (#{@ref}):".color(:green)
+          entries = @git.gtree(@ref).full_tree.map(&:split)
           entries = entries.select { |e| e[1] == 'blob' }
 
           @file_list = []
@@ -90,7 +91,7 @@ module Crabfarm
             else entry[3] end
 
             if @include.any? { |p| File.fnmatch? p, path }
-              @file_list << [path, entry[0].to_i(8), @git.show(@sha, entry[3])]
+              @file_list << [path, entry[0].to_i(8), @git.show(@ref, entry[3])]
             end
           end
         end
@@ -102,7 +103,7 @@ module Crabfarm
           full_path = File.join(@crawler_path, path)
           [path, File.stat(full_path).mode, File.read(full_path)]
         end
-        # TODO: calc signature
+        @ref = "filesystem"
       end
 
       def build_package
@@ -125,12 +126,18 @@ module Crabfarm
         writer.close
       end
 
+      def generate_signature
+        @signature = Digest::SHA1.hexdigest @package.string
+        puts "Package SHA1: #{@signature}"
+      end
+
       def send_package
         url = URI.join(@host, 'api/crawlers/', @name)
 
         req = Net::HTTP::Put::Multipart.new(url.path, {
           "repo" => UploadIO.new(StringIO.new(@cpackage.string), "application/x-gzip", "tree.tar.gz"),
-          "sha" => @sha
+          "sha" => @signature,
+          "ref" => @ref
         })
 
         res = Net::HTTP.start(url.host, url.port) do |http|
