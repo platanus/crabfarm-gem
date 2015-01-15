@@ -17,12 +17,14 @@ module Crabfarm
       def publish(_path, _options={})
 
         @crawler_path = _path
+        @options = _options
 
         load_config
+        return unless dry_run or authenticated?
         detect_git_repo
 
         if inside_git_repo?
-          if not _options.fetch(:unsafe, false) and is_tree_dirty?
+          if not unsafe and is_tree_dirty?
             puts "Aborting: Your working copy has uncommited changes! Use the --unsafe option to force.".color(:red)
             return
           end
@@ -35,16 +37,49 @@ module Crabfarm
         compress_package
         generate_signature
 
-        send_package unless _options.fetch(:dry, false)
+        send_package unless dry_run
       end
 
     private
 
+      def dry_run
+        @options.fetch(:dry, false)
+      end
+
+      def unsafe
+        @options.fetch(:unsafe, false)
+      end
+
+      def config_path
+        File.join(@crawler_path, '.crabfarm')
+      end
+
+      def home_config_path
+        File.join(Dir.home, '.crabfarm')
+      end
+
       def load_config
-        config = YAML.load_file File.join(@crawler_path, '.crabfarm')
+        config = YAML.load_file config_path
+
+        if File.exists? home_config_path
+          home_config = YAML.load_file home_config_path
+          config = home_config.merge config
+        end
+
+        @token = config['token']
         @name = config['name']
         @host = config['host'] || DEFAULT_HOST
         @include = config['files']
+      end
+
+      def authenticated?
+        # TODO: if no token, ask for credentials and fetch token
+        if @token.nil? or @token.empty?
+          puts "No crabfarm API token has been provided".color(:red)
+          return false
+        end
+
+        true
       end
 
       def is_tree_dirty?
@@ -138,6 +173,8 @@ module Crabfarm
           "repo" => UploadIO.new(StringIO.new(@cpackage.string), "application/x-gzip", "tree.tar.gz"),
           "sha" => @signature,
           "ref" => @ref
+        }, {
+          'X-Api-Token' => @token
         })
 
         res = Net::HTTP.start(url.host, url.port) do |http|
