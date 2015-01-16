@@ -1,0 +1,281 @@
+#!/usr/bin/env node
+
+var net = require('net'),
+	http = require('http'),
+	https = require('https'),
+	url = require('url'),
+	fs = require('fs'),
+	zlib = require('zlib');
+
+// Utility methods
+
+function forOwn(_obj, _cb) {
+	for(var key in _obj) {
+		if(_obj.hasOwnProperty(key)) {
+			_cb(key, _obj[key]);
+		}
+	}
+}
+
+function keysToLowerCase(_obj) {
+	var result = {};
+	forOwn(_obj, function(k,v) { result[k.toLowerCase()] = v; });
+	return result;
+}
+
+function matchRequestToResource(_req, _resource) {
+	return _resource.method.toLowerCase() == _req.method.toLowerCase() && _resource.url == _req.url;
+}
+
+function matchRequestToResourceFuzzy(_req, _resource) {
+	return false;
+}
+
+function findAndMoveLast(_array, _matchFun) {
+
+}
+
+// TODO: make this a proxy with two modes:
+// - Capture: tunnels and captures every request.
+// - Playback: only returns cached requests
+
+// TODO: CLI
+// server <file> [option]
+// Options:
+// -c: capture mode, tunnel requests and store in file.
+
+function Bucket(_path) {
+	this.path = _path;
+	this.data = [];
+}
+
+Bucket.prototype = {
+	load: function() {
+		this.data = JSON.parse(fs.readFileSync(this.path));
+	},
+	save: function() {
+		fs.writeFileSync(this.path, JSON.stringify(this.data));
+	},
+	serve: function(_req, _resp) {
+		var resource = this.resolve(_req);
+		if(resource) {
+			this.serveResource(resource, _resp);
+		} else {
+			console.log('not found: ' + req.url);
+			_resp.statusCode = 404;
+			_resp.end();
+		}
+	},
+	serveLast: function(_resp) {
+		this.serveResource(this.data[this.data.length-1], _resp);
+	},
+	serveResource: function(_resource, _resp) {
+		_resp.statusCode = _resource.statusCode;
+
+		forOwn(_resource.headers, function(k, v) { _resp.setHeader(k, v); });
+
+		if(_resource.content) {
+			console.log('encoding!  ' + _resource.encoding);
+			var buf = new Buffer(_resource.content, _resource.encoding);
+			_resp.end(buf);
+		} else {
+			_resp.end();
+		}
+	},
+	resolve: function(_req, _partial) {
+		// find closer resource definition
+		for(var i = 0, resource; (resource = this.data[i]); i++) {
+			if(resource.method.toLowerCase() == _req.method.toLowerCase() && resource.url == _req.url) {
+				console.log(resource.statusCode);
+				console.log(resource.url);
+				console.log(resource.headers);
+				return resource;
+			}
+		}
+
+		// if there is not an exact match, search for the closest one
+		if(_partial) {
+			console.log('comparing');
+			console.log(_path);
+			var currentUrl = url.parse(_path, true), matchPoints;
+			_.each(this.data, function(_resource) {
+				if(_resource.method.toLowerCase() == _req.method.toLowerCase()) {
+					var resourceUrl = url.parse(_resource.url, true);
+
+					// only consider urls with same hostname and pathnamea as close
+					if(currentUrl.hostname == resourceUrl.hostname && currentUrl.pathname == resourceUrl.pathname) {
+
+						console.log(_resource.url);
+
+						var resQsSize = 0, points = _.reduce(resourceUrl.query, function(count, val, key) {
+							resQsSize++;
+							return currentUrl.query[key] == val ? count+1 : count;
+						}, 0);
+						points += (_.size(currentUrl) - resQsSize);
+
+						console.log(points);
+
+						// keep the match with more points!
+						if(!match || points > matchPoints) {
+							matchPoints = points;
+							match = _resource;
+						}
+					}
+				}
+			});
+		}
+
+		return match;
+	},
+	cacheResponse: function(_req, _resp, _cb) {
+
+		console.log(_req.url);
+		console.log(_resp.statusCode);
+		console.log(keysToLowerCase(_resp.headers));
+
+		var self = this,
+			encoding = null,
+			resource = {
+				url: _req.url,
+				statusCode: _resp.statusCode,
+				method: _req.method,
+				// inHeaders: req.headers, // store request headers to aid in recognition?
+				headers: keysToLowerCase(_resp.headers),
+				content: '',
+				encoding: 'base64'
+			},
+			contentEncoding = resource.headers['content-encoding'],
+			contentType = resource.headers['content-type'],
+			outStream = _resp;
+
+		// add decompression if supported encoding:
+		if(contentEncoding == 'gzip') {
+			outStream = _resp.pipe(zlib.createGunzip());
+			delete resource.headers['content-encoding'];
+			contentEncoding = null;
+		} else if(contentEncoding == 'deflate') {
+			outStream = _resp.pipe(zlib.createInflate());
+			delete resource.headers['content-encoding'];
+			contentEncoding = null;
+		}
+
+		// use utf8 encoding for uncompresed text:
+		if(!contentEncoding && contentType) {
+			contentType = contentType.match(/([^\/]+)\/([^\s]+)(?:\s+(.+))?/i);
+			if(contentType && (contentType[1] == 'text' || contentType[1] == 'application')) {
+				resource.encoding = 'utf-8';
+			}
+		}
+
+		// remove unwanted headers:
+		delete resource.headers['content-length'];
+
+		// start receiving data:
+		if(resource.encoding) outStream.setEncoding(resource.encoding);
+		outStream.on('data', function(_chunk) {
+			resource.content += _chunk;
+		});
+
+		// when all data is received, store resource (dont know how this will handle more than one request)
+		outStream.on('end', function() {
+			self.data.push(resource);
+			_cb();
+		});
+	}
+};
+
+var CAPTURE = true;
+var BUCKET = new Bucket('./bucket.json');
+if(!CAPTURE) BUCKET.load();
+
+function prepareForward(_req) {
+	var urlObj = url.parse('http://' + _req.url);
+
+	var options = {
+		method: _req.method,
+		host: urlObj.host,
+		path: urlObj.path,
+		rejectUnauthorized: false,
+		headers: keysToLowerCase(_req.headers)
+	};
+
+	// Rewrite headers
+	options.headers['accept-encoding'] = 'gzip,deflate';
+	return options;
+}
+
+function processRequest(_req, _resp, _useSSL) {
+	console.log('New request received for ' + _req.url + ', headers: ' + JSON.stringify(_req.headers));
+
+	if(CAPTURE)
+	{
+		var options = prepareForward(_req);
+		console.log(JSON.stringify(options));
+		var forward = (_useSSL ? https : http).request(options, function(_fw_resp) {
+			console.log('TOUCHING THE SKY!!!)');
+			BUCKET.cacheResponse(_req, _fw_resp, function() {
+				BUCKET.serveLast(_resp);
+			});
+		});
+
+		_req.pipe(forward); // forward request data
+	}
+	else
+	{
+		BUCKET.serve(_req, _resp);
+	}
+}
+
+var server = http.createServer(function (_req, _resp) {
+	processRequest(_req, _resp, false);
+});
+
+
+var httpsOptions = {
+	key: fs.readFileSync('key.pem'),
+	cert: fs.readFileSync('cert.pem')
+};
+
+server.on('connect', function (_req, _sock, _head) {
+
+	var hostname = url.parse('http://' + _req.url).hostname;
+
+	var httpsServ = https.createServer(httpsOptions, function(_req, _resp) {
+		console.log('New HTTPS request!' + hostname);
+		_req.url = hostname + _req.url;
+		processRequest(_req, _resp, true);
+	});
+	httpsServ.listen(0);
+
+	console.log('connects!!!' + _req.url);
+	console.log('server port!!!' + httpsServ.address().port);
+
+	var srvSocket = net.connect(httpsServ.address().port, function() {
+		_sock.write('HTTP/1.1 200 Connection Established\r\n' +
+			'Proxy-agent: Node-Proxy\r\n' +
+			'\r\n');
+		srvSocket.write(_head);
+		srvSocket.pipe(_sock);
+		_sock.pipe(srvSocket);
+	});
+
+	_sock.on('close', function() {
+		console.log('Discarding MITM https server');
+		httpsServ.close();
+	});
+});
+
+server.listen(4000);
+
+process.on('SIGINT', function() {
+	console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" );
+
+	server.close();
+
+	if(CAPTURE) {
+		console.log('Storing bucket!');
+		BUCKET.save();
+	}
+
+	process.exit( );
+});
