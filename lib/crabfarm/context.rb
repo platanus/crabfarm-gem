@@ -59,8 +59,8 @@ module Crabfarm
       if config.phantom_mode_enabled?
         PhantomDriverFactory.new @phantom, override_config(config.driver_config)
       else
-        return config.driver_factory if override_config(config.driver_factory)
-        DefaultDriverFactory.new config.driver_config
+        return config.driver_factory if config.driver_factory
+        DefaultDriverFactory.new override_config(config.driver_config)
       end
     end
 
@@ -69,7 +69,7 @@ module Crabfarm
     end
 
     def override_config(_config)
-      _config[:proxy] = "https://127.0.0.1:#{@crabtrap.port}" unless @crabtrap.nil?
+      _config[:proxy] = "127.0.0.1:#{@crabtrap.port}" unless @crabtrap.nil?
       _config
     end
 
