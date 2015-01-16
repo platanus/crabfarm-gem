@@ -18,6 +18,8 @@ module Crabfarm
         load_remote_driver
       when :firefox
         load_firefox_driver
+      when :chrome
+        load_chrome_driver
       else
         load_other_driver driver_name
       end
@@ -31,7 +33,13 @@ module Crabfarm
     def load_remote_driver
       client = Selenium::WebDriver::Remote::Http::Default.new
       client.timeout = @config[:remote_timeout]
-      client.proxy = Selenium::WebDriver::Proxy.new(:http => @config[:proxy]) if config_present? :proxy
+
+      if config_present? :proxy
+        client.proxy = Selenium::WebDriver::Proxy.new({
+          :http => @config[:proxy],
+          :ssl => @config[:proxy]
+        })
+      end
 
       Selenium::WebDriver.for(:remote, {
         :url => @config[:remote_host],
@@ -42,9 +50,26 @@ module Crabfarm
 
     def load_firefox_driver
       profile = Selenium::WebDriver::Firefox::Profile.new
-      profile.proxy = Selenium::WebDriver::Proxy.new(:http => @config[:proxy]) if config_present? :proxy
+
+      if config_present? :proxy
+        profile.proxy = Selenium::WebDriver::Proxy.new({
+          :http => @config[:proxy],
+          :ssl => @config[:proxy]
+        })
+      end
 
       Selenium::WebDriver.for :firefox, :profile => profile
+    end
+
+    def load_chrome_driver
+      switches = []
+
+      if config_present? :proxy
+        switches << "--proxy-server=#{@config[:proxy]}"
+        switches << "--ignore-certificate-errors"
+      end
+
+      Selenium::WebDriver.for :chrome, :switches => switches
     end
 
     def load_other_driver(_name)
