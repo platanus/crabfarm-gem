@@ -10,13 +10,24 @@ module Crabfarm
     desc "Starts the crawler in console mode"
     command [:console, :c] do |c|
 
+      c.desc "Capture to crabtrap file"
+      c.flag [:c, :capture]
+
+      c.desc "Replay from crabtrap file"
+      c.flag [:r, :replay]
+
       Support::GLI.generate_options c
 
       c.action do |global_options,options,args|
         next puts "This command can only be run inside a crabfarm application" unless defined? CF_PATH
 
         require "crabfarm/modes/console"
-        Crabfarm.config.set Support::GLI.parse_options options
+        cb_options = Support::GLI.parse_options options
+        cb_options[:crabtrap_bucket] = options[:capture] if options[:capture]
+        cb_options[:crabtrap_bucket] = options[:replay] if options[:replay]
+        cb_options[:crabtrap_mode] = 'replay' if options[:replay]
+
+        Crabfarm.config.set cb_options # overrides should be set in the executed context (in server mode too)
         Crabfarm::Modes::Console.start
       end
     end

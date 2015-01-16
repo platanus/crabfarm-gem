@@ -9,6 +9,7 @@ module Crabfarm
       [:output_builder, :string, 'Default json output builder used by states'],
       [:driver_factory, :mixed, 'Driver factory, disabled if phantom_mode is used'],
       [:log_path, :string, 'Path where logs should be stored'],
+      [:proxy, :string, 'If given, a proxy is used to connect to the internet if driver supports it'],
 
       # Default driver configuration parameters
       [:driver, ['chrome', 'firefox', 'phantomjs', 'remote'], 'Webdriver to be user, common options: chrome, firefox, phantomjs, remote.'],
@@ -21,10 +22,13 @@ module Crabfarm
 
       # Phantom launcher configuration
       [:phantom_load_images, :boolean, 'Phantomjs image loading, only for phantomjs driver.'],
-      [:phantom_proxy, :string, 'Phantonjs proxy address, only for phantomjs driver.'],
       [:phantom_ssl, ['sslv3', 'sslv2', 'tlsv1', 'any'], 'Phantomjs ssl mode: sslv3, sslv2, tlsv1 or any, only for phantomjs driver.'],
       [:phantom_bin_path, :string, 'Phantomjs binary path, only for phantomjs driver.'],
-      [:phantom_lock_file, :string, 'Phantomjs lock file path, only for phantomjs driver.']
+      [:phantom_lock_file, :string, 'Phantomjs lock file path, only for phantomjs driver.'],
+
+      [:crabtrap_bin, :string, 'Crabtrap binary path.'],
+      [:crabtrap_bucket, :string, 'Crabtrap bucket path.'],
+      [:crabtrap_mode, ['capture', 'replay'], 'Crabtrap operation mode.']
     ]
     .map { |o| Option.new *o }
 
@@ -48,6 +52,7 @@ module Crabfarm
         output_builder: :hash,
         driver_factory: nil,
         log_path: 'logs',
+        proxy: nil,
 
         driver: 'phantomjs',
         driver_capabilities: Selenium::WebDriver::Remote::Capabilities.firefox,
@@ -58,10 +63,13 @@ module Crabfarm
         driver_window_height: 800,
 
         phantom_load_images: false,
-        phantom_proxy: nil,
         phantom_ssl: 'any',
         phantom_bin_path: 'phantomjs',
-        phantom_lock_file: nil
+        phantom_lock_file: nil,
+
+        crabtrap_bin: 'crabtrap',
+        crabtrap_bucket: nil,
+        crabtrap_mode: 'capture'
       }
     end
 
@@ -79,6 +87,7 @@ module Crabfarm
     def driver_config
       {
         name: driver,
+        proxy: proxy,
         capabilities: driver_capabilities,
         remote_host: driver_remote_host,
         remote_timeout: driver_remote_timeout,
@@ -94,7 +103,7 @@ module Crabfarm
     def phantom_config
       {
         load_images: phantom_load_images,
-        proxy: phantom_proxy,
+        proxy: proxy,
         ssl: phantom_ssl,
         bin_path: phantom_bin_path,
         lock_file: phantom_lock_file,
@@ -102,9 +111,22 @@ module Crabfarm
       }
     end
 
-     # Add enviroment support (like a Gemfile)
-     # group :test { set_driver :phantom }
-     # set_driver :phantom, group: :test
+    def crabtrap_enabled?
+      not crabtrap_bucket.nil?
+    end
+
+    def crabtrap_config
+      {
+        bin_path: crabtrap_bin,
+        bucket_path: crabtrap_bucket,
+        capture: crabtrap_mode == 'capture',
+        proxy: proxy
+      }
+    end
+
+    # Add enviroment support (like a Gemfile)
+    # group :test { set_driver :phantom }
+    # set_driver :phantom, group: :test
 
   end
 

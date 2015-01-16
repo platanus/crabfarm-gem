@@ -7,33 +7,54 @@ module Crabfarm
 
     def build_driver(_session_id)
 
-      driver_name = @config[:name]
-      raise ConfigurationError.new 'must provide a webdriver type' if driver_name.nil?
+      raise ConfigurationError.new 'must provide a webdriver type' unless config_present? :name
+      driver_name = @config[:name].to_sym
 
-      case driver_name
+      driver = case driver_name
       when :noop
         require "crabfarm/mocks/noop_driver"
         driver = Crabfarm::Mocks::NoopDriver.new # TODO: improve dummy driver...
       when :remote
-        # setup a custom client to use longer timeouts
-        client = Selenium::WebDriver::Remote::Http::Default.new
-        client.timeout = @config[:remote_timeout]
-
-        driver = Selenium::WebDriver.for :remote, {
-          :url => @config[:remote_host],
-          :http_client => client,
-          :desired_capabilities => @config[:capabilities]
-        }
-
-        driver.send(:bridge).setWindowSize(@config[:window_width], @config[:window_height])
+        load_remote_driver
+      when :firefox
+        load_firefox_driver
       else
-        driver = Selenium::WebDriver.for driver_name.to_sym
-
-        # apply browser configuration to new driver
-        driver.manage.window.resize_to(@config[:window_width], @config[:window_height]) rescue nil
+        load_other_driver driver_name
       end
 
+      # apply browser configuration to new driver
+      driver.manage.window.resize_to(@config[:window_width], @config[:window_height]) rescue nil
+
       return driver
+    end
+
+    def load_remote_driver
+      client = Selenium::WebDriver::Remote::Http::Default.new
+      client.timeout = @config[:remote_timeout]
+      client.proxy = Selenium::WebDriver::Proxy.new(:http => @config[:proxy]) if config_present? :proxy
+
+      Selenium::WebDriver.for(:remote, {
+        :url => @config[:remote_host],
+        :http_client => client,
+        :desired_capabilities => @config[:capabilities]
+      })
+    end
+
+    def load_firefox_driver
+      profile = Selenium::WebDriver::Firefox::Profile.new
+      profile.proxy = Selenium::WebDriver::Proxy.new(:http => @config[:proxy]) if config_present? :proxy
+
+      Selenium::WebDriver.for :firefox, :profile => profile
+    end
+
+    def load_other_driver(_name)
+      raise ConfigurationError.new 'default driver does not support proxy' if config_present? :proxy
+
+      Selenium::WebDriver.for _name.to_sym
+    end
+
+    def config_present?(_key)
+      not (@config[_key].nil? or @config[_key].empty?)
     end
 
   end
