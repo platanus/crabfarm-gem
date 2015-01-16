@@ -15,6 +15,7 @@ var HTTPS_OPTIONS = {
 };
 
 var LOG = {
+	DEBUG: 0,
 	INFO: 1,
 	WARN: 2,
 	ERROR: 3
@@ -44,6 +45,7 @@ var STACK = [],
 // Utility methods
 
 function log(_level, _message) {
+	if(_level == LOG.DEBUG) _message = '\t' + _message;
 	if(_level >= LOG_LEVEL) console.log(_message);
 }
 
@@ -72,8 +74,8 @@ function matchRequestToResource(_req, _resource) {
 function matchRequestToResourceWOQuery(_req, _resource) {
 	if(_resource.method.toLowerCase() == _req.method.toLowerCase()) return false;
 
-	var reqUrl = url.parse('http://' + _req.url, true),
-		resUrl = url.parse('http://' + _resource.url, true);
+	var reqUrl = url.parse(_req.url, true),
+		resUrl = url.parse(_resource.url, true);
 
 	return reqUrl.hostname == resUrl.hostname && reqUrl.pathname == resUrl.pathname;
 }
@@ -101,9 +103,13 @@ function saveStackTo(_path) {
 function resolveAndServeResource(_req, _resp) {
 	var resource = findInStack(_req);
 	if(resource) {
+		log(LOG.INFO, "Serving: " + resource.method + ' ' + resource.url);
+		log(LOG.DEBUG, "HTTP " + resource.statusCode);
+		log(LOG.DEBUG, JSON.stringify(resource.headers));
+
 		serveResource(resource, _resp);
 	} else {
-		log(LOG.INFO, 'Not found: ' + req.url);
+		log(LOG.WARN, 'Not found: ' + _req.url);
 		_resp.statusCode = 404;
 		_resp.end();
 	}
@@ -119,7 +125,6 @@ function serveResource(_resource, _resp) {
 	forOwn(_resource.headers, function(k, v) { _resp.setHeader(k, v); });
 
 	if(_resource.content) {
-		log(LOG.INFO, 'encoding!  ' + _resource.encoding);
 		var buf = new Buffer(_resource.content, _resource.encoding);
 		_resp.end(buf);
 	} else {
@@ -146,9 +151,9 @@ function findInStack(_req, _partial) {
 
 function cacheResponse(_req, _resp, _cb) {
 
-	log(LOG.INFO, _req.url);
-	log(LOG.INFO, _resp.statusCode);
-	log(LOG.INFO, keysToLowerCase(_resp.headers));
+	log(LOG.INFO, "Caching Response");
+	log(LOG.DEBUG, "HTTP " + _resp.statusCode);
+	log(LOG.DEBUG, keysToLowerCase(_resp.headers));
 
 	var encoding = null,
 		// TODO: consider storing port and protocoll in the resource.
@@ -201,7 +206,7 @@ function cacheResponse(_req, _resp, _cb) {
 }
 
 function prepareForwardRequest(_req) {
-	var urlObj = url.parse('http://' + _req.url);
+	var urlObj = url.parse(_req.url);
 
 	var options = {
 		method: _req.method,
@@ -217,12 +222,13 @@ function prepareForwardRequest(_req) {
 }
 
 function processRequest(_req, _resp, _useSSL) {
-	log(LOG.INFO, 'New request received for ' + _req.url + ', headers: ' + JSON.stringify(_req.headers));
-
 	if(CAPTURE)
 	{
 		var options = prepareForwardRequest(_req);
-		log(LOG.INFO, JSON.stringify(options));
+
+		log(LOG.INFO, 'Forwarding ' + _req.method + ' request for ' + _req.url);
+		log(LOG.DEBUG, JSON.stringify(options));
+
 		var forward = (_useSSL ? https : http).request(options, function(_fw_resp) {
 			cacheResponse(_req, _fw_resp, function() {
 				serveLastResource(_resp);
@@ -233,6 +239,8 @@ function processRequest(_req, _resp, _useSSL) {
 	}
 	else
 	{
+		log(LOG.INFO, 'Resolving ' + _req.method + ' request for ' + _req.url);
+
 		resolveAndServeResource(_req, _resp);
 	}
 }
@@ -247,10 +255,10 @@ var SERVER = http.createServer(function (_req, _resp) {
 SERVER.on('connect', function (_req, _sock, _head) {
 
 	var urlObj = url.parse('http://' + _req.url);
+	log(LOG.INFO, 'New HTTPS request: starting https intercept on ' + urlObj.hostname);
 
 	var httpsServ = https.createServer(HTTPS_OPTIONS, function(_req, _resp) {
-		log(LOG.INFO, 'New HTTPS request!' + urlObj.hostname);
-		_req.url = urlObj.hostname + _req.url;
+		_req.url = 'http://' + urlObj.hostname + _req.url;
 		// TODO: maybe we should also store the original source port..
 		processRequest(_req, _resp, true);
 	});
