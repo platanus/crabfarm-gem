@@ -95,6 +95,16 @@ module Crabfarm
       end
     end
 
+    desc "Perform an HTTP recording for use in tests"
+    command [:record, :r] do |c|
+      c.action do |global_options, options, args|
+        next puts "This command can only be run inside a crabfarm application" unless defined? CF_PATH
+
+        require "crabfarm/modes/recorder"
+        Crabfarm::Modes::Recorder.start args[0]
+      end
+    end
+
     command :publish do |c|
       c.action do |global_options,options,args|
 
