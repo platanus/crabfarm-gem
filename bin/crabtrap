@@ -7,7 +7,45 @@ var net = require('net'),
 	fs = require('fs'),
 	zlib = require('zlib');
 
+// Globals
+
+var HTTPS_OPTIONS = {
+	key: fs.readFileSync('key.pem'),
+	cert: fs.readFileSync('cert.pem')
+};
+
+var LOG = {
+	INFO: 1,
+	WARN: 2,
+	ERROR: 3
+};
+
+var STACK = [],
+	CAPTURE = false,
+	SOURCE = null,
+	PORT = 4000,
+	LOG_LEVEL = LOG.WARN;
+
+(function() {
+	if(process.argv.length < 2) throw 'Must provide the bucket path';
+	SOURCE = process.argv[2];
+
+	for(var i = 3; i < process.argv.length; i++) {
+		var parts = process.argv[i].split('=');
+		switch(parts[0]) {
+			case '--capture': CAPTURE = true; break;
+			case '--port': PORT = parseInt(parts[1], 10); break;
+			case '--quiet': PORT = parseInt(parts[1], 10); break;
+			default: throw 'Invalid option ' + parts[0];
+		}
+	}
+})();
+
 // Utility methods
+
+function log(_level, _message) {
+	if(_level >= LOG_LEVEL) console.log(_message);
+}
 
 function forOwn(_obj, _cb) {
 	for(var key in _obj) {
@@ -23,172 +61,146 @@ function keysToLowerCase(_obj) {
 	return result;
 }
 
+function pickRandomPort() {
+	return 0; // This could fail on Linux...
+}
+
 function matchRequestToResource(_req, _resource) {
 	return _resource.method.toLowerCase() == _req.method.toLowerCase() && _resource.url == _req.url;
 }
 
-function matchRequestToResourceFuzzy(_req, _resource) {
-	return false;
+function matchRequestToResourceWOQuery(_req, _resource) {
+	if(_resource.method.toLowerCase() == _req.method.toLowerCase()) return false;
+
+	var reqUrl = url.parse('http://' + _req.url, true),
+		resUrl = url.parse('http://' + _resource.url, true);
+
+	return reqUrl.hostname == resUrl.hostname && reqUrl.pathname == resUrl.pathname;
 }
 
-function findAndMoveLast(_array, _matchFun) {
-
-}
-
-// TODO: make this a proxy with two modes:
-// - Capture: tunnels and captures every request.
-// - Playback: only returns cached requests
-
-// TODO: CLI
-// server <file> [option]
-// Options:
-// -c: capture mode, tunnel requests and store in file.
-
-function Bucket(_path) {
-	this.path = _path;
-	this.data = [];
-}
-
-Bucket.prototype = {
-	load: function() {
-		this.data = JSON.parse(fs.readFileSync(this.path));
-	},
-	save: function() {
-		fs.writeFileSync(this.path, JSON.stringify(this.data));
-	},
-	serve: function(_req, _resp) {
-		var resource = this.resolve(_req);
-		if(resource) {
-			this.serveResource(resource, _resp);
-		} else {
-			console.log('not found: ' + req.url);
-			_resp.statusCode = 404;
-			_resp.end();
+function findAndMoveLast(_req, _array, _matches) {
+	for(var i = 0, l = _array.length; i < l; i++) {
+		if(_matches(_req, _array[i])) {
+			var resource = _array.splice(i, 1)[0];
+			_array.push(resource);
+			return resource;
 		}
-	},
-	serveLast: function(_resp) {
-		this.serveResource(this.data[this.data.length-1], _resp);
-	},
-	serveResource: function(_resource, _resp) {
-		_resp.statusCode = _resource.statusCode;
-
-		forOwn(_resource.headers, function(k, v) { _resp.setHeader(k, v); });
-
-		if(_resource.content) {
-			console.log('encoding!  ' + _resource.encoding);
-			var buf = new Buffer(_resource.content, _resource.encoding);
-			_resp.end(buf);
-		} else {
-			_resp.end();
-		}
-	},
-	resolve: function(_req, _partial) {
-		// find closer resource definition
-		for(var i = 0, resource; (resource = this.data[i]); i++) {
-			if(resource.method.toLowerCase() == _req.method.toLowerCase() && resource.url == _req.url) {
-				console.log(resource.statusCode);
-				console.log(resource.url);
-				console.log(resource.headers);
-				return resource;
-			}
-		}
-
-		// if there is not an exact match, search for the closest one
-		if(_partial) {
-			console.log('comparing');
-			console.log(_path);
-			var currentUrl = url.parse(_path, true), matchPoints;
-			_.each(this.data, function(_resource) {
-				if(_resource.method.toLowerCase() == _req.method.toLowerCase()) {
-					var resourceUrl = url.parse(_resource.url, true);
-
-					// only consider urls with same hostname and pathnamea as close
-					if(currentUrl.hostname == resourceUrl.hostname && currentUrl.pathname == resourceUrl.pathname) {
-
-						console.log(_resource.url);
-
-						var resQsSize = 0, points = _.reduce(resourceUrl.query, function(count, val, key) {
-							resQsSize++;
-							return currentUrl.query[key] == val ? count+1 : count;
-						}, 0);
-						points += (_.size(currentUrl) - resQsSize);
-
-						console.log(points);
-
-						// keep the match with more points!
-						if(!match || points > matchPoints) {
-							matchPoints = points;
-							match = _resource;
-						}
-					}
-				}
-			});
-		}
-
-		return match;
-	},
-	cacheResponse: function(_req, _resp, _cb) {
-
-		console.log(_req.url);
-		console.log(_resp.statusCode);
-		console.log(keysToLowerCase(_resp.headers));
-
-		var self = this,
-			encoding = null,
-			resource = {
-				url: _req.url,
-				statusCode: _resp.statusCode,
-				method: _req.method,
-				// inHeaders: req.headers, // store request headers to aid in recognition?
-				headers: keysToLowerCase(_resp.headers),
-				content: '',
-				encoding: 'base64'
-			},
-			contentEncoding = resource.headers['content-encoding'],
-			contentType = resource.headers['content-type'],
-			outStream = _resp;
-
-		// add decompression if supported encoding:
-		if(contentEncoding == 'gzip') {
-			outStream = _resp.pipe(zlib.createGunzip());
-			delete resource.headers['content-encoding'];
-			contentEncoding = null;
-		} else if(contentEncoding == 'deflate') {
-			outStream = _resp.pipe(zlib.createInflate());
-			delete resource.headers['content-encoding'];
-			contentEncoding = null;
-		}
-
-		// use utf8 encoding for uncompresed text:
-		if(!contentEncoding && contentType) {
-			contentType = contentType.match(/([^\/]+)\/([^\s]+)(?:\s+(.+))?/i);
-			if(contentType && (contentType[1] == 'text' || contentType[1] == 'application')) {
-				resource.encoding = 'utf-8';
-			}
-		}
-
-		// remove unwanted headers:
-		delete resource.headers['content-length'];
-
-		// start receiving data:
-		if(resource.encoding) outStream.setEncoding(resource.encoding);
-		outStream.on('data', function(_chunk) {
-			resource.content += _chunk;
-		});
-
-		// when all data is received, store resource (dont know how this will handle more than one request)
-		outStream.on('end', function() {
-			self.data.push(resource);
-			_cb();
-		});
 	}
-};
 
-var CAPTURE = true;
-var BUCKET = new Bucket('./bucket.json');
-if(!CAPTURE) BUCKET.load();
+	return null;
+}
 
-function prepareForward(_req) {
+function loadStackFrom(_path) {
+	STACK = JSON.parse(fs.readFileSync(_path));
+}
+
+function saveStackTo(_path) {
+	fs.writeFileSync(_path, JSON.stringify(STACK));
+}
+
+function resolveAndServeResource(_req, _resp) {
+	var resource = findInStack(_req);
+	if(resource) {
+		serveResource(resource, _resp);
+	} else {
+		log(LOG.INFO, 'Not found: ' + req.url);
+		_resp.statusCode = 404;
+		_resp.end();
+	}
+}
+
+function serveLastResource(_resp) {
+	serveResource(STACK[STACK.length-1], _resp);
+}
+
+function serveResource(_resource, _resp) {
+	_resp.statusCode = _resource.statusCode;
+
+	forOwn(_resource.headers, function(k, v) { _resp.setHeader(k, v); });
+
+	if(_resource.content) {
+		log(LOG.INFO, 'encoding!  ' + _resource.encoding);
+		var buf = new Buffer(_resource.content, _resource.encoding);
+		_resp.end(buf);
+	} else {
+		_resp.end();
+	}
+}
+
+function findAndMoveLast(_req, _matches) {
+	for(var i = 0, l = STACK.length; i < l; i++) {
+		if(_matches(_req, STACK[i])) {
+			var resource = STACK.splice(i, 1)[0];
+			STACK.push(resource);
+			return resource;
+		}
+	}
+
+	return null;
+}
+
+function findInStack(_req, _partial) {
+	return findAndMoveLast(_req, matchRequestToResource) ||
+		findAndMoveLast(_req, matchRequestToResourceWOQuery);
+}
+
+function cacheResponse(_req, _resp, _cb) {
+
+	log(LOG.INFO, _req.url);
+	log(LOG.INFO, _resp.statusCode);
+	log(LOG.INFO, keysToLowerCase(_resp.headers));
+
+	var encoding = null,
+		// TODO: consider storing port and protocoll in the resource.
+		resource = {
+			url: _req.url,
+			statusCode: _resp.statusCode,
+			method: _req.method,
+			// inHeaders: req.headers, // store request headers to aid in recognition?
+			headers: keysToLowerCase(_resp.headers),
+			content: '',
+			encoding: 'base64'
+		},
+		contentEncoding = resource.headers['content-encoding'],
+		contentType = resource.headers['content-type'],
+		outStream = _resp;
+
+	// add decompression if supported encoding:
+	if(contentEncoding == 'gzip') {
+		outStream = _resp.pipe(zlib.createGunzip());
+		delete resource.headers['content-encoding'];
+		contentEncoding = null;
+	} else if(contentEncoding == 'deflate') {
+		outStream = _resp.pipe(zlib.createInflate());
+		delete resource.headers['content-encoding'];
+		contentEncoding = null;
+	}
+
+	// use utf8 encoding for uncompresed text:
+	if(!contentEncoding && contentType) {
+		contentType = contentType.match(/([^\/]+)\/([^\s]+)(?:\s+(.+))?/i);
+		if(contentType && (contentType[1] == 'text' || contentType[1] == 'application')) {
+			resource.encoding = 'utf-8';
+		}
+	}
+
+	// remove unwanted headers:
+	delete resource.headers['content-length'];
+
+	// start receiving data:
+	if(resource.encoding) outStream.setEncoding(resource.encoding);
+	outStream.on('data', function(_chunk) {
+		resource.content += _chunk;
+	});
+
+	// when all data is received, store resource (dont know how this will handle more than one request)
+	outStream.on('end', function() {
+		STACK.push(resource);
+		_cb();
+	});
+}
+
+function prepareForwardRequest(_req) {
 	var urlObj = url.parse('http://' + _req.url);
 
 	var options = {
@@ -205,16 +217,15 @@ function prepareForward(_req) {
 }
 
 function processRequest(_req, _resp, _useSSL) {
-	console.log('New request received for ' + _req.url + ', headers: ' + JSON.stringify(_req.headers));
+	log(LOG.INFO, 'New request received for ' + _req.url + ', headers: ' + JSON.stringify(_req.headers));
 
 	if(CAPTURE)
 	{
-		var options = prepareForward(_req);
-		console.log(JSON.stringify(options));
+		var options = prepareForwardRequest(_req);
+		log(LOG.INFO, JSON.stringify(options));
 		var forward = (_useSSL ? https : http).request(options, function(_fw_resp) {
-			console.log('TOUCHING THE SKY!!!)');
-			BUCKET.cacheResponse(_req, _fw_resp, function() {
-				BUCKET.serveLast(_resp);
+			cacheResponse(_req, _fw_resp, function() {
+				serveLastResource(_resp);
 			});
 		});
 
@@ -222,60 +233,52 @@ function processRequest(_req, _resp, _useSSL) {
 	}
 	else
 	{
-		BUCKET.serve(_req, _resp);
+		resolveAndServeResource(_req, _resp);
 	}
 }
 
-var server = http.createServer(function (_req, _resp) {
+var SERVER = http.createServer(function (_req, _resp) {
 	processRequest(_req, _resp, false);
 });
 
+// Special handler for HTTPS request, creates a dedicated HTTPS proxy per connection,
+// that way the CONNECT tunnel can be intercepted, requires support for self signed
+// certificates in the client.
+SERVER.on('connect', function (_req, _sock, _head) {
 
-var httpsOptions = {
-	key: fs.readFileSync('key.pem'),
-	cert: fs.readFileSync('cert.pem')
-};
+	var urlObj = url.parse('http://' + _req.url);
 
-server.on('connect', function (_req, _sock, _head) {
-
-	var hostname = url.parse('http://' + _req.url).hostname;
-
-	var httpsServ = https.createServer(httpsOptions, function(_req, _resp) {
-		console.log('New HTTPS request!' + hostname);
-		_req.url = hostname + _req.url;
+	var httpsServ = https.createServer(HTTPS_OPTIONS, function(_req, _resp) {
+		log(LOG.INFO, 'New HTTPS request!' + urlObj.hostname);
+		_req.url = urlObj.hostname + _req.url;
+		// TODO: maybe we should also store the original source port..
 		processRequest(_req, _resp, true);
 	});
-	httpsServ.listen(0);
 
-	console.log('connects!!!' + _req.url);
-	console.log('server port!!!' + httpsServ.address().port);
+	httpsServ.listen(pickRandomPort());
 
-	var srvSocket = net.connect(httpsServ.address().port, function() {
+	var tunnelSock = net.connect(httpsServ.address().port, function() {
 		_sock.write('HTTP/1.1 200 Connection Established\r\n' +
 			'Proxy-agent: Node-Proxy\r\n' +
 			'\r\n');
-		srvSocket.write(_head);
-		srvSocket.pipe(_sock);
-		_sock.pipe(srvSocket);
+		tunnelSock.write(_head);
+		tunnelSock.pipe(_sock);
+		_sock.pipe(tunnelSock);
 	});
 
 	_sock.on('close', function() {
-		console.log('Discarding MITM https server');
 		httpsServ.close();
 	});
 });
 
-server.listen(4000);
+console.log("Starting crabtrap!");
+
+if(!CAPTURE) loadStackFrom(SOURCE);
+SERVER.listen(PORT);
 
 process.on('SIGINT', function() {
-	console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" );
-
-	server.close();
-
-	if(CAPTURE) {
-		console.log('Storing bucket!');
-		BUCKET.save();
-	}
-
-	process.exit( );
+	console.log("Shutting down crabtrap!");
+	SERVER.close();
+	if(CAPTURE) saveStackTo(SOURCE);
+	process.exit();
 });
