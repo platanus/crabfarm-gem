@@ -25,7 +25,7 @@ var STACK = [],
 	CAPTURE = false,
 	SOURCE = null,
 	PORT = 4000,
-	LOG_LEVEL = LOG.WARN;
+	LOG_LEVEL = LOG.DEBUG;
 
 (function() {
 	if(process.argv.length < 2) throw 'Must provide the bucket path';
@@ -92,12 +92,20 @@ function findAndMoveLast(_req, _array, _matches) {
 	return null;
 }
 
-function loadStackFrom(_path) {
-	STACK = JSON.parse(fs.readFileSync(_path));
+function loadStackFrom(_path, _then) {
+	var data = fs.readFileSync(_path);
+	zlib.gunzip(data, function(err, buffer) {
+		if (!err) STACK = JSON.parse(buffer.toString());
+		_then();
+	});
 }
 
-function saveStackTo(_path) {
-	fs.writeFileSync(_path, JSON.stringify(STACK));
+function saveStackTo(_path, _then) {
+	var data = JSON.stringify(STACK);
+	zlib.gzip(data, function(err, buffer) {
+		if (!err) fs.writeFileSync(_path, buffer);
+		_then();
+	});
 }
 
 function resolveAndServeResource(_req, _resp) {
@@ -281,12 +289,22 @@ SERVER.on('connect', function (_req, _sock, _head) {
 
 console.log("Starting crabtrap!");
 
-if(!CAPTURE) loadStackFrom(SOURCE);
-SERVER.listen(PORT);
+if(!CAPTURE) {
+	loadStackFrom(SOURCE, SERVER.listen.bind(SERVER, PORT));
+} else {
+	SERVER.listen(PORT);
+}
 
+var EXITING = false;
 process.on('SIGINT', function() {
+	if(EXITING) return;
+	EXITING = true;
+
 	console.log("Shutting down crabtrap!");
 	SERVER.close();
-	if(CAPTURE) saveStackTo(SOURCE);
-	process.exit();
+	if(CAPTURE) {
+		saveStackTo(SOURCE, process.exit.bind(process));
+	} else {
+		process.exit();
+	}
 });
