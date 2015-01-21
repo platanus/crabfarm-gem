@@ -1,4 +1,5 @@
 CF_TEST_CONTEXT = Crabfarm::Context::new
+CF_TEST_CONTEXT.load
 CF_TEST_BUCKET = CF_TEST_CONTEXT.driver
 
 module Crabfarm

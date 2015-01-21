@@ -10,8 +10,8 @@ module Crabfarm
         return puts "Must provide a recording name" unless _target.is_a? String
 
         crabtrap_config = Crabfarm.config.crabtrap_config
-        crabtrap_config[:bucket_path] = File.join(CF_PATH, 'spec/mementos', _target)
-        crabtrap_config[:capture] = true
+        crabtrap_config[:mode] = :capture
+        crabtrap_config[:bucket_path] = File.join(CF_PATH, 'spec/mementos', _target + '.json.gz')
 
         crabtrap = CrabtrapRunner.new crabtrap_config
         crabtrap.start

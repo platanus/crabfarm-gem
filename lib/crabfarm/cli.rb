@@ -11,24 +11,27 @@ module Crabfarm
     command [:console, :c] do |c|
 
       c.desc "Capture to crabtrap file"
-      c.flag [:c, :capture]
+      c.flag :capture
 
       c.desc "Replay from crabtrap file"
-      c.flag [:r, :replay]
+      c.flag :replay
 
       Support::GLI.generate_options c
 
       c.action do |global_options,options,args|
         next puts "This command can only be run inside a crabfarm application" unless defined? CF_PATH
 
-        require "crabfarm/modes/console"
-        cb_options = Support::GLI.parse_options options
-        cb_options[:crabtrap_bucket] = options[:capture] if options[:capture]
-        cb_options[:crabtrap_bucket] = options[:replay] if options[:replay]
-        cb_options[:crabtrap_mode] = 'replay' if options[:replay]
+        Crabfarm.config.set Support::GLI.parse_options options
 
-        Crabfarm.config.set cb_options # overrides should be set in the executed context (in server mode too)
-        Crabfarm::Modes::Console.start
+        next puts "Cannot use --replay with --capture" if options[:capture] and options[:replay]
+
+        require 'crabfarm/crabtrap_context'
+        context = Crabfarm::CrabtrapContext.new
+        context.capture options[:capture] if options[:capture]
+        context.replay options[:replay] if options[:replay]
+
+        require "crabfarm/modes/console"
+        Crabfarm::Modes::Console.start context
       end
     end
 

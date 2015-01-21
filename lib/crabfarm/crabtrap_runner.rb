@@ -9,7 +9,11 @@ module Crabfarm
     end
 
     def port
-      4000 # TODO: maybe select port dynamically...
+      @config[:port] # TODO: maybe select port dynamically...
+    end
+
+    def mode
+      @config.fetch(:mode, :pass).to_sym
     end
 
     def start
@@ -29,9 +33,9 @@ module Crabfarm
 
     def crabtrap_cmd
       cmd = [@config[:bin_path]]
-      cmd << @config[:bucket_path]
+      cmd << mode.to_s
+      cmd << @config[:bucket_path] if mode != :pass
       cmd << "--port=#{port}"
-      cmd << "--capture" if @config[:capture]
       cmd.join(' ')
     end
 

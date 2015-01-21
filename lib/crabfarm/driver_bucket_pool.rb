@@ -2,7 +2,7 @@ module Crabfarm
   class DriverBucketPool
 
     def initialize(_factory=nil)
-      @factory = _factory ||  DefaultDriverFactory.new(Crabfarm.config.driver_config)
+      @factory = _factory || DefaultDriverFactory.new(Crabfarm.config.driver_config)
       @buckets = Hash.new
     end
 

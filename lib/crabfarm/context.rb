@@ -4,63 +4,57 @@ module Crabfarm
   class Context
     extend Forwardable
 
-    attr_accessor :phantom, :crabtrap
     def_delegators :@pool, :driver
 
     def initialize
-      init_crabtrap_if_required
-      init_phantom_if_required
-
-      @pool = DriverBucketPool.new build_driver_factory
       @store = StateStore.new
+      @loaded = false
+    end
+
+    def load
+      unless @loaded
+        init_phantom_if_required
+        @pool = DriverBucketPool.new build_driver_factory
+        @loaded = true
+      end
     end
 
     def run_state(_name, _params={})
+      load
       state = LoaderService.load_state(_name).new @pool, @store, _params
       state.crawl
       state
     end
 
     def reset
+      load
       @store.reset
       @pool.reset
-
-      # unless @crabtrap.nil?
-      #   # restart crabtrap
-      #   @crabtrap.stop
-      #   @crabtrap.start
-      # end
     end
 
     def release
-      @pool.release
-      @phantom.stop unless @phantom.nil?
-      @crabtrap.stop unless @crabtrap.nil?
+      if @loaded
+        @pool.release
+        @phantom.stop unless @phantom.nil?
+        @loaded = false
+      end
     end
 
   private
 
-    def init_crabtrap_if_required
-      if config.crabtrap_enabled?
-        require "crabfarm/crabtrap_runner"
-        @crabtrap = CrabtrapRunner.new config.crabtrap_config
-        @crabtrap.start
-      end
-    end
-
     def init_phantom_if_required
       if config.phantom_mode_enabled?
-        @phantom = PhantomRunner.new override_config(config.phantom_config)
+        @phantom = PhantomRunner.new phantom_config
         @phantom.start
       end
     end
 
     def build_driver_factory
-      if config.phantom_mode_enabled?
-        PhantomDriverFactory.new @phantom, override_config(config.driver_config)
+      if @phantom
+        PhantomDriverFactory.new @phantom, driver_config
       else
         return config.driver_factory if config.driver_factory
-        DefaultDriverFactory.new override_config(config.driver_config)
+        DefaultDriverFactory.new driver_config
       end
     end
 
@@ -68,9 +62,12 @@ module Crabfarm
       Crabfarm.config
     end
 
-    def override_config(_config)
-      _config[:proxy] = "127.0.0.1:#{@crabtrap.port}" unless @crabtrap.nil?
-      _config
+    def driver_config
+      config.driver_config
+    end
+
+    def phantom_config
+      config.phantom_config
     end
 
   end
