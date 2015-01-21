@@ -22,19 +22,25 @@ var LOG = {
 };
 
 var STACK = [],
-	CAPTURE = false,
+	MODE = false,
 	SOURCE = null,
 	PORT = 4000,
 	LOG_LEVEL = LOG.DEBUG;
 
 (function() {
-	if(process.argv.length < 2) throw 'Must provide the bucket path';
-	SOURCE = process.argv[2];
+	if(process.argv.length < 2) throw 'Must provide a proxy mode';
+	MODE = process.argv[2];
+	var i = 3;
 
-	for(var i = 3; i < process.argv.length; i++) {
+	if(MODE != 'pass') {
+		if(process.argv.length < 3) throw 'Must provide a bucket path';
+		SOURCE = process.argv[3];
+		i = 4;
+	}
+
+	for(; i < process.argv.length; i++) {
 		var parts = process.argv[i].split('=');
 		switch(parts[0]) {
-			case '--capture': CAPTURE = true; break;
 			case '--port': PORT = parseInt(parts[1], 10); break;
 			case '--quiet': PORT = parseInt(parts[1], 10); break;
 			default: throw 'Invalid option ' + parts[0];
@@ -161,7 +167,7 @@ function cacheResponse(_req, _resp, _cb) {
 
 	log(LOG.INFO, "Caching Response");
 	log(LOG.DEBUG, "HTTP " + _resp.statusCode);
-	log(LOG.DEBUG, keysToLowerCase(_resp.headers));
+	log(LOG.DEBUG, JSON.stringify(keysToLowerCase(_resp.headers)));
 
 	var encoding = null,
 		// TODO: consider storing port and protocoll in the resource.
@@ -229,33 +235,59 @@ function prepareForwardRequest(_req) {
 	return options;
 }
 
-function processRequest(_req, _resp, _useSSL) {
-	if(CAPTURE)
-	{
-		var options = prepareForwardRequest(_req);
+function passRequest(_req, _resp) {
+	var _reqUrl = url.parse('http://' + _req.url);
+	var forward = http.request({
+		method: _req.method,
+		host: _reqUrl.host,
+		path: _reqUrl.path,
+		headers: _req.headers
+	});
 
-		log(LOG.INFO, 'Forwarding ' + _req.method + ' request for ' + _req.url);
-		log(LOG.DEBUG, JSON.stringify(options));
+	_req.pipe(forward);
+}
 
-		var forward = (_useSSL ? https : http).request(options, function(_fw_resp) {
-			cacheResponse(_req, _fw_resp, function() {
-				serveLastResource(_resp);
-			});
+function captureRequest(_req, _resp, _useSSL) {
+	var urlObj = url.parse(_req.url);
+
+	var options = {
+		method: _req.method,
+		host: urlObj.host,
+		path: urlObj.path,
+		rejectUnauthorized: false,
+		headers: keysToLowerCase(_req.headers)
+	};
+
+	// Rewrite headers
+	options.headers['accept-encoding'] = 'gzip,deflate';
+	log(LOG.INFO, 'Forwarding ' + _req.method + ' request for ' + _req.url);
+	log(LOG.DEBUG, JSON.stringify(options));
+
+	var forward = (urlObj.protocol == 'https:' ? https : http).request(options, function(_fw_resp) {
+		cacheResponse(_req, _fw_resp, function() {
+			serveLastResource(_resp);
 		});
+	});
 
-		_req.pipe(forward); // forward request data
-	}
-	else
-	{
-		log(LOG.INFO, 'Resolving ' + _req.method + ' request for ' + _req.url);
+	_req.pipe(forward); // forward request data
+}
 
-		resolveAndServeResource(_req, _resp);
+function replayRequest(_req, _resp) {
+	log(LOG.INFO, 'Resolving ' + _req.method + ' request for ' + _req.url);
+	resolveAndServeResource(_req, _resp);
+}
+
+function selectProxy() {
+	switch(MODE) {
+		case 'pass': return passRequest;
+		case 'capture': return captureRequest;
+		case 'replay': return replayRequest;
+		default: throw 'Invalid proxy mode';
 	}
 }
 
-var SERVER = http.createServer(function (_req, _resp) {
-	processRequest(_req, _resp, false);
-});
+var PROXY_FUN = selectProxy(),
+	SERVER = http.createServer(PROXY_FUN);
 
 // Special handler for HTTPS request, creates a dedicated HTTPS proxy per connection,
 // that way the CONNECT tunnel can be intercepted, requires support for self signed
@@ -266,9 +298,8 @@ SERVER.on('connect', function (_req, _sock, _head) {
 	log(LOG.INFO, 'New HTTPS request: starting https intercept on ' + urlObj.hostname);
 
 	var httpsServ = https.createServer(HTTPS_OPTIONS, function(_req, _resp) {
-		_req.url = 'http://' + urlObj.hostname + _req.url;
-		// TODO: maybe we should also store the original source port..
-		processRequest(_req, _resp, true);
+		_req.url = 'https://' + urlObj.hostname + _req.url;
+		PROXY_FUN(_req, _resp);
 	});
 
 	httpsServ.listen(pickRandomPort());
@@ -287,9 +318,9 @@ SERVER.on('connect', function (_req, _sock, _head) {
 	});
 });
 
-console.log("Starting crabtrap!");
+console.log("Starting crabtrap! mode: " + MODE);
 
-if(!CAPTURE) {
+if(MODE == 'replay') {
 	loadStackFrom(SOURCE, SERVER.listen.bind(SERVER, PORT));
 } else {
 	SERVER.listen(PORT);
@@ -302,7 +333,7 @@ process.on('SIGINT', function() {
 
 	console.log("Shutting down crabtrap!");
 	SERVER.close();
-	if(CAPTURE) {
+	if(MODE == 'capture') {
 		saveStackTo(SOURCE, process.exit.bind(process));
 	} else {
 		process.exit();
