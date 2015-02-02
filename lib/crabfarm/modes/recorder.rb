@@ -17,7 +17,7 @@ module Crabfarm
         crabtrap.start
 
         driver_config = Crabfarm.config.driver_config
-        driver_config[:name] = :chrome
+        driver_config[:name] = :firefox
         driver_config[:proxy] = "127.0.0.1:#{crabtrap.port}"
 
         driver = DefaultDriverFactory.new(driver_config).build_driver nil
