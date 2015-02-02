@@ -25,7 +25,7 @@ var STACK = [],
 	MODE = false,
 	SOURCE = null,
 	PORT = 4000,
-	LOG_LEVEL = LOG.DEBUG;
+	LOG_LEVEL = LOG.WARN;
 
 (function() {
 	if(process.argv.length < 2) throw 'Must provide a proxy mode';
