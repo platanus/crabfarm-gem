@@ -236,20 +236,27 @@ function prepareForwardRequest(_req) {
 }
 
 function passRequest(_req, _resp) {
-	var _reqUrl = url.parse('http://' + _req.url);
-	var forward = http.request({
+	log(LOG.INFO, 'Passing through ' + _req.method + ' request for ' + _req.url);
+
+	var urlObj = url.parse(_req.url);
+	var forward = (urlObj.protocol == 'https:' ? https : http).request({
 		method: _req.method,
-		host: _reqUrl.host,
-		path: _reqUrl.path,
+		host: urlObj.host,
+		path: urlObj.path,
 		headers: _req.headers
+	}, function(_fw_resp) {
+		// pipe response back untouched
+		_resp.writeHead(_fw_resp.statusCode, _fw_resp.headers);
+		_fw_resp.pipe(_resp);
 	});
 
 	_req.pipe(forward);
 }
 
 function captureRequest(_req, _resp, _useSSL) {
-	var urlObj = url.parse(_req.url);
+	log(LOG.INFO, 'Forwarding ' + _req.method + ' request for ' + _req.url);
 
+	var urlObj = url.parse(_req.url);
 	var options = {
 		method: _req.method,
 		host: urlObj.host,
@@ -260,7 +267,6 @@ function captureRequest(_req, _resp, _useSSL) {
 
 	// Rewrite headers
 	options.headers['accept-encoding'] = 'gzip,deflate';
-	log(LOG.INFO, 'Forwarding ' + _req.method + ' request for ' + _req.url);
 	log(LOG.DEBUG, JSON.stringify(options));
 
 	var forward = (urlObj.protocol == 'https:' ? https : http).request(options, function(_fw_resp) {
