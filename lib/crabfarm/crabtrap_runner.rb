@@ -18,7 +18,7 @@ module Crabfarm
 
     def start
       @pid = Process.spawn({}, crabtrap_cmd)
-      # wait_for_server
+      wait_for_server
     end
 
     def stop
@@ -42,6 +42,7 @@ module Crabfarm
     def wait_for_server
       loop do
         begin
+          # TODO: improve waiting, making this kind of request could change crabtrap's stack
           Net::HTTP.get_response(URI.parse("http://127.0.0.1:#{port}/status"))
           break
         rescue
