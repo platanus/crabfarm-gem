@@ -5,8 +5,12 @@ module Crabfarm
   class CrabtrapContext < Context
 
     def load
-      restart_with_options(mode: :pass) if @runner.nil?
+      pass_through if @runner.nil?
       super
+    end
+
+    def pass_through
+      restart_with_options(mode: :pass) if @runner.nil? or @runner.mode != :pass
     end
 
     def capture(_path)
