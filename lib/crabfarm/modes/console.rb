@@ -10,20 +10,19 @@ module Crabfarm
 
       class ConsoleDsl
 
-        attr_reader :context
-
-        def initialize
-          reload!
+        def initialize(_context)
+          @context = _context
         end
 
         def reload!
-          unless @context.nil?
-            puts "Reloading crawler source".color(:green)
-            @context.release
-            ActiveSupport::Dependencies.clear
-          end
+          puts "Reloading crawler source".color(:green)
+          ActiveSupport::Dependencies.clear
+          @context.reset
+        end
 
-          @context = Crabfarm::Context.new
+        def reset
+          puts "Resetting crawling context".color(:green)
+          @context.reset
         end
 
         def transition(_name=nil, _params={})
@@ -53,17 +52,12 @@ module Crabfarm
           puts "Ejem..."
         end
 
-        def reset
-          puts "Resetting crawling context".color(:green)
-          @context.reset
-        end
-
         alias :t :transition
         alias :r :reset
       end
 
-      def self.start
-        dsl = ConsoleDsl.new
+      def self.start(_context)
+        dsl = ConsoleDsl.new _context
 
         loop do
           begin
@@ -78,7 +72,7 @@ module Crabfarm
         end
 
         puts "Releasing crawling context".color(:green)
-        dsl.context.release
+        _context.release
       end
 
     end
