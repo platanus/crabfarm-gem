@@ -108,6 +108,7 @@ module Crabfarm
       end
     end
 
+    desc "Publish the crawler to a crabfarm cloud"
     command :publish do |c|
       c.desc "Just list the files that are beign packaged"
       c.switch :dry, :default_value => false
