@@ -27,6 +27,8 @@ module Crabfarm
           path(_name, 'app', 'helpers', '.gitkeep').render('dot_gitkeep')
           path(_name, 'spec', 'spec_helper.rb').render('spec_helper.rb', binding)
           path(_name, 'spec', 'snapshots', '.gitkeep').render('dot_gitkeep')
+          path(_name, 'spec', 'mementos', '.gitkeep').render('dot_gitkeep')
+          path(_name, 'spec', 'integration', '.gitkeep').render('dot_gitkeep')
         end
       end
 

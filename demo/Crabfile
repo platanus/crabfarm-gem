@@ -1,2 +1,4 @@
 set_browser_dsl :surfer
 set_driver :phantomjs
+
+set_crabtrap_bin File.expand_path('../../bin/crabtrap', __FILE__)

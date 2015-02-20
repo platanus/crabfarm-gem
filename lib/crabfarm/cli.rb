@@ -10,14 +10,28 @@ module Crabfarm
     desc "Starts the crawler in console mode"
     command [:console, :c] do |c|
 
+      c.desc "Capture to crabtrap file"
+      c.flag :capture
+
+      c.desc "Replay from crabtrap file"
+      c.flag :replay
+
       Support::GLI.generate_options c
 
       c.action do |global_options,options,args|
         next puts "This command can only be run inside a crabfarm application" unless defined? CF_PATH
 
-        require "crabfarm/modes/console"
         Crabfarm.config.set Support::GLI.parse_options options
-        Crabfarm::Modes::Console.start
+
+        next puts "Cannot use --replay with --capture" if options[:capture] and options[:replay]
+
+        require 'crabfarm/crabtrap_context'
+        context = Crabfarm::CrabtrapContext.new
+        context.capture options[:capture] if options[:capture]
+        context.replay options[:replay] if options[:replay]
+
+        require "crabfarm/modes/console"
+        Crabfarm::Modes::Console.start context
       end
     end
 
@@ -81,6 +95,16 @@ module Crabfarm
           require "crabfarm/modes/generator"
           Crabfarm::Modes::Generator.new.generate_state(args[0])
         end
+      end
+    end
+
+    desc "Perform an HTTP recording for use in tests"
+    command [:record, :r] do |c|
+      c.action do |global_options, options, args|
+        next puts "This command can only be run inside a crabfarm application" unless defined? CF_PATH
+
+        require "crabfarm/modes/recorder"
+        Crabfarm::Modes::Recorder.start args[0]
       end
     end
 
