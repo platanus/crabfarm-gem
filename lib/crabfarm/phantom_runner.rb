@@ -12,14 +12,18 @@ module Crabfarm
 
     def start
       find_available_port
+      Crabfarm.logger.info "Starting phantomjs in port #{@port}"
       @pid = Process.spawn({}, phantomjs_cmd)
       wait_for_server
+      Crabfarm.logger.info "Phantomjs started (PID: #{@pid})"
     end
 
     def stop
       unless @pid.nil?
+        Crabfarm.logger.info "Stopping phantomjs (PID: #{@pid})"
         Process.kill "INT", @pid
         Process.wait @pid, Process::WNOHANG
+        Crabfarm.logger.info "Phantomjs stopped (PID: #{@pid})"
         @pid = nil
       end
     end

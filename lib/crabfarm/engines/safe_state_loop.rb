@@ -95,9 +95,13 @@ module Crabfarm
             @elapsed = Benchmark.measure do
               begin
                 ActiveSupport::Dependencies.clear
+                logger.info "StateLoop: loading state: #{@next_state_name}"
                 @doc = @context.run_state(@next_state_name, @next_state_params).output_as_json
+                logger.info "StateLoop: state loaded successfully: #{@next_state_name}"
                 @error = nil
               rescue Exception => e
+                logger.error "StateLoop: error while loading state: #{@next_state_name}"
+                logger.error e
                 @doc = nil
                 @error = e
               end
@@ -110,6 +114,10 @@ module Crabfarm
             }
           else sleep 0.2 end
         end
+      end
+
+      def logger
+        Crabfarm.logger
       end
     end
   end
