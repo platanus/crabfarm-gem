@@ -1,3 +1,4 @@
+require 'logger'
 require "forwardable"
 require "active_support/inflector"
 require "selenium-webdriver"
@@ -20,9 +21,18 @@ require "crabfarm/strategies"
 module Crabfarm
 
   @@config = Configuration.new
+  @@logger = nil
 
   def self.config
     @@config
+  end
+
+  def self.logger
+    if @@logger.nil?
+      @@logger = Logger.new(@@config.log_path.nil? ? STDOUT : File.join(@@config.log_path, 'crawler.log'))
+      @@logger.level = Logger::INFO
+    end
+    @@logger
   end
 
   def self.read_crabfile(_path)

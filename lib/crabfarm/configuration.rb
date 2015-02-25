@@ -52,7 +52,7 @@ module Crabfarm
         browser_dsl: :surfer,
         output_builder: :hash,
         driver_factory: nil,
-        log_path: 'logs',
+        log_path: nil,
         proxy: nil,
 
         driver: 'phantomjs',
