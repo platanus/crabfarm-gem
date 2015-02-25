@@ -18,8 +18,8 @@ module Crabfarm
 
     def stop
       unless @pid.nil?
-        Process.kill("TERM", @pid)
-        Process.wait @pid
+        Process.kill "INT", @pid
+        Process.wait @pid, Process::WNOHANG
         @pid = nil
       end
     end
