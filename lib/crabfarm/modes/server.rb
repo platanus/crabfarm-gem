@@ -66,6 +66,8 @@ module Crabfarm
         @@evaluator = Engines::SafeStateLoop.new
         begin
           Support::CustomPuma.run API, _options
+        rescue SystemExit, Interrupt
+          # just finish
         ensure
           @@evaluator.release
         end
