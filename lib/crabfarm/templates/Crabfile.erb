@@ -1,4 +1,70 @@
+
+# The default crawling dsl to use in states and parsers, can be overriden in each component using the `browser_dsl :dsl` modifier
+# Available options are :surfer, :watir and :capybara
 set_browser_dsl :surfer
+
+# Change the defaut output builder used in a state to generate the output document.
+# Available options are :hash, :ostruct, :jbuilder
+# set_output_builder :hash
+
+# The path where every crawler log is stored.
+set_log_path 'logs'
+
+
+# General driver configuration
+########################################
+
+# The selected selenium driver to be using throughout the crawler
+# Other options (may require instalation of additional libraries): :phantomjs, :remote, :chrome, :firefox
 set_driver :phantomjs
 
-set_log_path 'logs'
+# Set the selected webdriver capabilities (check the driver documentation for more details)
+# set_driver_capabilities
+
+# Set the browser window width
+# set_driver_window_width 1280
+
+# Set the browser window height
+# set_driver_window_height 800
+
+# Set the driver proxy address
+# set_proxy
+
+
+# Phantom launcher configuration
+########################################
+
+# The following parameters only apply if using the :phantomjs driver
+
+# Make phantom load images when requesting documents
+# set_phantom_load_images false
+
+# Set phantom ssl mode, defaults to :any, posible options are sslv3, sslv2, tlsv1 or any
+# set_phantom_ssl 'any'
+
+# Set phantomjs executable location, by default crabfarm expects phantomjs to be included in enviroment
+# set_phantom_bin_path 'phantomjs'
+
+
+# Remote driver options
+########################################
+
+# The following parameters only apply if using the :remote driver
+
+# Remote driver host
+# set_driver_host www.myseleniumgrid.com
+
+# Remote driver port
+# set_driver_port 8080
+
+# Remote driver response timeout, in seconds
+# set_driver_remote_timeout 120
+
+
+# Crabtrap launcher configuration
+########################################
+
+# The following parameters only apply when running the crabtrap proxy on specs
+
+# Set the crabtrap executable location, by default crabfarm expects crabtrap to be included in enviroment
+# set_crabtrap_bin_path 'crabtrap'
