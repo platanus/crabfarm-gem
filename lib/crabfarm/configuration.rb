@@ -27,7 +27,7 @@ module Crabfarm
       [:phantom_lock_file, :string, 'Phantomjs lock file path, only for phantomjs driver.'],
 
       # Crabtrap launcher configuration
-      [:crabtrap_bin, :string, 'Crabtrap binary path.'],
+      [:crabtrap_bin_path, :string, 'Crabtrap binary path.'],
       [:crabtrap_port, :integer, 'Crabtrap port, defaults to 4000.'],
       [:crabtrap_mode, ['capture', 'replay'], 'Crabtrap operation mode.']
     ]
@@ -68,7 +68,7 @@ module Crabfarm
         phantom_bin_path: 'phantomjs',
         phantom_lock_file: nil,
 
-        crabtrap_bin: 'crabtrap',
+        crabtrap_bin_path: 'crabtrap',
         crabtrap_port: 4000
       }
     end
@@ -113,7 +113,7 @@ module Crabfarm
 
     def crabtrap_config
       {
-        bin_path: crabtrap_bin,
+        bin_path: crabtrap_bin_path,
         port: crabtrap_port,
         proxy: proxy
       }
