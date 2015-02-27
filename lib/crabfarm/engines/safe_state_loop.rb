@@ -6,7 +6,6 @@ module Crabfarm
     class SafeStateLoop
 
       def initialize
-        @context = Crabfarm::Context.new
         @running = true
         @working = false
         @lock = Mutex.new
@@ -16,7 +15,6 @@ module Crabfarm
       def release
         @running = false
         @thread.join
-        @context.release
       end
 
       def change_state(_name, _params={}, _wait=nil)
@@ -90,29 +88,38 @@ module Crabfarm
       end
 
       def crawl_loop
-        while @running
-          if @working
-            @elapsed = Benchmark.measure do
-              begin
-                ActiveSupport::Dependencies.clear
-                logger.info "StateLoop: loading state: #{@next_state_name}"
-                @doc = @context.run_state(@next_state_name, @next_state_params).output_as_json
-                logger.info "StateLoop: state loaded successfully: #{@next_state_name}"
-                @error = nil
-              rescue Exception => e
-                logger.error "StateLoop: error while loading state: #{@next_state_name}"
-                logger.error e
-                @doc = nil
-                @error = e
-              end
-            end.real
+        context = Crabfarm::Context.new
 
-            @lock.synchronize {
-              @state_name = @next_state_name
-              @state_params = @next_state_params
-              @working = false
-            }
-          else sleep 0.2 end
+        begin
+          while @running
+            if @working
+              @elapsed = Benchmark.measure do
+                begin
+                  ActiveSupport::Dependencies.clear
+                  logger.info "StateLoop: loading state: #{@next_state_name}"
+                  @doc = context.run_state(@next_state_name, @next_state_params).output_as_json
+                  logger.info "StateLoop: state loaded successfully: #{@next_state_name}"
+                  @error = nil
+                rescue Exception => e
+                  logger.error "StateLoop: error while loading state: #{@next_state_name}"
+                  logger.error e
+                  @doc = nil
+                  @error = e
+                end
+              end.real
+
+              @lock.synchronize {
+                @state_name = @next_state_name
+                @state_params = @next_state_params
+                @working = false
+              }
+            else sleep 0.2 end
+          end
+        rescue Exception => e
+          logger.fatal "StateLoop: unhandled exception!"
+          logger.fatal e
+        ensure
+          context.release
         end
       end
 
