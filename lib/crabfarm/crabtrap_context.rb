@@ -39,11 +39,11 @@ module Crabfarm
     end
 
     def driver_config
-      super.merge(proxy: proxy_address)
+      if @runner.is_running? then super.merge(proxy: proxy_address) else super end
     end
 
     def phantom_config
-      super.merge(proxy: proxy_address)
+      if @runner.is_running? then super.merge(proxy: proxy_address) else super end
     end
 
     def proxy_address

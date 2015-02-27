@@ -8,6 +8,10 @@ module Crabfarm
       @pid = nil
     end
 
+    def is_running?
+      not @pid.nil?
+    end
+
     def port
       @config[:port] # TODO: maybe select port dynamically...
     end
@@ -17,8 +21,13 @@ module Crabfarm
     end
 
     def start
-      @pid = Process.spawn({}, crabtrap_cmd)
-      wait_for_server
+      begin
+        @pid = Process.spawn({}, crabtrap_cmd)
+        wait_for_server
+      rescue
+        puts "Could not find crabtrap at #{@config[:bin_path]}, memento replaying is disabled!"
+        @pid = nil
+      end
     end
 
     def stop
