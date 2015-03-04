@@ -8,6 +8,7 @@ module Crabfarm
       def initialize
         @running = true
         @working = false
+        @fatal = nil
         @lock = Mutex.new
         @thread = Thread.new { crawl_loop }
       end
@@ -19,7 +20,9 @@ module Crabfarm
 
       def change_state(_name, _params={}, _wait=nil)
         @lock.synchronize {
-          if @working
+          if @fatal
+            raise CrawlerError.new @fatal
+          elsif @working
             raise StillWorkingError.new unless matches_next_state? _name, _params
             wait_and_load_struct _wait
           elsif matches_current_state? _name, _params
@@ -77,6 +80,7 @@ module Crabfarm
       end
 
       def state_as_struct
+        raise CrawlerError.new @fatal if @fatal
         raise CrawlerError.new @error if @error
 
         OpenStruct.new({
@@ -118,6 +122,11 @@ module Crabfarm
         rescue Exception => e
           logger.fatal "StateLoop: unhandled exception!"
           logger.fatal e
+
+          @lock.synchronize {
+            @working = false
+            @fatal = e
+          }
         ensure
           context.release
         end
