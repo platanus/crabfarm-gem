@@ -1,7 +1,10 @@
 require 'net/http'
+require 'timeout'
 
 module Crabfarm
   class PhantomRunner
+
+    PHANTOM_START_TM = 5 # seconds
 
     attr_reader :port
 
@@ -13,8 +16,7 @@ module Crabfarm
     def start
       find_available_port
       Crabfarm.logger.info "Starting phantomjs in port #{@port}"
-      @pid = Process.spawn({}, phantomjs_cmd)
-      wait_for_server
+      @pid = spawn_phantomjs
       Crabfarm.logger.info "Phantomjs started (PID: #{@pid})"
     end
 
@@ -29,6 +31,18 @@ module Crabfarm
     end
 
   private
+
+    def spawn_phantomjs
+      pid = Process.spawn({}, phantomjs_cmd)
+      begin
+        Timeout::timeout(PHANTOM_START_TM) { wait_for_server }
+      rescue Timeout::Error
+        Process.kill "INT", pid
+        Process.wait pid
+        raise
+      end
+      return pid
+    end
 
     def phantomjs_cmd
       cmd = [@config[:bin_path]]
