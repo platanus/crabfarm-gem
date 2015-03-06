@@ -5,17 +5,36 @@ module Crabfarm
   module Engines
     class SafeStateLoop
 
+      class LoopAbortedException < StandardError; end
+
       def initialize
-        @running = true
         @working = false
         @fatal = nil
         @lock = Mutex.new
-        @thread = Thread.new { crawl_loop }
       end
 
-      def release
-        @running = false
-        @thread.join
+      def start
+        @lock.synchronize {
+          if @thread.nil?
+            @fatal = nil
+            @thread = Thread.new { crawl_loop }
+          end
+        }
+      end
+
+      def stop
+        @lock.synchronize {
+          unless @thread.nil?
+            @thread.raise LoopAbortedException
+            @thread.join
+            @thread = nil
+          end
+        }
+      end
+
+      def restart
+        stop
+        start
       end
 
       def change_state(_name, _params={}, _wait=nil)
@@ -40,17 +59,6 @@ module Crabfarm
       def wait_for_state(_wait=nil)
         @lock.synchronize {
           wait_and_load_struct _wait
-        }
-      end
-
-      def cancel
-        @lock.synchronize {
-          if @working
-            @thread.terminate
-            @thread.join
-            @thread = Thread.new { crawl_loop }
-            @working = false
-          end
         }
       end
 
@@ -95,7 +103,7 @@ module Crabfarm
         context = Crabfarm::Context.new
 
         begin
-          while @running
+          loop do
             if @working
               @elapsed = Benchmark.measure do
                 begin
@@ -119,12 +127,14 @@ module Crabfarm
               }
             else sleep 0.2 end
           end
+        rescue LoopAbortedException
+          logger.info "StateLoop: stopping"
+
         rescue Exception => e
           logger.fatal "StateLoop: unhandled exception!"
           logger.fatal e
 
           @lock.synchronize {
-            @working = false
             @fatal = e
           }
         ensure

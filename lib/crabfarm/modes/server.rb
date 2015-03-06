@@ -64,12 +64,13 @@ module Crabfarm
 
       def self.start(_options)
         @@evaluator = Engines::SafeStateLoop.new
+        @@evaluator.start
         begin
           Support::CustomPuma.run API, _options
         rescue SystemExit, Interrupt
           # just finish
         ensure
-          @@evaluator.release
+          @@evaluator.stop
         end
       end
 
