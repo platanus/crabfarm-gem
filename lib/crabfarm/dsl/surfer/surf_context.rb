@@ -19,7 +19,7 @@ module Crabfarm
           [driver]
         end
 
-        def source
+        def to_html
           driver.page_source
         end
 

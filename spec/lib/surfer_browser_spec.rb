@@ -92,4 +92,32 @@ describe Crabfarm::Dsl::Surfer do
     end
 
   end
+
+  context "when inside a simple page" do
+
+    before { surfer.goto "file://#{FIXTURE_PATH}/simple.html" }
+
+    describe "to_html" do
+      it "should properly return the selected elements html" do
+        expect(surfer.to_html).to eq '<html><head></head><body><ul class="bikes"><li>GT</li><li>Mongoose</li></ul></body></html>'
+        expect(surfer.search('li').to_html).to eq '<li>GT</li><li>Mongoose</li>'
+        expect(surfer.search('li').first.to_html).to eq '<li>GT</li>'
+      end
+    end
+
+    describe "parse" do
+
+      before {
+        Crabfarm.config.set_parser_dsl :surimi
+      }
+
+      let (:parser_class) { Class.new(Crabfarm::BaseParser) { def parse; end } }
+
+      it "should load the parser html using the to_html method" do
+        allow(surfer).to receive(:to_html) { "<html></html>" }
+        expect(surfer.parse(parser_class).root.html).to eq '<html></html>'
+      end
+    end
+
+  end
 end

@@ -92,11 +92,11 @@ module Crabfarm
         end
 
         def parse(_parser_class, _params={})
-          ParserService.parse _parser_class, source, _params
+          ParserService.parse _parser_class, to_html, _params
         end
 
-        def source
-          elements.map { |el| el['innerHtml'] }.join('')
+        def to_html
+          elements.map { |e| e['outerHTML'] }.join
         end
 
         # Any methods missing are forwarded to the main element (first).
