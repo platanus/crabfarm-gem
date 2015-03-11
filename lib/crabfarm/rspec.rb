@@ -1,4 +1,5 @@
 require 'crabfarm/crabtrap_context'
+require 'net/http'
 
 CF_TEST_CONTEXT = Crabfarm::CrabtrapContext::new
 CF_TEST_CONTEXT.load
@@ -9,13 +10,13 @@ module Crabfarm
 
     def parse(_snap_or_url, _options={})
       fixture = Pathname.new(File.join(ENV['SNAPSHOT_DIR'], _snap_or_url))
-      if fixture.exist?
-        CF_TEST_BUCKET.get("file://#{fixture.realpath}")
+      html = if fixture.exist?
+        File.read fixture.realpath
       else
-        CF_TEST_BUCKET.get(_snap_or_url)
+        Net::HTTP.get(URI.parse _snap_or_url)
       end
 
-      CF_TEST_BUCKET.parse(described_class, _options)
+      ParserService.parse described_class, html, _options
     end
 
     def crawl(_state=nil, _params={})

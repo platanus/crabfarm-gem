@@ -14,13 +14,6 @@ module Crabfarm
       @factory = _factory
     end
 
-    def parse(_parser_class, _options={})
-      _parser_class = LoaderService.load_parser(_parser_class) if _parser_class.is_a? String or _parser_class.is_a? Symbol
-      parser = _parser_class.new self, _options
-      parser.parse
-      return parser
-    end
-
     def original
       @driver ||= @factory.build_driver(@session_id)
     end

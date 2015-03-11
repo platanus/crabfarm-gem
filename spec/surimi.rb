@@ -13,7 +13,22 @@ module Surimi
     end
   end
 
+  class ParserDsl < Struct.new(:html)
+    def self.parse(_html)
+      ParserDsl.new _html
+    end
+  end
+
+  class ParserDsl2 < Struct.new(:html)
+    def self.parse(_html)
+      ParserDsl2.new _html
+    end
+  end
+
 end
 
 Crabfarm::Strategies.register :browser_dsl, :surimi, Surimi::DslAdapter
 Crabfarm::Strategies.register :browser_dsl, :surimi_2, Surimi::DslAdapter2
+
+Crabfarm::Strategies.register :parser_dsl, :surimi, Surimi::ParserDsl
+Crabfarm::Strategies.register :parser_dsl, :surimi_2, Surimi::ParserDsl2

@@ -7,6 +7,7 @@ require "crabfarm/version"
 require "crabfarm/errors"
 require "crabfarm/configuration"
 require "crabfarm/loader_service"
+require "crabfarm/parser_service"
 require "crabfarm/driver_bucket"
 require "crabfarm/driver_bucket_pool"
 require "crabfarm/default_driver_factory"
@@ -44,6 +45,9 @@ module Crabfarm
     register :browser_dsl, :surfer, 'Crabfarm::SurferBrowserDsl', 'crabfarm/adapters/browser/surfer'
     register :browser_dsl, :watir, 'Crabfarm::WatirBrowserDsl', 'crabfarm/adapters/browser/watir'
     register :browser_dsl, :capybara, 'Crabfarm::CapybaraBrowserDsl', 'crabfarm/adapters/browser/capybara'
+
+    # bundled parsers dsl adapters
+    register :parser_dsl, :nokogiri, 'Crabfarm::NokogiriDsl', 'crabfarm/adapters/parser/nokogiri'
 
     # bundled state output builders
     register :output_builder, :hash, 'Crabfarm::HashOutputBuilder', 'crabfarm/adapters/output/hash'
