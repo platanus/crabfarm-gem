@@ -24,7 +24,7 @@ describe Crabfarm::Dsl::Surfer do
 
   context "when inside a page" do
 
-    before { surfer.goto "file://#{FIXTURE_PATH}/surfer.html" }
+    before { surfer.goto "file://#{FIXTURE_PATH}/complex.html" }
 
     describe "search" do
 
