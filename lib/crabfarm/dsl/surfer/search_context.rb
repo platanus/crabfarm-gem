@@ -49,7 +49,6 @@ module Crabfarm
           wrap_errors { (element!['class'] || '').split(' ') }
         end
 
-        # searches for elements that match a given selector
         def search(_selector=nil, _options={})
           _options[:css] = _selector if _selector
 
@@ -85,12 +84,19 @@ module Crabfarm
           end
         end
 
-        # clears and sends_keys to this context main element
         def fill(_value)
           wrap_errors do
             element!.clear
             element!.send_keys _value
           end
+        end
+
+        def parse(_parser_class, _params={})
+          ParserService.parse _parser_class, source, _params
+        end
+
+        def source
+          elements.map { |el| el['innerHtml'] }.join('')
         end
 
         # Any methods missing are forwarded to the main element (first).

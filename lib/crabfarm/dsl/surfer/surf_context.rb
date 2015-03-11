@@ -3,7 +3,7 @@ module Crabfarm
     module Surfer
       class SurfContext < SearchContext
 
-        def_delegators :@bucket, :parse, :setup
+        def_delegators :@bucket, :setup
         def_delegators 'driver.navigate', :back, :forward, :refresh
 
         def initialize(_bucket)
@@ -17,6 +17,10 @@ module Crabfarm
 
         def elements
           [driver]
+        end
+
+        def source
+          driver.page_source
         end
 
         def driver
