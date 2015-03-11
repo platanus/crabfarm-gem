@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'crabfarm/dsl/surfer'
+require 'crabfarm/adapters/browser/surfer'
 
 describe Crabfarm::Dsl::Surfer do
 
@@ -11,7 +11,7 @@ describe Crabfarm::Dsl::Surfer do
 
   after(:context) { @pool.release }
 
-  let(:surfer) { Crabfarm::Dsl::Surfer::SurfContext.new @pool.driver }
+  let(:surfer) { Crabfarm::SurferBrowserDsl.wrap @pool.driver }
 
   describe "goto" do
 
