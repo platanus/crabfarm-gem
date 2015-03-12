@@ -12,22 +12,42 @@ Then generate a new crawler using the gem's generator:
 
     $ crabfarm g app YourCrawler
 
-The generator als provides tasks to generate parsers and states:
+The generator also provides tasks to generate parsers and states:
 
-    $ crabfarm g parser TheParser
+    $ crabfarm g parser PriceTable
     $ crabfarm g state FrontPage
 
-Crabfarm generated projects come bundled with rspec, take a look at the demo project to see how **parsers are tested using snapshots**. To run the tests just call:
+To run the tests just call:
 
     $ rspec
 
 To use the crawler in development you can start it in server mode, just call `crabfarm s -p 3000`. Take a look at the API spec for the server.
+
+## States
+
+States are responsible of navigation, calling parsers to extract data and building the API output.
+
+States represent steps in the crawling process, session information and browser connections and persisted between state transitions.
+
+States have access to one or more webdriver sessions using the `browser` property. The `browser` property exposes the webdriver session wrapped in the selected *browser_dsl*. By default the **surfer** dsl is used, you can also use the **watir** dsl if you want.
+
+States can also specify the crawler output document by interacting with the `output` property. By default the `output` property is just a hash. You can also use a **OpenStruct** or a **Jbuilder object**.
+
+Every time a state is transitioned to, the crawler `state_name`, `state_params` and `doc` properties (exposed via the crawler api) are updated.
+
+## Parsers
+
+Parsers are resposible of extracting data from documents and exposing that data to states.
+
+The most common parser is the one used to extract data from the HTML being crawled. You could use the `browser` property in the state to extract data, but is not recommended since webdriver is much slower than a HTML parser like Nokogiri and is also harder to test.
 
 ## Testing
 
 Crabfarm provides a couple of tools to help you build the crawlers using TDD.
 
 Every time a parser or a state is generated, a new empty spec is loaded into the specs directory.
+
+Take a look at the demo folder to see the tests in action!
 
 ### Testing the states
 
@@ -91,9 +111,7 @@ Now you are ready to write the state code and stay very TDDstic at the same time
 
 Parsers can be tested using static HTML snapshots.
 
-We recommend using the [SingleFile Chrome Extension](https://chrome.google.com/webstore/detail/singlefile/mpiodijhokgodhhofbcjdecpffjipkle?hl=en) to generate the snapshots.
-
-New snapshots should be stored in the `spec/snapshots` directory.
+We recommend using chrome or firefox inspect tool to extract the html to be parsed (for html parsers of course). These html snapshots should be stored in the `spec/snapshots` directory.
 
 With the snapshot in place, use the `parsing` attribute to load the proper snapshot and then use the `parser` property to access the parser instance inside the example:
 
