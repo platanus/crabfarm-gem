@@ -69,7 +69,7 @@ module Crabfarm
 
     def method_missing(_method, *_args, &_block)
       m = PARSE_METHOD_RX.match(_method)
-      if m and
+      if m
         options = _args[1] || {}
         options[:using] = (m[1].camelize + 'Parser').constantize
         parse _args[0], options
