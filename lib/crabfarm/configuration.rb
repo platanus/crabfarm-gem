@@ -6,7 +6,7 @@ module Crabfarm
 
     OPTIONS = [
       [:browser_dsl, :string, 'Default browser dsl used by states'],
-      [:parser_dsl, :string, 'Default parser dsl used by parsers'],
+      [:parser_engine, :string, 'Default parser engine used by parsers'],
       [:output_builder, :string, 'Default json output builder used by states'],
       [:driver_factory, :mixed, 'Driver factory, disabled if phantom_mode is used'],
       [:log_path, :string, 'Path where logs should be stored'],
@@ -51,7 +51,7 @@ module Crabfarm
     def reset
       @values = {
         browser_dsl: :surfer,
-        parser_dsl: :nokogiri,
+        parser_engine: :nokogiri,
         output_builder: :hash,
         driver_factory: nil,
         log_path: nil,

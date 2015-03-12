@@ -3,13 +3,13 @@ module Crabfarm
 
     attr_reader :params, :document
 
-    def self.parser_dsl(_dsl)
-      @parser_dsl = _dsl
+    def self.engine(_engine)
+      @engine = _engine
     end
 
     def initialize(_target, _params)
-      dsl_class = Strategies.load(:parser_dsl, class_parser_dsl || Crabfarm.config.parser_dsl)
-      @document = dsl_class.parse _target
+      engine_class = Strategies.load(:parser_engine, class_engine || Crabfarm.config.parser_engine)
+      @document = engine_class.parse _target
       @params = _params
 
       super @document
@@ -29,8 +29,8 @@ module Crabfarm
 
   private
 
-    def class_parser_dsl
-      self.class.instance_variable_get :@parser_dsl
+    def class_engine
+      self.class.instance_variable_get :@engine
     end
   end
 end

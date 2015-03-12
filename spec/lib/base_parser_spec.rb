@@ -3,11 +3,11 @@ require 'spec_helper'
 describe Crabfarm::BaseParser do
 
   before {
-    Crabfarm.config.set_parser_dsl :fake_engine_1
+    Crabfarm.config.set_parser_engine :fake_engine_1
   }
 
   let(:parser_class_a) { Class.new(Crabfarm::BaseParser) }
-  let(:parser_class_b) { Class.new(Crabfarm::BaseParser) { parser_dsl :fake_engine_2 } }
+  let(:parser_class_b) { Class.new(Crabfarm::BaseParser) { engine :fake_engine_2 } }
 
   let(:html_a) { '<div></div>' }
   let(:html_b) { '<span></span>' }
