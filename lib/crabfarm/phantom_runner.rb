@@ -1,4 +1,3 @@
-require 'net/http'
 require 'timeout'
 
 module Crabfarm
