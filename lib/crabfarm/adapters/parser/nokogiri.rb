@@ -1,7 +1,7 @@
 require 'nokogiri'
 
 module Crabfarm
-  class NokogiriDsl
+  class NokogiriAdapter
     def self.parse(_element)
       if _element.respond_to? :to_html
         Nokogiri::HTML _element.to_html

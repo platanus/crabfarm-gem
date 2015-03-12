@@ -48,7 +48,8 @@ module Crabfarm
     register :browser_dsl, :capybara, 'Crabfarm::CapybaraBrowserDsl', 'crabfarm/adapters/browser/capybara'
 
     # bundled parsers dsl adapters
-    register :parser_dsl, :nokogiri, 'Crabfarm::NokogiriDsl', 'crabfarm/adapters/parser/nokogiri'
+    register :parser_dsl, :nokogiri, 'Crabfarm::NokogiriAdapter', 'crabfarm/adapters/parser/nokogiri'
+    register :parser_dsl, :pdf_reader, 'Crabfarm::PdfReaderAdapter', 'crabfarm/adapters/parser/pdf_reader'
 
     # bundled state output builders
     register :output_builder, :hash, 'Crabfarm::HashOutputBuilder', 'crabfarm/adapters/output/hash'
