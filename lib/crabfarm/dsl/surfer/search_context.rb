@@ -91,10 +91,6 @@ module Crabfarm
           end
         end
 
-        def parse(_parser_class, _params={})
-          ParserService.parse _parser_class, to_html, _params
-        end
-
         def to_html
           elements.map { |e| e['outerHTML'] }.join
         end

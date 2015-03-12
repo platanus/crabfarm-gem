@@ -16,7 +16,9 @@ module Crabfarm
         Net::HTTP.get(URI.parse _snap_or_url)
       end
 
-      ParserService.parse described_class, html, _options
+      parser = described_class.new html, _options
+      parser.parse
+      parser
     end
 
     def crawl(_state=nil, _params={})

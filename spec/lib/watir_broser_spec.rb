@@ -17,18 +17,11 @@ describe Crabfarm::WatirBrowserDsl do
 
     before { browser.goto "file://#{FIXTURE_PATH}/simple.html" }
 
-    describe "parse" do
-
-      before {
-        Crabfarm.config.set_parser_dsl :surimi
-      }
-
-      let (:parser_class) { Class.new(Crabfarm::BaseParser) { def parse; end } }
-
+    describe "to_html" do
       it "should load the parser html using the current node html" do
-        expect(browser.parse(parser_class).root.html).to eq '<html><head></head><body><ul class="bikes"><li>GT</li><li>Mongoose</li></ul></body></html>'
-        expect(browser.lis.parse(parser_class).root.html).to eq '<li>GT</li><li>Mongoose</li>'
-        expect(browser.lis.first.parse(parser_class).root.html).to eq '<li>GT</li>'
+        expect(browser.to_html).to eq '<html><head></head><body><ul class="bikes"><li>GT</li><li>Mongoose</li></ul></body></html>'
+        expect(browser.lis.to_html).to eq '<li>GT</li><li>Mongoose</li>'
+        expect(browser.lis.first.to_html).to eq '<li>GT</li>'
       end
     end
 

@@ -105,19 +105,5 @@ describe Crabfarm::Dsl::Surfer do
       end
     end
 
-    describe "parse" do
-
-      before {
-        Crabfarm.config.set_parser_dsl :surimi
-      }
-
-      let (:parser_class) { Class.new(Crabfarm::BaseParser) { def parse; end } }
-
-      it "should load the parser html using the to_html method" do
-        allow(surfer).to receive(:to_html) { "<html></html>" }
-        expect(surfer.parse(parser_class).root.html).to eq '<html></html>'
-      end
-    end
-
   end
 end
