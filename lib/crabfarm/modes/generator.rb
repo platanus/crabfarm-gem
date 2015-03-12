@@ -35,18 +35,20 @@ module Crabfarm
       end
 
       def generate_state(_name)
+        class_name = _name.camelize
         with_crawler_path do
-          binding = { state_class: _name.camelize }
-          path('app', 'states', _name.underscore + '.rb').render('state.rb', binding)
-          path('spec', 'states', _name.underscore + '_spec.rb').render('state_spec.rb', binding)
+          binding = { state_class: class_name.camelize }
+          path('app', 'states', class_name.underscore + '.rb').render('state.rb', binding)
+          path('spec', 'states', class_name.underscore + '_spec.rb').render('state_spec.rb', binding)
         end
       end
 
       def generate_parser(_name)
+        class_name = _name.camelize + 'Parser'
         with_crawler_path do
-          binding = { parser_class: _name.camelize }
-          path('app', 'parsers', _name.underscore + '.rb').render('parser.rb', binding)
-          path('spec', 'parsers', _name.underscore + '_spec.rb').render('parser_spec.rb', binding)
+          binding = { parser_class: class_name }
+          path('app', 'parsers', class_name.underscore + '.rb').render('parser.rb', binding)
+          path('spec', 'parsers', class_name.underscore + '_spec.rb').render('parser_spec.rb', binding)
         end
       end
 
