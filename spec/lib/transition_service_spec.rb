@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Crabfarm::Context do
+describe Crabfarm::TransitionService do
 
   before {
     Crabfarm.config.set_driver :noop
@@ -18,10 +18,10 @@ describe Crabfarm::Context do
 
   let(:context) { Crabfarm::Context.new }
 
-  describe "run_state" do
+  describe "apply_state" do
 
     it "should load and call crawl on the loaded state" do
-      state = context.run_state mock_class
+      state = Crabfarm::TransitionService.apply_state context, mock_class
       expect(state.crawl_called).to be(true)
     end
   end

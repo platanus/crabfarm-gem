@@ -109,7 +109,7 @@ module Crabfarm
                 begin
                   ActiveSupport::Dependencies.clear
                   logger.info "StateLoop: loading state: #{@next_state_name}"
-                  @doc = context.run_state(@next_state_name, @next_state_params).output_as_json
+                  @doc = TransitionService.apply_state(context, @next_state_name, @next_state_params).output_as_json
                   logger.info "StateLoop: state loaded successfully: #{@next_state_name}"
                   @error = nil
                 rescue Exception => e

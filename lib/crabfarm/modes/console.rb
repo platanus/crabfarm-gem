@@ -34,7 +34,7 @@ module Crabfarm
           begin
             elapsed = Benchmark.measure do
               puts "Transitioning to #{_name.to_s.camelize} state"
-              doc = @context.run_state(_name, _params).output_as_json
+              doc = TransitionService.apply_state(@context, _name, _params).output_as_json
 
               puts "State changed, generated document:"
               puts JSON.pretty_generate(doc).color(:green).gsub(/(^|\\n)/, '  ')

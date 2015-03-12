@@ -3,7 +3,6 @@ require 'net/http'
 
 CF_TEST_CONTEXT = Crabfarm::CrabtrapContext::new
 CF_TEST_CONTEXT.load
-CF_TEST_BUCKET = CF_TEST_CONTEXT.driver
 
 module Crabfarm
   module RSpec
@@ -29,9 +28,9 @@ module Crabfarm
 
       if _state.nil?
         return nil unless described_class < BaseState # TODO: maybe raise an error here.
-        @state = @last_state = CF_TEST_CONTEXT.run_state(described_class, _params)
+        @state = @last_state = TransitionService.apply_state CF_TEST_CONTEXT, described_class, _params
       else
-        @last_state = CF_TEST_CONTEXT.run_state(_state, _params)
+        @last_state = TransitionService.apply_state CF_TEST_CONTEXT, _state, _params
       end
     end
 

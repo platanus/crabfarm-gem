@@ -7,13 +7,18 @@ describe Crabfarm::BaseState do
     Crabfarm.config.set_driver :noop # prevent phantomjs from starting
   }
 
-  let(:pool) { Crabfarm::DriverBucketPool.new }
+  let(:fake_context) { Class.new {
+      def pool
+        Crabfarm::DriverBucketPool.new
+      end
+    }.new
+  }
 
   let(:state_class_a) { Class.new(Crabfarm::BaseState) }
   let(:state_class_b) { Class.new(Crabfarm::BaseState) { browser_dsl :fake_dsl_2 } }
 
-  let(:state_a) { state_class_a.new pool, nil, { arg: 'imateapot' } }
-  let(:state_b) { state_class_b.new pool, nil, { } }
+  let(:state_a) { state_class_a.new fake_context, { arg: 'imateapot' } }
+  let(:state_b) { state_class_b.new fake_context, { } }
 
   describe "browser" do
 
@@ -37,7 +42,7 @@ describe Crabfarm::BaseState do
 
   describe "parse" do
 
-    let(:state) { MockStateA.new pool, nil, { arg: 'imateapot' } }
+    let(:state) { MockStateA.new fake_context, { arg: 'imateapot' } }
     let(:parser) { state.parse 'data', using: FakeParser, other_arg: 'param' }
 
     it "should load parser specified in :using" do
@@ -71,7 +76,7 @@ describe Crabfarm::BaseState do
 
   describe "fork_each" do
 
-    let(:state) { MockStateA.new pool, nil, {} }
+    let(:state) { MockStateA.new fake_context, {} }
 
     it "should execute given block in paralell and wait for every thread to finish" do
       state.output[:values] = []

@@ -9,8 +9,8 @@ module Crabfarm
 
     attr_reader :params, :output
 
-    def_delegators :@pool, :driver
-    def_delegators :@store, :get, :fetch
+    def_delegators '@context.pool', :driver
+    def_delegators '@context.store', :get, :fetch
 
     def self.browser_dsl(_dsl)
       @class_browser_dsl = _dsl
@@ -20,9 +20,8 @@ module Crabfarm
       @class_output_builder = _builder
     end
 
-    def initialize(_pool, _store, _params)
-      @pool = _pool
-      @store = _store
+    def initialize(_context, _params)
+      @context = _context
       @params = _params
 
       @dsl = Strategies.load(:browser_dsl, class_browser_dsl || Crabfarm.config.browser_dsl)

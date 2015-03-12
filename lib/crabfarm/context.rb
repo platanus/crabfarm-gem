@@ -4,7 +4,7 @@ module Crabfarm
   class Context
     extend Forwardable
 
-    def_delegators :@pool, :driver
+    attr_accessor :pool, :store
 
     def initialize
       @store = StateStore.new
@@ -15,13 +15,6 @@ module Crabfarm
       init_phantom_if_required
       init_driver_pool
       @loaded = true
-    end
-
-    def run_state(_name, _params={})
-      load
-      state = LoaderService.load_state(_name).new @pool, @store, _params
-      state.crawl
-      state
     end
 
     def reset
