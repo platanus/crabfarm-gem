@@ -2,7 +2,7 @@ module Crabfarm
   class ForkedState
     extend Forwardable
 
-    def_delegators :@state, :params, :get, :fetch
+    def_delegators :@state, :params, :get, :fetch, :event, :alert, :info, :parse, :method_missing, :respond_to?
 
     def initialize(_state, _name, _mutex)
       @state = _state

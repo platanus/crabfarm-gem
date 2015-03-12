@@ -1,4 +1,4 @@
-class Indicators < Crabfarm::BaseParser
+class IndicatorsParser < Crabfarm::BaseParser
 
   attr_accessor :btc_price
 

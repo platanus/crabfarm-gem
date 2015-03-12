@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Indicators do
+describe IndicatorsParser do
 
   it "should extract bitcoin value from live page", parsing: 'https://btc-e.com/' do
     expect(parser.btc_price).to be_instance_of(Float)
