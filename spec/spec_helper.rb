@@ -1,6 +1,6 @@
 require 'pry'
 require 'crabfarm'
-require 'surimi'
+require 'crabfarm-mocks'
 
 FIXTURE_PATH = File.expand_path('../support', __FILE__)
 

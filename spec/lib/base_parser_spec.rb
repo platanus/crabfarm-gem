@@ -3,11 +3,11 @@ require 'spec_helper'
 describe Crabfarm::BaseParser do
 
   before {
-    Crabfarm.config.set_parser_dsl :surimi
+    Crabfarm.config.set_parser_dsl :fake_engine_1
   }
 
   let(:parser_class_a) { Class.new(Crabfarm::BaseParser) }
-  let(:parser_class_b) { Class.new(Crabfarm::BaseParser) { parser_dsl :surimi_2 } }
+  let(:parser_class_b) { Class.new(Crabfarm::BaseParser) { parser_dsl :fake_engine_2 } }
 
   let(:html_a) { '<div></div>' }
   let(:html_b) { '<span></span>' }
@@ -21,11 +21,11 @@ describe Crabfarm::BaseParser do
     end
 
     it 'should provide the dsl specified in configuration if no dsl is specified in parser' do
-      expect(parser_a.document.class).to be(Surimi::ParserDsl)
+      expect(parser_a.document.class).to be(FakeParserEngine1)
     end
 
     it 'should provide the dsl specified in parser' do
-      expect(parser_b.document.class).to be(Surimi::ParserDsl2)
+      expect(parser_b.document.class).to be(FakeParserEngine2)
     end
   end
 
