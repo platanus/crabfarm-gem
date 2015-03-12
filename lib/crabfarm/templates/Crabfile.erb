@@ -1,13 +1,14 @@
 
 # The default crawling dsl to use in states and parsers, can be overriden in each component using the `browser_dsl :dsl` modifier
-# Available options are :surfer, :watir and :capybara
+# Available options are :surfer, :watir and :capybara. Both watir and capybara require an additional gem to be added to Gemfile
 set_browser_dsl :surfer
 
 # The default parser engine for parsers that do not specify one.
+# Available options are :nokogiri and :pdf_parser. :pdf_parser requires an additional gem to be added to Gemfile
 # set_parser_engine :nokogiri
 
 # Change the defaut output builder used in a state to generate the output document.
-# Available options are :hash, :ostruct, :jbuilder
+# Available options are :hash, :ostruct, :jbuilder. :jbuilder requires an additional gem to be added to Gemfile
 # set_output_builder :hash
 
 # The path where every crawler log is stored.

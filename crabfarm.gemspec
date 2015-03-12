@@ -17,10 +17,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_dependency 'jbuilder', "~> 2.2.0"
   spec.add_dependency 'selenium-webdriver', "~> 2.33"
-  spec.add_dependency 'capybara'
-  spec.add_dependency 'watir-webdriver'
   spec.add_dependency 'nokogiri', '~> 1.6.6'
   spec.add_dependency 'activesupport', '>= 3.0.0', '< 5'
   spec.add_dependency 'gli','~> 2.12.0'
@@ -28,7 +25,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'grape','~> 0.10.0'
   spec.add_dependency 'puma','~> 2.10.2'
   spec.add_dependency 'git'
-  spec.add_dependency 'multipart-post'
 
   spec.add_development_dependency "bundler", "~> 1.6"
   spec.add_development_dependency "rake"
@@ -40,4 +36,9 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "pry"
   spec.add_development_dependency "pry-remote"
   spec.add_development_dependency "pry-nav"
+
+  spec.add_development_dependency 'pdf-reader', '~> 1.3.3'
+  spec.add_development_dependency 'capybara'
+  spec.add_development_dependency 'watir-webdriver'
+  spec.add_development_dependency 'jbuilder', "~> 2.2.0"
 end

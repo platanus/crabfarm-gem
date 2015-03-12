@@ -1,5 +1,3 @@
-require 'watir-webdriver'
-
 class Watir::Browser
   def to_html
     html

@@ -44,16 +44,16 @@ module Crabfarm
   module Strategies
     # bundled browser dsl adapters
     register :browser_dsl, :surfer, 'Crabfarm::SurferBrowserDsl', 'crabfarm/adapters/browser/surfer'
-    register :browser_dsl, :watir, 'Crabfarm::WatirBrowserDsl', 'crabfarm/adapters/browser/watir'
-    register :browser_dsl, :capybara, 'Crabfarm::CapybaraBrowserDsl', 'crabfarm/adapters/browser/capybara'
+    register :browser_dsl, :watir, 'Crabfarm::WatirBrowserDsl', 'crabfarm/adapters/browser/watir', ['watir-webdriver']
+    register :browser_dsl, :capybara, 'Crabfarm::CapybaraBrowserDsl', 'crabfarm/adapters/browser/capybara', ['capybara']
 
     # bundled parsers dsl adapters
     register :parser_engine, :nokogiri, 'Crabfarm::NokogiriAdapter', 'crabfarm/adapters/parser/nokogiri'
-    register :parser_engine, :pdf_reader, 'Crabfarm::PdfReaderAdapter', 'crabfarm/adapters/parser/pdf_reader'
+    register :parser_engine, :pdf_reader, 'Crabfarm::PdfReaderAdapter', 'crabfarm/adapters/parser/pdf_reader', ['pdf-reader']
 
     # bundled state output builders
     register :output_builder, :hash, 'Crabfarm::HashOutputBuilder', 'crabfarm/adapters/output/hash'
     register :output_builder, :ostruct, 'Crabfarm::OStructOutputBuilder', 'crabfarm/adapters/output/ostruct'
-    register :output_builder, :jbuilder, 'Crabfarm::JbuilderOutputBuilder', 'crabfarm/adapters/output/jbuilder'
+    register :output_builder, :jbuilder, 'Crabfarm::JbuilderOutputBuilder', 'crabfarm/adapters/output/jbuilder', ['jbuilder']
   end
 end

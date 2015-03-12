@@ -1,5 +1,3 @@
-require 'jbuilder'
-
 module Crabfarm
   class JbuilderOutputBuilder
     def self.prepare

@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'watir-webdriver'
 require 'crabfarm/adapters/browser/watir'
 
 describe Crabfarm::WatirBrowserDsl do
