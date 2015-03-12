@@ -60,7 +60,7 @@ module Crabfarm
 
       raise MaximumRedirectsError.new if _limit == 0
 
-      request = _req_type.new(_uri.path.empty? ? '/' : _uri.path)
+      request = _req_type.new(_uri.request_uri.empty? ? '/' : _uri.request_uri)
       _headers.keys.each { |k| request[k] = _headers[k] }
       yield request if block_given?
 
