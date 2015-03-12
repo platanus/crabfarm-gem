@@ -4,7 +4,7 @@ module Crabfarm
   class Context
     extend Forwardable
 
-    attr_accessor :pool, :store
+    attr_accessor :pool, :store, :http
 
     def initialize
       @store = StateStore.new
@@ -14,6 +14,7 @@ module Crabfarm
     def load
       init_phantom_if_required
       init_driver_pool
+      init_http_client
       @loaded = true
     end
 
@@ -56,6 +57,14 @@ module Crabfarm
       @phantom = nil
     end
 
+    def init_http_client
+      @http = build_http_client if @http.nil?
+    end
+
+    def release_http_client
+      @http = nil
+    end
+
     def build_driver_factory
       if @phantom
         PhantomDriverFactory.new @phantom, driver_config
@@ -63,6 +72,10 @@ module Crabfarm
         return config.driver_factory if config.driver_factory
         DefaultDriverFactory.new driver_config
       end
+    end
+
+    def build_http_client
+      HttpClient.new config.proxy
     end
 
     def config

@@ -9,6 +9,7 @@ module Crabfarm
 
     attr_reader :params, :output
 
+    def_delegators '@context', :http
     def_delegators '@context.pool', :driver
     def_delegators '@context.store', :get, :fetch
 
@@ -30,6 +31,10 @@ module Crabfarm
 
     def browser(_name=nil)
       @dsl.wrap driver(_name)
+    end
+
+    def download(_url)
+      @context.http.get(_url).body
     end
 
     def output

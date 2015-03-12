@@ -28,6 +28,10 @@ module Crabfarm
 
   private
 
+    def build_http_client
+      HttpClient.new proxy_address
+    end
+
     def restart_with_options(_options)
       stop_daemon
       @runner = CrabtrapRunner.new Crabfarm.config.crabtrap_config.merge(_options)

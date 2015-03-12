@@ -1,5 +1,6 @@
-require 'logger'
+require "logger"
 require "forwardable"
+require "net/http"
 require "active_support/inflector"
 require "selenium-webdriver"
 
@@ -9,6 +10,7 @@ require "crabfarm/configuration"
 require "crabfarm/transition_service"
 require "crabfarm/driver_bucket"
 require "crabfarm/driver_bucket_pool"
+require "crabfarm/http_client"
 require "crabfarm/default_driver_factory"
 require "crabfarm/phantom_driver_factory"
 require "crabfarm/phantom_runner"
