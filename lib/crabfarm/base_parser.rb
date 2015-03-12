@@ -1,18 +1,18 @@
 module Crabfarm
   class BaseParser < Delegator
 
-    attr_reader :params, :root
+    attr_reader :params, :document
 
     def self.parser_dsl(_dsl)
       @parser_dsl = _dsl
     end
 
-    def initialize(_html, _params)
+    def initialize(_target, _params)
       dsl_class = Strategies.load(:parser_dsl, class_parser_dsl || Crabfarm.config.parser_dsl)
-      @root = dsl_class.parse _html
+      @document = dsl_class.parse _target
       @params = _params
 
-      super @root
+      super @document
     end
 
     def parse
@@ -20,11 +20,11 @@ module Crabfarm
     end
 
     def __getobj__
-      @root
+      @document
     end
 
     def __setobj__(obj)
-      @root = obj
+      @document = obj
     end
 
   private

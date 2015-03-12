@@ -15,17 +15,17 @@ describe Crabfarm::BaseParser do
   let(:parser_a) { parser_class_a.new html_a, { arg: 'imateapot' } }
   let(:parser_b) { parser_class_b.new html_b, { } }
 
-  describe "root" do
+  describe "document" do
     it 'should be loaded with the html root node representation on initialization' do
-      expect(parser_a.root.html).to eq(html_a)
+      expect(parser_a.document.html).to eq(html_a)
     end
 
     it 'should provide the dsl specified in configuration if no dsl is specified in parser' do
-      expect(parser_a.root.class).to be(Surimi::ParserDsl)
+      expect(parser_a.document.class).to be(Surimi::ParserDsl)
     end
 
     it 'should provide the dsl specified in parser' do
-      expect(parser_b.root.class).to be(Surimi::ParserDsl2)
+      expect(parser_b.document.class).to be(Surimi::ParserDsl2)
     end
   end
 
