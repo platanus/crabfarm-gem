@@ -1,6 +1,4 @@
-host: 'http://www.crabfarm.pow'
-name: 'demo'
-token: 'demo'
+host: http://www.crabfarm.pow
 files:
 - Crabfile
 - Gemfile

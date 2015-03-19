@@ -1,8 +1,10 @@
 require 'yaml'
+require 'json'
 require 'git'
 require 'zlib'
+require 'inquirer'
 require 'rubygems/package'
-require 'net/http/post/multipart'
+require 'base64'
 require 'rainbow'
 require 'rainbow/ext/string'
 require 'digest/sha1'
@@ -20,7 +22,7 @@ module Crabfarm
         @options = _options
 
         load_config
-        return unless dry_run or authenticated?
+        return unless dry_run or check_credentials
         detect_git_repo
 
         if inside_git_repo?
@@ -37,7 +39,7 @@ module Crabfarm
         compress_package
         generate_signature
 
-        send_package unless dry_run
+        send_package if not dry_run and ensure_valid_remote
       end
 
     private
@@ -59,27 +61,76 @@ module Crabfarm
       end
 
       def load_config
-        config = YAML.load_file config_path
+        @local_config = YAML.load_file config_path
 
-        if File.exists? home_config_path
-          home_config = YAML.load_file home_config_path
-          config = home_config.merge config
-        end
+        @home_config = if File.exists? home_config_path
+          YAML.load_file home_config_path
+        else {} end
+
+        config = @home_config.merge @local_config
 
         @token = config['token']
-        @name = config['name']
+        @url = @options[:remote] || config['remote']
         @host = config['host'] || DEFAULT_HOST
         @include = config['files']
       end
 
-      def authenticated?
-        # TODO: if no token, ask for credentials and fetch token
-        if @token.nil? or @token.empty?
-          puts "No crabfarm API token has been provided".color(:red)
-          return false
+      def ensure_valid_remote
+        if @url.nil?
+          @url = Ask.input 'Enter default remote for crawler'
+          return false unless validate_remote @url
+          @local_config['remote'] = @url
+          save_local_config
+          return true
+        else
+          validate_remote @url
+        end
+      end
+
+      def validate_remote(_url)
+        return true if /^\w+\/\w+$/i === _url
+        puts "Invalid remote syntax: #{_url}".color :red
+        return false
+      end
+
+      def check_credentials
+        if @token.nil?
+          puts 'No credential data found, please identify yourself'
+          email = Ask.input 'Enter your crabfarm.io email'
+          password = Ask.input 'Enter your crabfarm.io password'
+
+          resp = send_request Net::HTTP::Post, 'api/tokens', {
+            'email' => email,
+            'password' => password
+          }
+
+          case resp
+          when Net::HTTPCreated
+            @token = JSON.parse(resp.body)['token']
+            @home_config['token'] = @token
+            save_home_config
+          when Net::HTTPUnauthorized
+            puts "The provided credentials are invalid!".color(:red)
+          else
+            puts "Unknown error when asking for token!".color(:red)
+          end
         end
 
-        true
+        not @token.nil?
+      end
+
+      def save_local_config
+        save_config config_path, @local_config
+      end
+
+      def save_home_config
+        save_config home_config_path, @home_config
+      end
+
+      def save_config(_path, _config)
+        data = YAML.dump _config
+        data = data.split("\n", 2).last # remove first line to make it more readable
+        File.open(_path, 'w') { |f| f.write data }
       end
 
       def is_tree_dirty?
@@ -167,21 +218,35 @@ module Crabfarm
       end
 
       def send_package
-        url = URI.join(@host, 'api/crawlers/', @name)
-
-        req = Net::HTTP::Put::Multipart.new(url.path, {
-          "repo" => UploadIO.new(StringIO.new(@cpackage.string), "application/x-gzip", "tree.tar.gz"),
+        resp = send_request(Net::HTTP::Put, "api/bots/#{@url}", {
+          "repo" => Base64.encode64(@cpackage.string),
           "sha" => @signature,
           "ref" => @ref
-        }, {
-          'X-Api-Token' => @token
         })
 
-        res = Net::HTTP.start(url.host, url.port) do |http|
+        case resp
+        when Net::HTTPSuccess
+          sha = JSON.parse(resp.body)['sha']
+          puts "#{@url} updated!"
+        when Net::HTTPUnauthorized
+          puts "You are not authorized to update crawler: #{@url}".color(:red)
+        when Net::HTTPNotFound
+          puts "Crawler not found: #{@url}".color(:red)
+        else
+          puts "Unknown error when updating crawler information!".color(:red)
+        end
+      end
+
+      def send_request(_class, _path, _data=nil)
+        uri = URI.join(@host, _path)
+
+        req = req = _class.new uri.path
+        req.set_form_data _data
+        req['X-User-Token'] = @token unless @token.nil?
+
+        Net::HTTP.start(uri.host, uri.port) do |http|
           http.request(req)
         end
-
-        puts res.body
       end
 
     end

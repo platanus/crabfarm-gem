@@ -75,9 +75,12 @@ module Crabfarm
 
       c.desc "Generates a new crabfarm application"
       c.command :app do |app|
+        app.desc "Set the remote used by the crawler"
+        app.flag [:r, :remote]
+
         app.action do |global_options,options,args|
           require "crabfarm/modes/generator"
-          Crabfarm::Modes::Generator.new.generate_app(args[0], Dir.pwd)
+          Crabfarm::Modes::Generator.generate_app(Dir.pwd, args[0], options[:remote])
         end
       end
 
@@ -85,7 +88,7 @@ module Crabfarm
       c.command :parser do |parser|
         parser.action do |global_options,options,args|
           require "crabfarm/modes/generator"
-          Crabfarm::Modes::Generator.new.generate_parser(args[0])
+          Crabfarm::Modes::Generator.generate_parser(args[0])
         end
       end
 
@@ -93,7 +96,7 @@ module Crabfarm
       c.command :state do |parser|
         parser.action do |global_options,options,args|
           require "crabfarm/modes/generator"
-          Crabfarm::Modes::Generator.new.generate_state(args[0])
+          Crabfarm::Modes::Generator.generate_state(args[0])
         end
       end
     end
@@ -108,7 +111,7 @@ module Crabfarm
       end
     end
 
-    desc "Publish the crawler to a crabfarm cloud"
+    desc "Publish the crawler to the crabfarm.io cloud"
     command :publish do |c|
       c.desc "Just list the files that are beign packaged"
       c.switch :dry, :default_value => false
@@ -118,6 +121,8 @@ module Crabfarm
 
       c.action do |global_options,options,args|
         next puts "This command can only be run inside a crabfarm application" unless defined? CF_PATH
+
+        options[:remote] = args[0]
 
         require "crabfarm/modes/publisher"
         Crabfarm::Modes::Publisher.publish CF_PATH, options

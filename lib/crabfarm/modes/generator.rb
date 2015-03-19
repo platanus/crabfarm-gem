@@ -6,12 +6,13 @@ require 'ostruct'
 
 module Crabfarm
   module Modes
-    class Generator
+    module Generator
 
-      def generate_app(_name, _target)
+      def generate_app(_target, _name, _default_remote=nil)
         with_external_path _target do
           binding = {
             name: _name,
+            remote: _default_remote,
             version: Crabfarm::VERSION
           }
 
@@ -83,7 +84,7 @@ module Crabfarm
         self
       end
 
-  private
+    private
 
       def generate_dir(_path, _silent)
         path = File.join(*_path)
@@ -123,6 +124,8 @@ module Crabfarm
       def render_op(_op, _message, _color)
         puts _op.rjust(10).color(_color) + '  ' + _message
       end
+
+      extend self
     end
   end
 end

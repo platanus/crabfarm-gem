@@ -8,9 +8,9 @@ Install it using:
 
     $ gem install crabfarm
 
-Then generate a new crawler using the gem's generator:
+Then generate a new crawler using the gem's generator, you can optionally pass the crawler [crabfarm.io](http://www.crabfarm.io) remote here.
 
-    $ crabfarm g app YourCrawler
+    $ crabfarm g app new_crawler_folder --remote=platanus/demo
 
 The generator also provides tasks to generate parsers and states:
 

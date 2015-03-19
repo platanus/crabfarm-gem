@@ -21,11 +21,11 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'nokogiri', '~> 1.6.6'
   spec.add_dependency 'activesupport', '>= 3.0.0', '< 5'
   spec.add_dependency 'gli','~> 2.12.0'
+  spec.add_dependency 'inquirer', '~> 0.2.0'
   spec.add_dependency 'rainbow','~> 2.0.0'
   spec.add_dependency 'grape','~> 0.10.0'
   spec.add_dependency 'puma','~> 2.10.2'
   spec.add_dependency 'git'
-  spec.add_dependency 'multipart-post'
 
   spec.add_development_dependency "bundler", "~> 1.6"
   spec.add_development_dependency "rake"
@@ -42,4 +42,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'capybara'
   spec.add_development_dependency 'watir-webdriver'
   spec.add_development_dependency 'jbuilder', "~> 2.2.0"
+  spec.add_development_dependency 'fakefs', "~> 0.6.7"
 end

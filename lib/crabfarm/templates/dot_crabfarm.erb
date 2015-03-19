@@ -1,5 +1,5 @@
-host: 'http://www.crabfarm.io'
-name: '<%= name %>'
+host: http://api.crabfarm.io
+<% unless remote.nil? %>remote: <%= remote %><% end %>
 files:
 - Crabfile
 - Gemfile

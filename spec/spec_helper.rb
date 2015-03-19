@@ -1,5 +1,6 @@
 require 'pry'
 require 'crabfarm'
+require 'fakefs/spec_helpers'
 require 'crabfarm-mocks'
 
 FIXTURE_PATH = File.expand_path('../support', __FILE__)
