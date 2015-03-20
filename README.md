@@ -153,6 +153,27 @@ describe "Some stuff" do
 end
 ```
 
+## Assertive converters
+
+Crabfarm includes a set of validating data converters specially tunned for data extraction. To start converting/validating a value just call **assert** inside a state or a **parser**.
+
+```ruby
+# use it to convert
+self.price = assert(browser.search('#value').text).is_i # or
+self.price = assert(browser.search('#value')).is_i
+
+# or just to validate
+assert(browser.search('.price').size).is_i greater_than: 10
+```
+
+Available converters:
+
+* `is_i`: converts value to integer, validates that number is properly formatted. Accepts the following self-explaining options: `decimal_mark`, `thousand_mark`, `greater_than`, `less_than`, `greater_or_equal_to`, `less_or_equal_to`, `between`, `default`.
+* `is_f`: similar to `is_i` but always returns a float.
+* `is_s`: trims a string and removes consecutive spaces. Accepts the following options: `default`, `matches`.
+* `is_w`: similar to `is_s` but fails if string contains more than one word.
+* `is_b`: converts value to boolean. Truthy and falsy values can be specified using the `truthy` and `falsy` options. (that default to ['true'] and ['false', :empty] respectively)
+* `match`: executes a regular expression and returns the match object. Fails if regular expression does not match.
 
 ## Server mode API
 
