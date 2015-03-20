@@ -1,8 +1,10 @@
 require 'thwait'
 require 'crabfarm/forked_state'
+require "crabfarm/assertion/context"
 
 module Crabfarm
   class BaseState
+    include Assertion::Context
     extend Forwardable
 
     PARSE_METHOD_RX = /^parse_(.*)$/
