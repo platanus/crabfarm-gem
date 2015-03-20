@@ -4,6 +4,8 @@ module Crabfarm
 
   class ConfigurationError < Error; end
 
+  class AssertionError < Error; end
+
   class EntityNotFoundError < Error
     attr_accessor :role, :name
 

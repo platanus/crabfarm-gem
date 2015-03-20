@@ -1,5 +1,8 @@
+require "crabfarm/assertion/context"
+
 module Crabfarm
   class BaseParser < Delegator
+    include Assertion::Context
 
     attr_reader :params, :document
 
