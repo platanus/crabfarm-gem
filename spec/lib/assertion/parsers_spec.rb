@@ -25,6 +25,7 @@ describe Crabfarm::Assertion::Parsers do
 
     context "when looking for integers" do
       it { expect(srv.parse_integer('10.10')).to eq(10) }
+      it { expect(srv.parse_integer('-10.10')).to eq(-10) }
       it { expect(srv.parse_integer('.10')).to eq(0) }
       it { expect(srv.parse_integer('10,100')).to eq(10100) }
       it { expect(srv.parse_integer('10,100.10')).to eq(10100) }
@@ -41,6 +42,7 @@ describe Crabfarm::Assertion::Parsers do
       it { expect(srv.parse_float('10 US')).to eq(10.0) }
       it { expect(srv.parse_float('only 10.2 items')).to eq(10.2) }
       it { expect(srv.parse_float('10.10')).to eq(10.1) }
+      it { expect(srv.parse_float('-10.10')).to eq(-10.1) }
       it { expect(srv.parse_float('.10')).to eq(0.1) }
       it { expect(srv.parse_float('10,100')).to eq(10100.0) }
       it { expect(srv.parse_float('10,100.10')).to eq(10100.1) }

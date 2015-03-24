@@ -85,8 +85,7 @@ module Crabfarm
       def extract_number_from_string _value, _options
         decimal_mark = _options.fetch(:decimal_mark, '.') # TODO: make default decimal mark configurable
         thousand_mark = _options.fetch(:thousand_mark, infer_thousand_separator(decimal_mark))
-        num_rgx = /(?:\.\d+|\d{1,3}(?:\,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)/
-        num_rgx = Regexp.new "(?:\\#{decimal_mark}\\d+|\\d{1,3}(?:\\#{thousand_mark}\\d{3})+(?:\\#{decimal_mark}\\d+)?|\\d+(?:\\#{decimal_mark}\\d+)?)"
+        num_rgx = Regexp.new "-?(?:\\#{decimal_mark}\\d+|\\d{1,3}(?:\\#{thousand_mark}\\d{3})+(?:\\#{decimal_mark}\\d+)?|\\d+(?:\\#{decimal_mark}\\d+)?)"
         matches = _value.scan num_rgx
         fail_with "'#{_value}' has an ambiguous numeric format" if matches.count > 1
         fail_with "'#{_value}' does not contain any number" if matches.count < 1
