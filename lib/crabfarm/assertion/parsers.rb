@@ -42,7 +42,7 @@ module Crabfarm
         when String, Symbol
           _value = _value.strip if _value.is_a? String
           return parse_by_map :empty, _map if _value.empty?
-          fail_with "#'{_value.to_s}' is and invalid keyword" unless _map.key? _value
+          fail_with "'#{_value.to_s}' is and invalid keyword" unless _map.key? _value
           _map[_value]
         else
           fail_with "'#{_value}' cannot be mapped"
