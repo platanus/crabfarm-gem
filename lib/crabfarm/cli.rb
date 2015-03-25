@@ -78,6 +78,8 @@ module Crabfarm
         app.flag [:r, :remote]
 
         app.action do |global_options,options,args|
+          next puts "This command cannot be run inside a crabfarm application" if GlobalState.inside_crawler_app?
+
           require "crabfarm/modes/generator"
           Crabfarm::Modes::Generator.generate_app(Dir.pwd, args[0], options[:remote])
         end
@@ -86,16 +88,20 @@ module Crabfarm
       c.desc "Generates a new crabfarm parser and parser spec"
       c.command :parser do |parser|
         parser.action do |global_options,options,args|
+          next puts "This command can only be run inside a crabfarm application" unless GlobalState.inside_crawler_app?
+
           require "crabfarm/modes/generator"
-          Crabfarm::Modes::Generator.generate_parser(args[0])
+          Crabfarm::Modes::Generator.generate_parser(GlobalState.app_path, args[0])
         end
       end
 
       c.desc "Generates a new crabfarm state and parser spec"
       c.command :state do |parser|
         parser.action do |global_options,options,args|
+          next puts "This command can only be run inside a crabfarm application" unless GlobalState.inside_crawler_app?
+
           require "crabfarm/modes/generator"
-          Crabfarm::Modes::Generator.generate_state(args[0])
+          Crabfarm::Modes::Generator.generate_state(GlobalState.app_path, args[0])
         end
       end
     end

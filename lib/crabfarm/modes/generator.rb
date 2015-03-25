@@ -9,7 +9,7 @@ module Crabfarm
     module Generator
 
       def generate_app(_target, _name, _default_remote=nil)
-        with_external_path _target do
+        with_base_path _target do
           binding = {
             name: _name,
             remote: _default_remote,
@@ -35,36 +35,27 @@ module Crabfarm
         end
       end
 
-      def generate_state(_name)
+      def generate_state(_target, _name)
         class_name = _name.camelize
-        with_crawler_path do
+        with_base_path _target do
           binding = { state_class: class_name.camelize }
           path('app', 'states', class_name.underscore + '.rb').render('state.rb', binding)
           path('spec', 'states', class_name.underscore + '_spec.rb').render('state_spec.rb', binding)
         end
       end
 
-      def generate_parser(_name)
+      def generate_parser(_target, _name)
         class_name = _name.camelize + 'Parser'
-        with_crawler_path do
+        with_base_path _target do
           binding = { parser_class: class_name }
           path('app', 'parsers', class_name.underscore + '.rb').render('parser.rb', binding)
           path('spec', 'parsers', class_name.underscore + '_spec.rb').render('parser_spec.rb', binding)
         end
       end
 
-      def with_external_path(_target)
+      def with_base_path(_target)
         @base_path = _target
         yield
-      end
-
-      def with_crawler_path
-        if defined? CF_PATH
-          @base_path = CF_PATH
-          yield
-        else
-          puts "This command can only be run inside a crabfarm application"
-        end
       end
 
       def path(*_args)
