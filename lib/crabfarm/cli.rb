@@ -128,12 +128,12 @@ module Crabfarm
       c.switch :unsafe, :default_value => false
 
       c.action do |global_options,options,args|
-        next puts "This command can only be run inside a crabfarm application" unless defined? CF_PATH
+        next puts "This command can only be run inside a crabfarm application" unless GlobalState.inside_crawler_app?
 
         options[:remote] = args[0]
 
         require "crabfarm/modes/publisher"
-        Crabfarm::Modes::Publisher.publish CF_PATH, options
+        Crabfarm::Modes::Publisher.publish GlobalState.app_path, options
       end
     end
 
