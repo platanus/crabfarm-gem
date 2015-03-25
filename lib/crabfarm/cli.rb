@@ -108,11 +108,14 @@ module Crabfarm
 
     desc "Perform an HTTP recording for use in tests"
     command [:record, :r] do |c|
+      c.desc "Run recorder in playback mode"
+      c.switch [:p, :playback], :default_value => false
+
       c.action do |global_options, options, args|
-        next puts "This command can only be run inside a crabfarm application" unless defined? CF_PATH
+        next puts "This command can only be run inside a crabfarm application" unless GlobalState.inside_crawler_app?
 
         require "crabfarm/modes/recorder"
-        Crabfarm::Modes::Recorder.start args[0]
+        Crabfarm::Modes::Recorder.start GlobalState.memento_path(args[0]), options[:playback]
       end
     end
 

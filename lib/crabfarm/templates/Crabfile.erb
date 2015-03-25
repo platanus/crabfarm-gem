@@ -65,10 +65,13 @@ set_driver :phantomjs
 # set_driver_remote_timeout 120
 
 
-# Crabtrap launcher configuration
+# Recording configuration
 ########################################
 
-# The following parameters only apply when running the crabtrap proxy on specs
+# The following parameters only apply when recording or replaying mementos
 
 # Set the crabtrap executable location, by default crabfarm expects crabtrap to be included in enviroment
 # set_crabtrap_bin_path 'crabtrap'
+
+# Change the browser used for the recording command, available options are 'firefox' or 'chrome'
+# set_recorder_driver :firefox

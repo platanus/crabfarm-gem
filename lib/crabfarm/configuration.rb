@@ -27,7 +27,10 @@ module Crabfarm
       [:phantom_bin_path, :string, 'Phantomjs binary path, only for phantomjs driver.'],
 
       # Crabtrap launcher configuration
-      [:crabtrap_bin_path, :string, 'Crabtrap binary path.']
+      [:crabtrap_bin_path, :string, 'Crabtrap binary path.'],
+
+      # Recorder configuration
+      [:recorder_driver, :string, 'Recorder driver name, defaults to \'firefox\'']
     ]
     .map { |o| Option.new *o }
 
@@ -53,7 +56,6 @@ module Crabfarm
         driver_factory: nil,
         log_path: nil,
         proxy: nil,
-
         driver: 'phantomjs',
         driver_capabilities: Selenium::WebDriver::Remote::Capabilities.firefox,
         driver_host: 'localhost',
@@ -61,14 +63,11 @@ module Crabfarm
         driver_remote_timeout: 120,
         driver_window_width: 1280,
         driver_window_height: 800,
-
         phantom_load_images: false,
         phantom_ssl: 'any',
         phantom_bin_path: 'phantomjs',
-
         crabtrap_bin_path: 'crabtrap',
-
-        recorder_driver: 'firefox'
+        recorder_driver: :firefox
       }
     end
 
