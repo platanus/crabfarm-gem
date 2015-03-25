@@ -1,8 +1,6 @@
 require File.expand_path("../../boot", __FILE__)
 Bundler.require :test
 
-ENV['SNAPSHOT_DIR'] ||= File.expand_path("../snapshots", __FILE__)
-
 require "crabfarm/rspec"
 
 RSpec.configure do |config|

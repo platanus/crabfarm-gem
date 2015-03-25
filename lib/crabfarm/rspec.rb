@@ -1,26 +1,22 @@
-require 'crabfarm/crabtrap_context'
-require 'net/http'
-
-CF_TEST_CONTEXT = Crabfarm::CrabtrapContext::new
-CF_TEST_CONTEXT.load
-
 module Crabfarm
   module RSpec
 
-    def parse(_snap_or_url, _options={})
-      fixture = Pathname.new(File.join(ENV['SNAPSHOT_DIR'], _snap_or_url))
-      html = if fixture.exist?
-        File.read fixture.realpath
-      else
-        Net::HTTP.get(URI.parse _snap_or_url)
-      end
+    class Error < Crabfarm::Error; end
 
+    def parse(_snapshot, _options={})
+      snapshot_path = GlobalState.snapshot_path _snapshot
+      raise Error.new "Snapshot does not exist #{_snapshot}" unless File.exist? snapshot_path
+
+      html = File.read snapshot_path
       parser = described_class.new html, _options
       parser.parse
       parser
     end
 
     def crawl(_state=nil, _params={})
+
+      raise Error.new "Crawl is only available in state specs" if @context.nil?
+
       if _state.is_a? Hash
         _params = _state
         _state = nil
@@ -28,9 +24,9 @@ module Crabfarm
 
       if _state.nil?
         return nil unless described_class < BaseState # TODO: maybe raise an error here.
-        @state = @last_state = TransitionService.apply_state CF_TEST_CONTEXT, described_class, _params
+        @state = @last_state = TransitionService.apply_state @context, described_class, _params
       else
-        @last_state = TransitionService.apply_state CF_TEST_CONTEXT, _state, _params
+        @last_state = TransitionService.apply_state @context, _state, _params
       end
     end
 
@@ -46,26 +42,30 @@ module Crabfarm
       @parser
     end
 
+    def driver(_session_id=nil)
+      @context.pool.driver(_session_id)
+    end
+
   end
 end
 
 RSpec.configure do |config|
   config.include Crabfarm::RSpec
 
-  config.before(:example) do |example|
-
-    if example.metadata[:parsing]
-      @parser = parse example.metadata[:parsing], example.metadata[:using] || {}
-    end
-
-    if example.metadata[:crawling]
-      CF_TEST_CONTEXT.replay File.join(CF_PATH, 'spec/mementos', example.metadata[:crawling] + '.json.gz')
+  config.around(:example) do |example|
+    if described_class < Crabfarm::BaseParser
+      if example.metadata[:parsing]
+        @parser = parse example.metadata[:parsing], example.metadata[:using] || {}
+      end
+      example.run
+    elsif described_class < Crabfarm::BaseState
+      Crabfarm::ContextFactory.with_context example.metadata[:crawling] do |ctx|
+        @context = ctx
+        example.run
+      end
     else
-      CF_TEST_CONTEXT.pass_through
+      example.run
     end
   end
 
-  config.after(:suite) do
-    CF_TEST_CONTEXT.release
-  end
 end
