@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_dependency 'selenium-webdriver', "~> 2.33"
+  spec.add_dependency 'selenium-webdriver', "~> 2.45"
   spec.add_dependency 'nokogiri', '~> 1.6.6'
   spec.add_dependency 'activesupport', '>= 3.0.0', '< 5'
   spec.add_dependency 'gli','~> 2.12.0'
