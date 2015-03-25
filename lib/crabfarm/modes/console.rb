@@ -1,28 +1,23 @@
-require 'benchmark'
 require 'readline'
 require 'rainbow'
 require 'rainbow/ext/string'
 require 'json'
+require 'crabfarm/engines/sync_state_loop'
 
 module Crabfarm
   module Modes
     class Console
 
-      class ConsoleDsl
-
-        def initialize(_context)
-          @context = _context
-        end
+      class ConsoleDsl < Engines::SyncStateManager
 
         def reload!
           puts "Reloading crawler source".color(:green)
-          ActiveSupport::Dependencies.clear
-          @context.reset
+          super
         end
 
         def reset
           puts "Resetting crawling context".color(:green)
-          @context.reset
+          super
         end
 
         def transition(_name=nil, _params={})
@@ -32,17 +27,14 @@ module Crabfarm
           end
 
           begin
-            elapsed = Benchmark.measure do
-              puts "Transitioning to #{_name.to_s.camelize} state"
-              doc = TransitionService.apply_state(@context, _name, _params).output_as_json
+            puts "Transitioning to #{_name.to_s.camelize} state"
+            output = super
 
-              puts "State changed, generated document:"
-              puts JSON.pretty_generate(doc).color(:green).gsub(/(^|\\n)/, '  ')
-            end
-            puts "Completed in #{elapsed.real} s"
-          rescue EntityNotFoundError => e
-            puts "#{e.to_s}".color(:red)
-          rescue => e
+            puts "State changed, generated document:"
+            puts JSON.pretty_generate(output.doc).color(:green).gsub(/(^|\\n)/, '  ')
+            puts "Completed in #{output.elapsed.real} s"
+
+          rescue Exception => e
             puts "#{e.to_s}".color(:red)
             puts e.backtrace
           end
@@ -56,7 +48,7 @@ module Crabfarm
         alias :r :reset
       end
 
-      def self.start(_context)
+      def self.process_input(_context)
         dsl = ConsoleDsl.new _context
 
         loop do
@@ -71,8 +63,7 @@ module Crabfarm
           end
         end
 
-        puts "Releasing crawling context".color(:green)
-        _context.release
+        puts "Exiting".color(:green)
       end
 
     end

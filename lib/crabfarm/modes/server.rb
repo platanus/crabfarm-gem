@@ -1,6 +1,6 @@
 require 'grape'
 require 'crabfarm/support/custom_puma'
-require 'crabfarm/engines/safe_state_loop'
+require 'crabfarm/engines/async_state_manager'
 
 module Crabfarm
   module Modes
@@ -54,7 +54,7 @@ module Crabfarm
           optional :wait, type: Float
         end
         put :state do
-          print_state evaluator.change_state params[:name], params[:params], wait
+          print_state evaluator.transition params[:name], params[:params], wait
         end
       end
 
@@ -62,8 +62,8 @@ module Crabfarm
         @@evaluator
       end
 
-      def self.start(_options)
-        @@evaluator = Engines::SafeStateLoop.new
+      def self.serve(_context, _options)
+        @@evaluator = Engines::AsyncStateManager.new _context
         @@evaluator.start
         begin
           Support::CustomPuma.run API, _options

@@ -6,15 +6,9 @@ module Crabfarm
 
   class AssertionError < Error; end
 
-  class EntityNotFoundError < Error
-    attr_accessor :role, :name
+  class ArgumentError < Error; end
 
-    def initialize(_role, _name)
-      super("The required #{_role} was not found (#{_name})")
-      @role = _role
-      @name = _name
-    end
-  end
+  class ResourceNotFoundError < Crabfarm::Error; end
 
   class ApiError < Error
     def code; 500 end
