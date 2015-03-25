@@ -4,6 +4,19 @@ module Crabfarm
 
   class ConfigurationError < Error; end
 
+  class BinaryMissingError < ConfigurationError
+
+    attr_accessor :binary
+    attr_accessor :path
+
+    def initialize(_binary, _path)
+      @binary = _binary
+      @path = _path
+      super "Could not find a suitable version of #{@binary}"
+    end
+
+  end
+
   class AssertionError < Error; end
 
   class ArgumentError < Error; end

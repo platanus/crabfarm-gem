@@ -1,5 +1,9 @@
+require 'timeout'
+
 module Crabfarm
   class CrabtrapRunner
+
+    CRABTRAP_START_TM = 5 # seconds
 
     def initialize(_config={})
       @config = _config;
@@ -19,24 +23,38 @@ module Crabfarm
     end
 
     def start
-      begin
-        @pid = Process.spawn({}, crabtrap_cmd)
-        wait_for_server
-      rescue
-        puts "Could not find crabtrap at #{@config[:bin_path]}, memento replaying is disabled!"
-        @pid = nil
-      end
+      logger.info "Starting crabtrap in port #{port}"
+      @pid = spawn_crabtrap
+      logger.info "Crabtrap started (PID: #{@pid})"
     end
 
     def stop
       unless @pid.nil?
+        logger.info "Stopping crabtrap (PID: #{@pid})"
         Process.kill("INT", @pid)
         Process.wait @pid
+        logger.info "Crabtrap stopped"
         @pid = nil
       end
     end
 
   private
+
+    def spawn_crabtrap
+      pid = nil
+      begin
+        pid = Process.spawn({}, crabtrap_cmd)
+        Timeout::timeout(CRABTRAP_START_TM) { wait_for_server }
+        return pid
+      rescue Errno::ENOENT
+        raise BinaryMissingError.new 'crabtrap', @config[:bin_path]
+      rescue Timeout::Error
+        Process.kill "INT", pid
+        Process.wait pid
+        raise
+      end
+      pid
+    end
 
     def crabtrap_cmd
       cmd = [@config[:bin_path]]
@@ -55,6 +73,10 @@ module Crabfarm
         rescue
         end
       end
+    end
+
+    def logger
+      Crabfarm.logger
     end
 
   end

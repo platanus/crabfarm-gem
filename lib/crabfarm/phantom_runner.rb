@@ -33,15 +33,18 @@ module Crabfarm
   private
 
     def spawn_phantomjs
-      pid = Process.spawn({}, phantomjs_cmd)
+      pid = nil
       begin
+        pid = Process.spawn({}, phantomjs_cmd)
         Timeout::timeout(PHANTOM_START_TM) { wait_for_server }
+        return pid
+      rescue Errno::ENOENT
+        raise BinaryMissingError.new 'phantomjs', @config[:bin_path]
       rescue Timeout::Error
         Process.kill "INT", pid
         Process.wait pid
         raise
       end
-      return pid
     end
 
     def phantomjs_cmd

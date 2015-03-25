@@ -137,6 +137,21 @@ module Crabfarm
       end
     end
 
+    on_error do |exc|
+      case exc
+      when BinaryMissingError
+        if exc.binary == 'phantomjs'
+          puts "Could not find the phantomjs binary at '#{exc.path}', try installing it using 'npm install phantomjs -g' or set the propper path in your project's Crabfile"
+          false
+        elsif exc.binary == 'crabtrap'
+          puts "Could not find the crabtrap binary at '#{exc.path}', try installing it using 'npm install crabtrap -g' or set the propper path in your project's Crabfile"
+          false
+        else true end
+      else
+        true
+      end
+    end
+
     exit run(ARGV)
   end
 end
