@@ -1,4 +1,5 @@
 require 'timeout'
+require 'crabfarm/utils/processes'
 
 module Crabfarm
   class PhantomRunner
@@ -7,7 +8,7 @@ module Crabfarm
 
     def initialize(_config={})
       @config = _config;
-      @pid = nil
+      @process = nil
     end
 
     def port
@@ -15,36 +16,34 @@ module Crabfarm
     end
 
     def start
-      Crabfarm.logger.info "Starting phantomjs in port #{port}"
-      @pid = spawn_phantomjs
-      Crabfarm.logger.info "Phantomjs started (PID: #{@pid})"
+      logger.info "Starting phantomjs in port #{port}"
+      @process = spawn_phantomjs
+      logger.info "Phantomjs started (PID: #{@process.pid})"
     end
 
     def stop
-      unless @pid.nil?
-        Crabfarm.logger.info "Stopping phantomjs (PID: #{@pid})"
-        Process.kill "INT", @pid
-        Process.wait @pid, Process::WNOHANG
-        Crabfarm.logger.info "Phantomjs stopped (PID: #{@pid})"
-        @pid = nil
+      unless @process.nil?
+        logger.info "Stopping phantomjs (PID: #{@process.pid})"
+        @process.stop
+        @process = nil
+        logger.info "Phantomjs stopped"
       end
     end
 
   private
 
     def spawn_phantomjs
-      pid = nil
+      proc = nil
       begin
-        pid = Process.spawn({}, phantomjs_cmd)
+        proc = Utils::Processes.start_logged_process 'phantomjs', phantomjs_cmd, logger
         Timeout::timeout(PHANTOM_START_TM) { wait_for_server }
-        return pid
-      rescue Errno::ENOENT
+      rescue ChildProcess::LaunchError
         raise BinaryMissingError.new 'phantomjs', @config[:bin_path]
       rescue Timeout::Error
-        Process.kill "INT", pid
-        Process.wait pid
+        proc.stop
         raise
       end
+      proc
     end
 
     def phantomjs_cmd
@@ -54,9 +53,8 @@ module Crabfarm
       cmd << "--webdriver=#{port}"
       cmd << "--ssl-protocol=#{@config[:ssl]}" unless @config[:ssl].nil?
       cmd << "--ignore-ssl-errors=true"
-      cmd << "--webdriver-loglevel=WARN"
-      cmd << "--webdriver-logfile=#{@config[:log_file]}" unless @config[:log_file].nil?
-      cmd.join(' ')
+      cmd << "--webdriver-loglevel=DEBUG"
+      cmd
     end
 
     def wait_for_server
@@ -67,6 +65,10 @@ module Crabfarm
         rescue
         end
       end
+    end
+
+    def logger
+      Crabfarm.logger
     end
 
   end

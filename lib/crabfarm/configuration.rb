@@ -32,7 +32,7 @@ module Crabfarm
       # Recorder configuration
       [:recorder_driver, :string, 'Recorder driver name, defaults to \'firefox\'']
     ]
-    .map { |o| Option.new *o }
+    .map { |o| Option.new(*o) }
 
     OPTIONS.each do |var|
       define_method "set_#{var.name}" do |val|
@@ -103,8 +103,7 @@ module Crabfarm
         load_images: phantom_load_images,
         proxy: proxy,
         ssl: phantom_ssl,
-        bin_path: phantom_bin_path,
-        log_file: log_path ? File.join(log_path, 'phantom.log') : nil
+        bin_path: phantom_bin_path
       }
     end
 

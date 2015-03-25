@@ -1,4 +1,5 @@
 require 'timeout'
+require 'crabfarm/utils/processes'
 
 module Crabfarm
   class CrabtrapRunner
@@ -7,11 +8,11 @@ module Crabfarm
 
     def initialize(_config={})
       @config = _config;
-      @pid = nil
+      @process = nil
     end
 
     def is_running?
-      not @pid.nil?
+      not @process.nil?
     end
 
     def port
@@ -24,36 +25,33 @@ module Crabfarm
 
     def start
       logger.info "Starting crabtrap in port #{port}"
-      @pid = spawn_crabtrap
-      logger.info "Crabtrap started (PID: #{@pid})"
+      @process = spawn_crabtrap
+      logger.info "Crabtrap started (PID: #{@process.pid})"
     end
 
     def stop
-      unless @pid.nil?
-        logger.info "Stopping crabtrap (PID: #{@pid})"
-        Process.kill("INT", @pid)
-        Process.wait @pid
+      unless @process.nil?
+        logger.info "Stopping crabtrap (PID: #{@process.pid})"
+        @process.stop
+        @process = nil
         logger.info "Crabtrap stopped"
-        @pid = nil
       end
     end
 
   private
 
     def spawn_crabtrap
-      pid = nil
+      proc = nil
       begin
-        pid = Process.spawn({}, crabtrap_cmd)
+        proc = Utils::Processes.start_logged_process 'crabtrap', crabtrap_cmd, logger
         Timeout::timeout(CRABTRAP_START_TM) { wait_for_server }
-        return pid
-      rescue Errno::ENOENT
+      rescue ChildProcess::LaunchError
         raise BinaryMissingError.new 'crabtrap', @config[:bin_path]
       rescue Timeout::Error
-        Process.kill "INT", pid
-        Process.wait pid
+        proc.stop
         raise
       end
-      pid
+      proc
     end
 
     def crabtrap_cmd
@@ -61,7 +59,7 @@ module Crabfarm
       cmd << mode.to_s
       cmd << @config[:bucket_path] if mode != :pass
       cmd << "--port=#{port}"
-      cmd.join(' ')
+      cmd
     end
 
     def wait_for_server
