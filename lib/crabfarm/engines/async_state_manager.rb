@@ -3,11 +3,12 @@ require 'ostruct'
 
 module Crabfarm
   module Engines
-    class SafeStateLoop
+    class AsyncStateManager
 
       class LoopAbortedException < StandardError; end
 
-      def initialize
+      def initialize(_context)
+        @context = _context
         @working = false
         @fatal = nil
         @lock = Mutex.new
@@ -37,7 +38,7 @@ module Crabfarm
         start
       end
 
-      def change_state(_name, _params={}, _wait=nil)
+      def transition(_name, _params={}, _wait=nil)
         @lock.synchronize {
           if @fatal
             raise CrawlerError.new @fatal
@@ -100,25 +101,24 @@ module Crabfarm
       end
 
       def crawl_loop
-        context = Crabfarm::Context.new
-
         begin
           loop do
             if @working
-              @elapsed = Benchmark.measure do
-                begin
+              begin
+                logger.info "Transitioning state: #{@next_state_name}"
+                @elapsed = Benchmark.measure do
                   ActiveSupport::Dependencies.clear
-                  logger.info "StateLoop: loading state: #{@next_state_name}"
-                  @doc = TransitionService.apply_state(context, @next_state_name, @next_state_params).output_as_json
-                  logger.info "StateLoop: state loaded successfully: #{@next_state_name}"
-                  @error = nil
-                rescue Exception => e
-                  logger.error "StateLoop: error while loading state: #{@next_state_name}"
-                  logger.error e
-                  @doc = nil
-                  @error = e
-                end
-              end.real
+                  @doc = TransitionService.apply_state(@context, @next_state_name, @next_state_params).output_as_json
+                end.real
+
+                logger.info "Transitioned in #{@elapsed.real}"
+                @error = nil
+              rescue Exception => e
+                logger.error "Error during transition:"
+                logger.error e
+                @doc = nil
+                @error = e
+              end
 
               @lock.synchronize {
                 @state_name = @next_state_name
@@ -128,17 +128,15 @@ module Crabfarm
             else sleep 0.2 end
           end
         rescue LoopAbortedException
-          logger.info "StateLoop: stopping"
+          logger.info "Manager stopping"
 
         rescue Exception => e
-          logger.fatal "StateLoop: unhandled exception!"
+          logger.fatal "Unhandled exception:"
           logger.fatal e
 
           @lock.synchronize {
             @fatal = e
           }
-        ensure
-          context.release
         end
       end
 
