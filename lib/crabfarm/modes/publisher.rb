@@ -14,7 +14,7 @@ module Crabfarm
     module Publisher
       extend self
 
-      DEFAULT_HOST = 'http://www.crabfarm.io'
+      DEFAULT_HOST = 'http://api.crabfarm.io'
 
       def publish(_path, _options={})
 
