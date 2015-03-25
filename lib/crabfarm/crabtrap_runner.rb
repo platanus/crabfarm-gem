@@ -11,7 +11,7 @@ module Crabfarm
     end
 
     def port
-      @config[:port] # TODO: maybe select port dynamically...
+      @config[:port]
     end
 
     def mode

@@ -11,25 +11,44 @@ module Crabfarm
       @loaded = false
     end
 
-    def load
-      init_phantom_if_required
-      init_driver_pool
-      init_http_client
-      @loaded = true
+    def loaded?
+      @loaded
+    end
+
+    def prepare
+      unless @loaded
+        load_services
+        @loaded = true
+      end
     end
 
     def reset
-      @store.reset
-      @pool.reset unless @pool.nil?
+      reset_services if @loaded
     end
 
     def release
-      release_driver_pool
-      release_phantom
+      unload_services
       @loaded = false
     end
 
   private
+
+    def load_services
+      init_phantom_if_required
+      init_driver_pool
+      init_http_client
+    end
+
+    def reset_services
+      @store.reset
+      @pool.reset
+    end
+
+    def unload_services
+      release_driver_pool
+      release_http_client
+      release_phantom
+    end
 
     def init_driver_pool
       @pool = DriverBucketPool.new build_driver_factory if @pool.nil?
@@ -47,7 +66,8 @@ module Crabfarm
     end
 
     def load_and_start_phantom
-      new_phantom = PhantomRunner.new phantom_config
+      phantom_port = Utils::PortDiscovery.find_available_port
+      new_phantom = PhantomRunner.new phantom_config.merge(port: phantom_port)
       new_phantom.start
       return new_phantom
     end

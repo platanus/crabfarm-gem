@@ -20,6 +20,8 @@ require "crabfarm/base_state"
 require "crabfarm/base_parser"
 require "crabfarm/strategies"
 
+require "crabfarm/utils/port_discovery"
+
 module Crabfarm
 
   @@config = Configuration.new

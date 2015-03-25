@@ -25,12 +25,9 @@ module Crabfarm
       [:phantom_load_images, :boolean, 'Phantomjs image loading, only for phantomjs driver.'],
       [:phantom_ssl, ['sslv3', 'sslv2', 'tlsv1', 'any'], 'Phantomjs ssl mode: sslv3, sslv2, tlsv1 or any, only for phantomjs driver.'],
       [:phantom_bin_path, :string, 'Phantomjs binary path, only for phantomjs driver.'],
-      [:phantom_lock_file, :string, 'Phantomjs lock file path, only for phantomjs driver.'],
 
       # Crabtrap launcher configuration
-      [:crabtrap_bin_path, :string, 'Crabtrap binary path.'],
-      [:crabtrap_port, :integer, 'Crabtrap port, defaults to 4000.'],
-      [:crabtrap_mode, ['capture', 'replay'], 'Crabtrap operation mode.']
+      [:crabtrap_bin_path, :string, 'Crabtrap binary path.']
     ]
     .map { |o| Option.new *o }
 
@@ -68,10 +65,10 @@ module Crabfarm
         phantom_load_images: false,
         phantom_ssl: 'any',
         phantom_bin_path: 'phantomjs',
-        phantom_lock_file: nil,
 
         crabtrap_bin_path: 'crabtrap',
-        crabtrap_port: 4000
+
+        recorder_driver: 'firefox'
       }
     end
 
@@ -108,7 +105,6 @@ module Crabfarm
         proxy: proxy,
         ssl: phantom_ssl,
         bin_path: phantom_bin_path,
-        lock_file: phantom_lock_file,
         log_file: log_path ? File.join(log_path, 'phantom.log') : nil
       }
     end
@@ -116,7 +112,6 @@ module Crabfarm
     def crabtrap_config
       {
         bin_path: crabtrap_bin_path,
-        port: crabtrap_port,
         proxy: proxy
       }
     end

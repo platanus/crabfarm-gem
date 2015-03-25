@@ -6,7 +6,7 @@ module Crabfarm
         load_by_name _name
       else _name end
 
-      _context.load
+      _context.prepare
       state = state_class.new _context, _params
       state.crawl
       state

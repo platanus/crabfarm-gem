@@ -5,16 +5,17 @@ module Crabfarm
 
     PHANTOM_START_TM = 5 # seconds
 
-    attr_reader :port
-
     def initialize(_config={})
       @config = _config;
       @pid = nil
     end
 
+    def port
+      @config[:port]
+    end
+
     def start
-      find_available_port
-      Crabfarm.logger.info "Starting phantomjs in port #{@port}"
+      Crabfarm.logger.info "Starting phantomjs in port #{port}"
       @pid = spawn_phantomjs
       Crabfarm.logger.info "Phantomjs started (PID: #{@pid})"
     end
@@ -47,7 +48,7 @@ module Crabfarm
       cmd = [@config[:bin_path]]
       cmd << '--load-images=false' unless @config[:load_images]
       cmd << "--proxy=#{@config[:proxy]}" unless @config[:proxy].nil?
-      cmd << "--webdriver=#{@port}"
+      cmd << "--webdriver=#{port}"
       cmd << "--ssl-protocol=#{@config[:ssl]}" unless @config[:ssl].nil?
       cmd << "--ignore-ssl-errors=true"
       cmd << "--webdriver-loglevel=WARN"
@@ -55,34 +56,12 @@ module Crabfarm
       cmd.join(' ')
     end
 
-    def find_available_port
-      with_lock do
-        socket = Socket.new(:INET, :STREAM, 0)
-        socket.bind(Addrinfo.tcp("127.0.0.1", 0))
-        @port = socket.local_address.ip_port
-        socket.close
-      end
-    end
-
     def wait_for_server
       loop do
         begin
-          Net::HTTP.get_response(URI.parse("http://127.0.0.1:#{@port}/status"))
+          Net::HTTP.get_response(URI.parse("http://127.0.0.1:#{port}/status"))
           break
         rescue
-        end
-      end
-    end
-
-    def with_lock
-      return yield if @config[:lock_file].nil?
-
-      File.open(@config[:lock_file], 'a+') do |file|
-        begin
-          file.flock File::LOCK_EX
-          return yield
-        ensure
-          file.flock File::LOCK_UN
         end
       end
     end

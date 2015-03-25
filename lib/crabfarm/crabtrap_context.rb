@@ -4,54 +4,94 @@ require 'crabfarm/crabtrap_runner'
 module Crabfarm
   class CrabtrapContext < Context
 
-    def load
-      pass_through if @runner.nil?
-      super
+    attr_accessor :mode
+
+    def initialize(_mode=:pass, _path=nil)
+      @mode = _mode
+      @path = _path
     end
 
     def pass_through
-      restart_with_options(mode: :pass) if @runner.nil? or @runner.mode != :pass
+      if not loaded? or @mode != :pass
+        @mode = :pass
+        @path = nil
+        restart
+      end
     end
 
     def capture(_path)
-      restart_with_options(mode: :capture, bucket_path: _path)
+      @mode = :capture
+      @path = _path
+      restart
     end
 
     def replay(_path)
-      restart_with_options(mode: :replay, bucket_path: _path)
+      @mode = :replay
+      @path = _path
+      restart
     end
 
-    def release
-      super
-      stop_daemon
+    def restart
+      if not loaded?
+        prepare
+      else
+        stop_daemon
+        start_daemon
+      end
     end
 
   private
+
+    def load_services
+      @port = Utils::PortDiscovery.find_available_port
+      start_daemon
+      super
+    end
+
+    def reset_services
+      restart
+    end
+
+    def unload_services
+      super
+      stop_daemon
+      @port = nil
+    end
 
     def build_http_client
       HttpClient.new proxy_address
     end
 
-    def restart_with_options(_options)
-      stop_daemon
-      @runner = CrabtrapRunner.new Crabfarm.config.crabtrap_config.merge(_options)
-      @runner.start
+    def start_daemon
+      if @runner.nil?
+        options = {
+          mode: @mode,
+          bucket_path: @path,
+          port: @port
+        }
+
+        @runner = CrabtrapRunner.new Crabfarm.config.crabtrap_config.merge(options)
+        @runner.start
+      end
     end
 
     def stop_daemon
-      @runner.stop unless @runner.nil?
+      unless @runner.nil?
+        @runner.stop
+        @runner = nil
+      else nil end
     end
 
     def driver_config
-      if @runner.is_running? then super.merge(proxy: proxy_address) else super end
+      super.merge(proxy: proxy_address)
     end
 
     def phantom_config
-      if @runner.is_running? then super.merge(proxy: proxy_address) else super end
+      super.merge(proxy: proxy_address)
     end
 
     def proxy_address
-      "127.0.0.1:#{@runner.port}"
+      "127.0.0.1:#{@port}"
     end
 
   end
