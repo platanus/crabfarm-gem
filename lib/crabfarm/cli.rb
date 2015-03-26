@@ -16,7 +16,7 @@ module Crabfarm
       Support::GLI.generate_options c
 
       c.action do |global_options,options,args|
-        next puts "This command can only be run inside a crabfarm application" unless GlobalState.inside_crawler_app?
+        next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
 
         Crabfarm.config.set Support::GLI.parse_options options
 
@@ -50,7 +50,7 @@ module Crabfarm
       Support::GLI.generate_options c
 
       c.action do |global_options,options,args|
-        next puts "This command can only be run inside a crabfarm application" unless GlobalState.inside_crawler_app?
+        next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
 
         Crabfarm.config.set Support::GLI.parse_options options
 
@@ -78,7 +78,7 @@ module Crabfarm
         app.flag [:r, :remote]
 
         app.action do |global_options,options,args|
-          next puts "This command cannot be run inside a crabfarm application" if GlobalState.inside_crawler_app?
+          next puts "This command cannot be ran inside a crabfarm application" if GlobalState.inside_crawler_app?
 
           require "crabfarm/modes/generator"
           Crabfarm::Modes::Generator.generate_app(Dir.pwd, args[0], options[:remote])
@@ -88,7 +88,7 @@ module Crabfarm
       c.desc "Generates a new crabfarm parser and parser spec"
       c.command :parser do |parser|
         parser.action do |global_options,options,args|
-          next puts "This command can only be run inside a crabfarm application" unless GlobalState.inside_crawler_app?
+          next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
 
           require "crabfarm/modes/generator"
           Crabfarm::Modes::Generator.generate_parser(GlobalState.app_path, args[0])
@@ -98,7 +98,7 @@ module Crabfarm
       c.desc "Generates a new crabfarm state and parser spec"
       c.command :state do |parser|
         parser.action do |global_options,options,args|
-          next puts "This command can only be run inside a crabfarm application" unless GlobalState.inside_crawler_app?
+          next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
 
           require "crabfarm/modes/generator"
           Crabfarm::Modes::Generator.generate_state(GlobalState.app_path, args[0])
@@ -106,13 +106,13 @@ module Crabfarm
       end
     end
 
-    desc "Perform an HTTP recording for use in tests"
+    desc "Perform a memento recording for use in tests"
     command [:record, :r] do |c|
       c.desc "Run recorder in playback mode"
       c.switch [:p, :playback], :default_value => false
 
       c.action do |global_options, options, args|
-        next puts "This command can only be run inside a crabfarm application" unless GlobalState.inside_crawler_app?
+        next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
 
         require "crabfarm/modes/recorder"
         Crabfarm::Modes::Recorder.start GlobalState.memento_path(args[0]), options[:playback]
@@ -128,7 +128,7 @@ module Crabfarm
       c.switch :unsafe, :default_value => false
 
       c.action do |global_options,options,args|
-        next puts "This command can only be run inside a crabfarm application" unless GlobalState.inside_crawler_app?
+        next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
 
         options[:remote] = args[0]
 

@@ -26,7 +26,7 @@ module Crabfarm
           driver = DefaultDriverFactory.new(driver_config).build_driver nil
 
           begin
-            puts "Press Ctrl-C to stop capturing."
+            puts "Press Ctrl-C or close browser to stop #{_replay ? 'playback' : 'capturing'}."
             loop do
               driver.current_url
               sleep 1.0
