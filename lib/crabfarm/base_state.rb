@@ -29,6 +29,7 @@ module Crabfarm
 
       @dsl = Strategies.load(:browser_dsl, class_browser_dsl || Crabfarm.config.browser_dsl)
       @builder = Strategies.load(:output_builder, class_output_builder || Crabfarm.config.output_builder)
+      @output = @builder.prepare
     end
 
     def browser(_name=nil)
@@ -40,7 +41,7 @@ module Crabfarm
     end
 
     def output
-      @output ||= @builder.prepare
+      @output
     end
 
     def output_as_json
