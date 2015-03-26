@@ -98,36 +98,42 @@ eos
 
   end
 
-  describe "generate_parser" do
+  context "when inside a generated app" do
 
-    context "if run after app generator" do
+    before { Crabfarm::Modes::Generator.generate_app(Dir.pwd, 'test_app') }
+    let(:app_path) { File.join(Dir.pwd, 'test_app') }
 
-      before { Crabfarm::Modes::Generator.generate_app(Dir.pwd, 'test_app') }
+    describe "generate_parser" do
 
       it "should generate required files" do
-        Crabfarm::Modes::Generator.generate_parser(File.join(Dir.pwd, 'test_app'), 'MyTable')
+        Crabfarm::Modes::Generator.generate_parser(app_path, 'MyTable')
 
-        expect(File.exist? File.join('test_app', 'app/parsers/my_table_parser.rb')).to be_truthy
-        expect(File.exist? File.join('test_app', 'spec/parsers/my_table_parser_spec.rb')).to be_truthy
+        expect(File.exist? File.join(app_path, 'app/parsers/my_table_parser.rb')).to be_truthy
+        expect(File.exist? File.join(app_path, 'spec/parsers/my_table_parser_spec.rb')).to be_truthy
+      end
+
+      it "should fail is invalid class name is given" do
+        expect { Crabfarm::Modes::Generator.generate_parser(app_path, 'my_table') }.to raise_error Crabfarm::ArgumentError
+      end
+
+      it "should generate nested folders if a namespaced class is provided" do
+        Crabfarm::Modes::Generator.generate_parser(app_path, 'Platanus::Objects::MyTable')
+
+        expect(File.exist? File.join(app_path, 'app/parsers/platanus/objects/my_table_parser.rb')).to be_truthy
+        expect(File.exist? File.join(app_path, 'spec/parsers/platanus/objects/my_table_parser_spec.rb')).to be_truthy
+      end
+
+    end
+
+    describe "generate_state" do
+
+      it "should generate required files" do
+        Crabfarm::Modes::Generator.generate_state(app_path, 'MyPage')
+
+        expect(File.exist? File.join(app_path, 'app/states/my_page.rb')).to be_truthy
+        expect(File.exist? File.join(app_path, 'spec/states/my_page_spec.rb')).to be_truthy
       end
 
     end
   end
-
-  describe "generate_state" do
-
-    context "if run after app generator" do
-
-      before { Crabfarm::Modes::Generator.generate_app(Dir.pwd, 'test_app') }
-
-      it "should generate required files" do
-        Crabfarm::Modes::Generator.generate_state(File.join(Dir.pwd, 'test_app'), 'MyPage')
-
-        expect(File.exist? File.join('test_app', 'app/states/my_page.rb')).to be_truthy
-        expect(File.exist? File.join('test_app', 'spec/states/my_page_spec.rb')).to be_truthy
-      end
-
-    end
-  end
-
 end

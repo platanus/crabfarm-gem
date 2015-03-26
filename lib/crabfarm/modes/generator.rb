@@ -35,21 +35,26 @@ module Crabfarm
         end
       end
 
-      def generate_state(_target, _name)
-        class_name = _name.camelize
+      def generate_state(_target, _class_name)
+        validate_class_name _class_name
+
+        route = Utils::Naming.route_from_constant _class_name
         with_base_path _target do
-          binding = { state_class: class_name.camelize }
-          path('app', 'states', class_name.underscore + '.rb').render('state.rb', binding)
-          path('spec', 'states', class_name.underscore + '_spec.rb').render('state_spec.rb', binding)
+          binding = { state_class: _class_name }
+          path(*(['app', 'states'] + route[0...-1] + [route.last + '.rb'])).render('state.rb', binding)
+          path(*(['spec', 'states'] + route[0...-1] + [route.last + '_spec.rb'])).render('state_spec.rb', binding)
         end
       end
 
-      def generate_parser(_target, _name)
-        class_name = _name.camelize + 'Parser'
+      def generate_parser(_target, _class_name)
+        validate_class_name _class_name
+
+        _class_name = _class_name + 'Parser'
+        route = Utils::Naming.route_from_constant _class_name
         with_base_path _target do
-          binding = { parser_class: class_name }
-          path('app', 'parsers', class_name.underscore + '.rb').render('parser.rb', binding)
-          path('spec', 'parsers', class_name.underscore + '_spec.rb').render('parser_spec.rb', binding)
+          binding = { parser_class: _class_name }
+          path(*(['app', 'parsers'] + route[0...-1] + [route.last + '.rb'])).render('parser.rb', binding)
+          path(*(['spec', 'parsers'] + route[0...-1] + [route.last + '_spec.rb'])).render('parser_spec.rb', binding)
         end
       end
 
@@ -114,6 +119,10 @@ module Crabfarm
 
       def render_op(_op, _message, _color)
         puts _op.rjust(10).color(_color) + '  ' + _message
+      end
+
+      def validate_class_name(_name)
+        raise Crabfarm::ArgumentError.new "Invalid class name '#{_name}'" unless Utils::Naming.is_constant_name? _name
       end
 
       extend self
