@@ -23,6 +23,7 @@ require "crabfarm/base_parser"
 require "crabfarm/strategies"
 
 require "crabfarm/utils/port_discovery"
+require "crabfarm/utils/naming"
 
 module Crabfarm
 
