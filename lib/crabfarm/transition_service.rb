@@ -3,7 +3,7 @@ module Crabfarm
 
     def self.apply_state(_context, _name, _params={})
       state_class = if _name.is_a? String or _name.is_a? Symbol
-        load_by_name _name
+        load_class_from_uri _name
       else _name end
 
       _context.prepare
@@ -14,9 +14,9 @@ module Crabfarm
 
   private
 
-    def self.load_by_name(_name)
-      name = _name.to_s.gsub(/[^A-Z0-9:]+/i, '_').camelize
-      name.constantize
+    def self.load_class_from_uri(_uri)
+      class_name = Utils::Naming.decode_crabfarm_uri _uri
+      class_name.constantize
     end
 
   end
