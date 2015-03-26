@@ -59,7 +59,8 @@ module Crabfarm
           rescue SystemExit, Interrupt
             break
           rescue => e
-            puts "Unknown command".color(:red)
+            puts "#{e.to_s}".color(:red)
+            puts e.backtrace
           end
         end
 
