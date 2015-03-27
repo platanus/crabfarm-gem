@@ -1,4 +1,3 @@
-require 'active_support'
 require 'crabfarm/crabtrap_runner'
 
 module Crabfarm

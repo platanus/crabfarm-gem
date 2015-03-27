@@ -1,5 +1,3 @@
-require 'active_support'
-
 module Crabfarm
   class Context
     extend Forwardable

@@ -1,6 +1,5 @@
 require 'rainbow'
 require 'rainbow/ext/string'
-require 'active_support'
 require 'erb'
 require 'ostruct'
 
