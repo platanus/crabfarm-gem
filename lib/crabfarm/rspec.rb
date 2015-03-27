@@ -3,12 +3,21 @@ module Crabfarm
 
     class Error < Crabfarm::Error; end
 
-    def parse(_snapshot, _options={})
-      snapshot_path = GlobalState.snapshot_path _snapshot
+    def parse(_snapshot=nil, _options={})
+
+      raise Error.new "Crawl is only available in parser specs" unless described_class < Crabfarm::BaseParser
+
+      if _snapshot.is_a? Hash
+        raise ArgumentException.new 'Invalid arguments' unless _options.nil?
+        _options = _snapshot
+        _snapshot = nil
+      end
+
+      snapshot_path = described_class.snapshot_path _snapshot
       raise Error.new "Snapshot does not exist #{_snapshot}" unless File.exist? snapshot_path
 
-      html = File.read snapshot_path
-      parser = described_class.new html, _options
+      data = File.read snapshot_path
+      parser = described_class.new data, _options
       parser.parse
       parser
     end
@@ -39,7 +48,7 @@ module Crabfarm
     end
 
     def parser
-      @parser
+      @parser ||= parse
     end
 
     def driver(_session_id=nil)
@@ -54,8 +63,8 @@ RSpec.configure do |config|
 
   config.around(:example) do |example|
     if described_class < Crabfarm::BaseParser
-      if example.metadata[:parsing]
-        @parser = parse example.metadata[:parsing], example.metadata[:using] || {}
+      if example.metadata[:parsing] || example[:parsing_with_params]
+        @parser = parse example.metadata[:parsing], example.metadata[:parsing_with_params] || {}
       end
       example.run
     elsif described_class < Crabfarm::BaseState

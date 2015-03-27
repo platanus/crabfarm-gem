@@ -7,7 +7,7 @@ describe Crabfarm::BaseParser do
   }
 
   let(:parser_class_a) { Class.new(Crabfarm::BaseParser) }
-  let(:parser_class_b) { Class.new(Crabfarm::BaseParser) { engine :fake_engine_2 } }
+  let(:parser_class_b) { Class.new(Crabfarm::BaseParser) { parser_engine :fake_engine_2 } }
 
   let(:html_a) { '<div></div>' }
   let(:html_b) { '<span></span>' }

@@ -2,11 +2,19 @@ require 'nokogiri'
 
 module Crabfarm
   class NokogiriAdapter
-    def self.parse(_element)
-      if _element.respond_to? :to_html
-        Nokogiri::HTML _element.to_html
+    def self.format
+      'html'
+    end
+
+    def self.parse(_raw)
+      Nokogiri::HTML _raw
+    end
+
+    def self.preprocess_parsing_target(_target)
+      if _target.respond_to? :to_html
+        _target.to_html
       else
-        Nokogiri::HTML _element
+        _target
       end
     end
   end

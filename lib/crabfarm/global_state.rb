@@ -14,9 +14,8 @@ module Crabfarm
       File.join(app_path, 'spec/mementos', _name + '.json.gz')
     end
 
-    def snapshot_path(_file_name)
-      return nil if _file_name.nil?
-      File.join(app_path, 'spec/snapshots', _file_name)
+    def snapshots_path
+      File.join app_path, 'spec/snapshots'
     end
 
     extend self

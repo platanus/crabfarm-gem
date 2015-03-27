@@ -13,12 +13,20 @@ class FakeBrowserDsl2 < Struct.new(:bucket)
 end
 
 class FakeParserEngine1 < Struct.new(:html)
+  def self.format
+    'html'
+  end
+
   def self.parse(_html)
     FakeParserEngine1.new _html
   end
+
+  def self.preprocess_parsing_target(_target)
+    _target
+  end
 end
 
-class FakeParserEngine2 < Struct.new(:html)
+class FakeParserEngine2 < FakeParserEngine1
   def self.parse(_html)
     FakeParserEngine2.new _html
   end
