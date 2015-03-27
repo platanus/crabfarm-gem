@@ -21,7 +21,8 @@ module Crabfarm
 
     def load_crabtrap_context(_memento)
       require 'crabfarm/crabtrap_context'
-      m_path = GlobalState.memento_path _memento
+      require 'crabfarm/modes/recorder'
+      m_path = Modes::Recorder.memento_path _memento
       raise ResourceNotFoundError.new "Could not find memento '#{_name}'" unless File.exists? m_path
       Crabfarm::CrabtrapContext.new :replay, m_path
     end

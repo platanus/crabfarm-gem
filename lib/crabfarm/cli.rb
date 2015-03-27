@@ -115,7 +115,7 @@ module Crabfarm
         next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
 
         require "crabfarm/modes/recorder"
-        Crabfarm::Modes::Recorder.start GlobalState.memento_path(args[0]), options[:playback]
+        Crabfarm::Modes::Recorder.start args[0], options[:playback]
       end
     end
 

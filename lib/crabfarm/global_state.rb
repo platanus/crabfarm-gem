@@ -9,9 +9,8 @@ module Crabfarm
       CF_PATH
     end
 
-    def memento_path(_name)
-      return nil if _name.nil?
-      File.join(app_path, 'spec/mementos', _name + '.json.gz')
+    def mementos_path
+      File.join(app_path, 'spec/mementos')
     end
 
     def snapshots_path

@@ -6,14 +6,20 @@ module Crabfarm
   module Modes
     module Recorder
 
+      def self.memento_path(_name)
+        File.join(GlobalState.mementos_path, _name + '.json.gz')
+      end
+
       def self.start(_target, _replay=false)
         return puts "Must provide a recording target" unless _target.is_a? String
-        return puts "Memento file does not exist: #{_target}" if _replay and not File.exist? _target
+
+        target_path = memento_path _target
+        return puts "Memento file does not exist: #{target_path}" if _replay and not File.exist? target_path
 
         crabtrap_config = Crabfarm.config.crabtrap_config
         crabtrap_config[:mode] = _replay ? :replay : :capture
         crabtrap_config[:port] = Utils::PortDiscovery.find_available_port
-        crabtrap_config[:bucket_path] = _target
+        crabtrap_config[:bucket_path] = target_path
 
         crabtrap = CrabtrapRunner.new crabtrap_config
         crabtrap.start
