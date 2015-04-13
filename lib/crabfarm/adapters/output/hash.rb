@@ -1,11 +1,15 @@
 module Crabfarm
-  class HashOutputBuilder
-    def self.prepare
-      Hash.new
-    end
+  module Adapters
+    module Output
+      class Hash
+        def self.prepare
+          ::Hash.new
+        end
 
-    def self.serialize(_output)
-      _output
+        def self.serialize(_output)
+          _output
+        end
+      end
     end
   end
 end

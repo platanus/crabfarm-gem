@@ -3,12 +3,13 @@ module Crabfarm
     module Surfer
       class SurfContext < SearchContext
 
-        def_delegators :@bucket, :setup
+        attr_reader :driver
+
         def_delegators 'driver.navigate', :back, :forward, :refresh
 
-        def initialize(_bucket)
+        def initialize(_driver)
           super nil, self
-          @bucket = _bucket
+          @driver = _driver
         end
 
         def root
@@ -23,14 +24,6 @@ module Crabfarm
           driver.page_source
         end
 
-        def driver
-          @bucket.original
-        end
-
-        def quit
-          @bucket.reset
-        end
-
         def current_uri
           URI.parse driver.current_url
         end
@@ -41,20 +34,7 @@ module Crabfarm
 
         def goto(_url, _params=nil)
           _url += "?#{_params.to_query}" if _params
-          retries = 0
-
-          loop do
-            begin
-              @bucket.reset if retries > 0
-              driver.get(_url)
-              break
-            rescue Timeout::Error #, Selenium::WebDriver::Error::UnknownError
-              # TODO: log this
-              raise if retries >= max_retries
-              retries += 1
-              sleep 1.0
-            end
-          end
+          driver.get(_url)
         end
       end
     end

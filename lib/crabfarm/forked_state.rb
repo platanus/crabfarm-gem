@@ -1,20 +1,17 @@
 module Crabfarm
   class ForkedState < Delegator
 
-    def initialize(_state, _name, _mutex)
-      @state = _state
-      @name = _name
+    def initialize(_context, _parent, _browser_name, _mutex)
+      @context = _context
+      @parent = _parent
+      @browser_name = _browser_name
       @mutex = _mutex
 
-      super @state
-    end
-
-    def driver
-      @driver ||= @state.driver(@name)
+      super @parent
     end
 
     def browser
-      @browser ||= @state.browser(@name)
+      @browser ||= @context.pool.driver(@browser_name)
     end
 
     def output
@@ -23,16 +20,16 @@ module Crabfarm
 
     def lock_output
       @mutex.synchronize {
-        yield @state.output
+        yield @parent.output
       }
     end
 
     def __getobj__
-      @state
+      @parent
     end
 
     def __setobj__(obj)
-      @state = obj
+      @parent = obj
     end
   end
 end

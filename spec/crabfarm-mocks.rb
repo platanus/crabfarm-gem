@@ -33,8 +33,8 @@ class FakeParserEngine2 < FakeParserEngine1
 end
 
 
-Crabfarm::Strategies.register :browser_dsl, :fake_dsl_1, FakeBrowserDsl1
-Crabfarm::Strategies.register :browser_dsl, :fake_dsl_2, FakeBrowserDsl2
+Crabfarm::Strategies.register :webdriver_dsl, :fake_dsl_1, FakeBrowserDsl1
+Crabfarm::Strategies.register :webdriver_dsl, :fake_dsl_2, FakeBrowserDsl2
 
 Crabfarm::Strategies.register :parser_engine, :fake_engine_1, FakeParserEngine1
 Crabfarm::Strategies.register :parser_engine, :fake_engine_2, FakeParserEngine2
@@ -48,7 +48,6 @@ class MockStateA < Crabfarm::BaseState
 end
 
 class MockStateB < Crabfarm::BaseState
-  browser_dsl :fake_dsl_2
 
   def crawl
   end

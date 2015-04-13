@@ -1,9 +1,13 @@
 require 'crabfarm/dsl/surfer'
 
 module Crabfarm
-  class SurferBrowserDsl
-    def self.wrap(_bucket)
-      Crabfarm::Dsl::Surfer::SurfContext.new _bucket
+  module Adapters
+    module Browser
+      class Surfer
+        def self.wrap(_driver)
+          Crabfarm::Dsl::Surfer::SurfContext.new _driver
+        end
+      end
     end
   end
 end

@@ -57,10 +57,6 @@ module Crabfarm
       @port = nil
     end
 
-    def build_http_client
-      HttpClient.new proxy_address
-    end
-
     def start_daemon
       if @runner.nil?
         options = {
@@ -69,7 +65,7 @@ module Crabfarm
           port: @port
         }
 
-        @runner = CrabtrapRunner.new Crabfarm.config.crabtrap_config.merge(options)
+        @runner = CrabtrapRunner.new config.crabtrap_config.merge(options)
         @runner.start
       end
     end
@@ -81,12 +77,9 @@ module Crabfarm
       else nil end
     end
 
-    def driver_config
-      super.merge(proxy: proxy_address)
-    end
-
-    def phantom_config
-      super.merge(proxy: proxy_address)
+    def proxy
+      # just step over configuration proxy
+      proxy_address
     end
 
     def proxy_address

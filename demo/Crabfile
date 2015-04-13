@@ -1,4 +1,5 @@
-set_browser_dsl :surfer
 set_driver :phantomjs
+
+set_webdriver_dsl :surfer
 
 set_log_path 'logs'

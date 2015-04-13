@@ -1,11 +1,10 @@
-
-# The default crawling dsl to use in states and parsers, can be overriden in each component using the `browser_dsl :dsl` modifier
-# Available options are :surfer, :watir and :capybara. Both watir and capybara require an additional gem to be added to Gemfile
-set_browser_dsl :surfer
+# The selected driver to be using throughout the crawler
+# Other options (may require instalation of additional libraries): :phantomjs, :remote, :chrome, :firefox
+set_driver :phantomjs
 
 # The default parser engine for parsers that do not specify one.
 # Available options are :nokogiri and :pdf_parser. :pdf_parser requires an additional gem to be added to Gemfile
-# set_parser_engine :nokogiri
+set_parser_engine :nokogiri
 
 # Change the defaut output builder used in a state to generate the output document.
 # Available options are :hash, :ostruct, :jbuilder. :jbuilder requires an additional gem to be added to Gemfile
@@ -14,13 +13,17 @@ set_browser_dsl :surfer
 # The path where every crawler log is stored.
 set_log_path 'logs'
 
+# Set crawler proxy, this setting is overrided when running the crawler in crabfarm.io
+# set_proxy 'the.proxy.address'
 
-# General driver configuration
+# General webdriver configuration
 ########################################
 
-# The selected selenium driver to be using throughout the crawler
-# Other options (may require instalation of additional libraries): :phantomjs, :remote, :chrome, :firefox
-set_driver :phantomjs
+# The following parameters only apply if using a webdriver based driver
+
+# Selects the webdriver wrapper library to be used, options are :surfer, :watir and :capybara.
+# Both watir and capybara require an additional gem to be added to Gemfile
+set_webdriver_dsl :surfer
 
 # Set the selected webdriver capabilities (check the driver documentation for more details)
 # set_driver_capabilities
@@ -31,14 +34,10 @@ set_driver :phantomjs
 # Set the browser window height
 # set_driver_window_height 800
 
-# Set the driver proxy address
-# set_proxy
-
-
 # Phantom launcher configuration
 ########################################
 
-# The following parameters only apply if using the :phantomjs driver
+# The following parameters only apply if using the :phantomjs webdriver
 
 # Make phantom load images when requesting documents
 # set_phantom_load_images false
@@ -53,7 +52,7 @@ set_driver :phantomjs
 # Remote driver options
 ########################################
 
-# The following parameters only apply if using the :remote driver
+# The following parameters only apply if using the :remote webdriver
 
 # Remote driver host
 # set_driver_host www.myseleniumgrid.com

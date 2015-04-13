@@ -2,6 +2,12 @@ source 'https://rubygems.org'
 
 gem "crabfarm", :path => "../"
 
+# Comment this is not using the nokogiri default parser
+gem 'nokogiri', "~> 1.6.6"
+
+# Comment this is not using the defaulf phantom js webdriver based driver
+gem "selenium-webdriver", "~> 2.45"
+
 group :test do
   gem "rspec-nc"
 end

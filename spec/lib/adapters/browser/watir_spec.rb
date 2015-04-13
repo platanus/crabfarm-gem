@@ -2,17 +2,17 @@ require 'spec_helper'
 require 'watir-webdriver'
 require 'crabfarm/adapters/browser/watir'
 
-describe Crabfarm::WatirBrowserDsl do
+describe Crabfarm::Adapters::Browser::Watir do
 
   before(:context) {
-    @pool = Crabfarm::DriverBucketPool.new
+    @driver = Selenium::WebDriver.for :phantomjs
   }
 
-  after(:example) { @pool.reset }
+  after(:context) {
+    @driver.quit rescue nl
+  }
 
-  after(:context) { @pool.release }
-
-  let(:browser) { Crabfarm::WatirBrowserDsl.wrap @pool.driver }
+  let(:browser) { Crabfarm::Adapters::Browser::Watir.wrap @driver }
 
   context "when inside a simple page" do
 

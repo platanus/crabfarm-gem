@@ -1,7 +1,11 @@
 module Crabfarm
-  class CapybaraBrowserDsl
-    def self.wrap(_bucket)
-      raise NotImplementedError.new "Capybara adapter is incompleted"
+  module Adapters
+    module Browser
+      class Capybara
+        def self.wrap(_driver)
+          raise NotImplementedError.new "Capybara adapter is not available yet"
+        end
+      end
     end
   end
 end

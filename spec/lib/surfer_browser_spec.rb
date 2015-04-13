@@ -4,14 +4,14 @@ require 'crabfarm/adapters/browser/surfer'
 describe Crabfarm::Dsl::Surfer do
 
   before(:context) {
-    @pool = Crabfarm::DriverBucketPool.new
+    @driver = Selenium::WebDriver.for :phantomjs
   }
 
-  after(:example) { @pool.reset }
+  after(:context) {
+    @driver.quit rescue nl
+  }
 
-  after(:context) { @pool.release }
-
-  let(:surfer) { Crabfarm::SurferBrowserDsl.wrap @pool.driver }
+  let(:surfer) { Crabfarm::Adapters::Browser::Surfer.wrap @driver }
 
   describe "goto" do
 

@@ -12,12 +12,7 @@ module Crabfarm
     attr_reader :params, :output
 
     def_delegators '@context', :http
-    def_delegators '@context.pool', :driver
     def_delegators '@context.store', :get, :fetch
-
-    def self.browser_dsl(_dsl)
-      @class_browser_dsl = _dsl
-    end
 
     def self.output_builder(_builder)
       @class_output_builder = _builder
@@ -27,13 +22,12 @@ module Crabfarm
       @context = _context
       @params = _params
 
-      @dsl = Strategies.load(:browser_dsl, class_browser_dsl || Crabfarm.config.browser_dsl)
       @builder = Strategies.load(:output_builder, class_output_builder || Crabfarm.config.output_builder)
       @output = @builder.prepare
     end
 
     def browser(_name=nil)
-      @dsl.wrap driver(_name)
+      @context.pool.driver(_name)
     end
 
     def download(_url)
@@ -90,21 +84,17 @@ module Crabfarm
 
   private
 
-    def class_browser_dsl
-      self.class.instance_variable_get :@class_browser_dsl
-    end
-
     def class_output_builder
       self.class.instance_variable_get :@class_output_builder
     end
 
     def start_forked_state(_name, _value, _block, _mutex)
       Thread.new {
-        sub_state = ForkedState.new self, _name, _mutex
+        sub_state = ForkedState.new @context, self, _name, _mutex
         begin
           sub_state.instance_exec _value, &_block
         ensure
-          sub_state.driver.reset
+          @context.pool.reset _name
         end
       }
     end

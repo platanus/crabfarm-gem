@@ -17,9 +17,13 @@ class Watir::ElementCollection
 end
 
 module Crabfarm
-  class WatirBrowserDsl
-    def self.wrap(_bucket)
-      Watir::Browser.new _bucket.original
+  module Adapters
+    module Browser
+      class Watir
+        def self.wrap(_driver)
+          ::Watir::Browser.new _driver
+        end
+      end
     end
   end
 end
