@@ -20,14 +20,14 @@ module Crabfarm
           super
         end
 
-        def transition(_name=nil, _params={})
+        def navigate(_name=nil, _params={})
           if _name.nil?
-            puts "Must provide a state name".color(:red)
+            puts "Must provide a navigator name".color(:red)
             return
           end
 
           begin
-            puts "Transitioning to #{_name.to_s.camelize} state"
+            puts "Navigating to #{_name.to_s.camelize} state"
             output = super
 
             puts "State changed, generated document:"
@@ -44,7 +44,7 @@ module Crabfarm
           puts "Ejem..."
         end
 
-        alias :t :transition
+        alias :n :navigate
         alias :r :reset
       end
 
