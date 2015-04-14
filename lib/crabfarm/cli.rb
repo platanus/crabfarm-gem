@@ -85,23 +85,23 @@ module Crabfarm
         end
       end
 
-      c.desc "Generates a new crabfarm parser and parser spec"
-      c.command :parser do |parser|
-        parser.action do |global_options,options,args|
+      c.desc "Generates a new crabfarm surveyor and surveyor spec"
+      c.command :surveyor do |sub|
+        sub.action do |global_options,options,args|
           next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
 
           require "crabfarm/modes/generator"
-          Crabfarm::Modes::Generator.generate_parser(GlobalState.app_path, args[0])
+          Crabfarm::Modes::Generator.generate_surveyor(GlobalState.app_path, args[0])
         end
       end
 
-      c.desc "Generates a new crabfarm state and parser spec"
-      c.command :state do |parser|
-        parser.action do |global_options,options,args|
+      c.desc "Generates a new crabfarm navigator and navigator spec"
+      c.command :navigator do |sub|
+        sub.action do |global_options,options,args|
           next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
 
           require "crabfarm/modes/generator"
-          Crabfarm::Modes::Generator.generate_state(GlobalState.app_path, args[0])
+          Crabfarm::Modes::Generator.generate_navigator(GlobalState.app_path, args[0])
         end
       end
     end

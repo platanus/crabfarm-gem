@@ -14,10 +14,10 @@ TEMPLATE_CACHE = Hash[
     'crabfarm_bin',
     'dot_gitkeep',
     'spec_helper.rb',
-    'state.rb',
-    'state_spec.rb',
-    'parser.rb',
-    'parser_spec.rb'
+    'navigator.rb',
+    'navigator_spec.rb',
+    'surveyor.rb',
+    'surveyor_spec.rb'
   ].map do |file|
     path = File.join(TEMPLATE_DIR, file) + '.erb'
     [ path, File.read(path) ]
@@ -62,8 +62,8 @@ eos
       end
 
       it "should generate required folders" do
-        expect(File.exist? File.join('test_app', 'app/parsers')).to be_truthy
-        expect(File.exist? File.join('test_app', 'app/states')).to be_truthy
+        expect(File.exist? File.join('test_app', 'app/surveyors')).to be_truthy
+        expect(File.exist? File.join('test_app', 'app/navigators')).to be_truthy
         expect(File.exist? File.join('test_app', 'app/helpers')).to be_truthy
         expect(File.exist? File.join('test_app', 'spec/mementos')).to be_truthy
         expect(File.exist? File.join('test_app', 'spec/snapshots')).to be_truthy
@@ -103,35 +103,35 @@ eos
     before { Crabfarm::Modes::Generator.generate_app(Dir.pwd, 'test_app') }
     let(:app_path) { File.join(Dir.pwd, 'test_app') }
 
-    describe "generate_parser" do
+    describe "generate_surveyor" do
 
       it "should generate required files" do
-        Crabfarm::Modes::Generator.generate_parser(app_path, 'MyTable')
+        Crabfarm::Modes::Generator.generate_surveyor(app_path, 'MyTable')
 
-        expect(File.exist? File.join(app_path, 'app/parsers/my_table_parser.rb')).to be_truthy
-        expect(File.exist? File.join(app_path, 'spec/parsers/my_table_parser_spec.rb')).to be_truthy
+        expect(File.exist? File.join(app_path, 'app/surveyors/my_table_surveyor.rb')).to be_truthy
+        expect(File.exist? File.join(app_path, 'spec/surveyors/my_table_surveyor_spec.rb')).to be_truthy
       end
 
       it "should fail is invalid class name is given" do
-        expect { Crabfarm::Modes::Generator.generate_parser(app_path, 'my_table') }.to raise_error Crabfarm::ArgumentError
+        expect { Crabfarm::Modes::Generator.generate_surveyor(app_path, 'my_table') }.to raise_error Crabfarm::ArgumentError
       end
 
       it "should generate nested folders if a namespaced class is provided" do
-        Crabfarm::Modes::Generator.generate_parser(app_path, 'Platanus::Objects::MyTable')
+        Crabfarm::Modes::Generator.generate_surveyor(app_path, 'Platanus::Objects::MyTable')
 
-        expect(File.exist? File.join(app_path, 'app/parsers/platanus/objects/my_table_parser.rb')).to be_truthy
-        expect(File.exist? File.join(app_path, 'spec/parsers/platanus/objects/my_table_parser_spec.rb')).to be_truthy
+        expect(File.exist? File.join(app_path, 'app/surveyors/platanus/objects/my_table_surveyor.rb')).to be_truthy
+        expect(File.exist? File.join(app_path, 'spec/surveyors/platanus/objects/my_table_surveyor_spec.rb')).to be_truthy
       end
 
     end
 
-    describe "generate_state" do
+    describe "generate_navigator" do
 
       it "should generate required files" do
-        Crabfarm::Modes::Generator.generate_state(app_path, 'MyPage')
+        Crabfarm::Modes::Generator.generate_navigator(app_path, 'MyPage')
 
-        expect(File.exist? File.join(app_path, 'app/states/my_page.rb')).to be_truthy
-        expect(File.exist? File.join(app_path, 'spec/states/my_page_spec.rb')).to be_truthy
+        expect(File.exist? File.join(app_path, 'app/navigators/my_page.rb')).to be_truthy
+        expect(File.exist? File.join(app_path, 'spec/navigators/my_page_spec.rb')).to be_truthy
       end
 
     end

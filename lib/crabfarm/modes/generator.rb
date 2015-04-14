@@ -23,8 +23,8 @@ module Crabfarm
           path(_name, '.crabfarm').render('dot_crabfarm', binding)
           path(_name, 'boot.rb').render('boot.rb', binding)
           path(_name, 'bin', 'crabfarm').render('crabfarm_bin', binding, 0755)
-          path(_name, 'app', 'parsers', '.gitkeep').render('dot_gitkeep')
-          path(_name, 'app', 'states', '.gitkeep').render('dot_gitkeep')
+          path(_name, 'app', 'surveyors', '.gitkeep').render('dot_gitkeep')
+          path(_name, 'app', 'navigators', '.gitkeep').render('dot_gitkeep')
           path(_name, 'app', 'helpers', '.gitkeep').render('dot_gitkeep')
           path(_name, 'spec', 'spec_helper.rb').render('spec_helper.rb', binding)
           path(_name, 'spec', 'snapshots', '.gitkeep').render('dot_gitkeep')
@@ -34,26 +34,26 @@ module Crabfarm
         end
       end
 
-      def generate_state(_target, _class_name)
+      def generate_navigator(_target, _class_name)
         validate_class_name _class_name
 
         route = Utils::Naming.route_from_constant _class_name
         with_base_path _target do
-          binding = { state_class: _class_name }
-          path(*(['app', 'states'] + route[0...-1] + [route.last + '.rb'])).render('state.rb', binding)
-          path(*(['spec', 'states'] + route[0...-1] + [route.last + '_spec.rb'])).render('state_spec.rb', binding)
+          binding = { navigator_class: _class_name }
+          path(*(['app', 'navigators'] + route[0...-1] + [route.last + '.rb'])).render('navigator.rb', binding)
+          path(*(['spec', 'navigators'] + route[0...-1] + [route.last + '_spec.rb'])).render('navigator_spec.rb', binding)
         end
       end
 
-      def generate_parser(_target, _class_name)
+      def generate_surveyor(_target, _class_name)
         validate_class_name _class_name
 
-        _class_name = _class_name + 'Parser'
+        _class_name = _class_name + 'Surveyor'
         route = Utils::Naming.route_from_constant _class_name
         with_base_path _target do
-          binding = { parser_class: _class_name }
-          path(*(['app', 'parsers'] + route[0...-1] + [route.last + '.rb'])).render('parser.rb', binding)
-          path(*(['spec', 'parsers'] + route[0...-1] + [route.last + '_spec.rb'])).render('parser_spec.rb', binding)
+          binding = { surveyor_class: _class_name }
+          path(*(['app', 'surveyors'] + route[0...-1] + [route.last + '.rb'])).render('surveyor.rb', binding)
+          path(*(['spec', 'surveyors'] + route[0...-1] + [route.last + '_spec.rb'])).render('surveyor_spec.rb', binding)
         end
       end
 
