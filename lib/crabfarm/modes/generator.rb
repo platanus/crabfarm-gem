@@ -23,7 +23,7 @@ module Crabfarm
           path(_name, '.crabfarm').render('dot_crabfarm', binding)
           path(_name, 'boot.rb').render('boot.rb', binding)
           path(_name, 'bin', 'crabfarm').render('crabfarm_bin', binding, 0755)
-          path(_name, 'app', 'surveyors', '.gitkeep').render('dot_gitkeep')
+          path(_name, 'app', 'reducers', '.gitkeep').render('dot_gitkeep')
           path(_name, 'app', 'navigators', '.gitkeep').render('dot_gitkeep')
           path(_name, 'app', 'helpers', '.gitkeep').render('dot_gitkeep')
           path(_name, 'spec', 'spec_helper.rb').render('spec_helper.rb', binding)
@@ -45,15 +45,15 @@ module Crabfarm
         end
       end
 
-      def generate_surveyor(_target, _class_name)
+      def generate_reducer(_target, _class_name)
         validate_class_name _class_name
 
-        _class_name = _class_name + 'Surveyor'
+        _class_name = _class_name + 'Reducer'
         route = Utils::Naming.route_from_constant _class_name
         with_base_path _target do
-          binding = { surveyor_class: _class_name }
-          path(*(['app', 'surveyors'] + route[0...-1] + [route.last + '.rb'])).render('surveyor.rb', binding)
-          path(*(['spec', 'surveyors'] + route[0...-1] + [route.last + '_spec.rb'])).render('surveyor_spec.rb', binding)
+          binding = { reducer_class: _class_name }
+          path(*(['app', 'reducers'] + route[0...-1] + [route.last + '.rb'])).render('reducer.rb', binding)
+          path(*(['spec', 'reducers'] + route[0...-1] + [route.last + '_spec.rb'])).render('reducer_spec.rb', binding)
         end
       end
 

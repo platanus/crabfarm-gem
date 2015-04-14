@@ -1,7 +1,7 @@
 require "crabfarm/assertion/context"
 
 module Crabfarm
-  class BaseParser < Delegator
+  class BaseReducer < Delegator
     include Assertion::Context
 
     attr_reader :params, :document
@@ -31,14 +31,14 @@ module Crabfarm
       super @document
     end
 
-    def parse
+    def run
       raise NotImplementedError.new
     end
 
     def take_snapshot(_name=nil)
       file_path = self.class.snapshot_path _name
 
-      raise ArgumentError.new "Snapshot already exists '#{file_path}', make sure to implement the #{self.class.to_s} parse method." if File.exist? file_path
+      raise ArgumentError.new "Snapshot already exists '#{file_path}', make sure to implement the #{self.class.to_s} run method." if File.exist? file_path
 
       dir_path = file_path.split(File::SEPARATOR)[0...-1]
       FileUtils.mkpath dir_path.join(File::SEPARATOR) if dir_path.length > 0

@@ -85,13 +85,13 @@ module Crabfarm
         end
       end
 
-      c.desc "Generates a new crabfarm surveyor and surveyor spec"
-      c.command :surveyor do |sub|
+      c.desc "Generates a new crabfarm reducer and reducer spec"
+      c.command :reducer do |sub|
         sub.action do |global_options,options,args|
           next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
 
           require "crabfarm/modes/generator"
-          Crabfarm::Modes::Generator.generate_surveyor(GlobalState.app_path, args[0])
+          Crabfarm::Modes::Generator.generate_reducer(GlobalState.app_path, args[0])
         end
       end
 

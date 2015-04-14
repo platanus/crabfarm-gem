@@ -16,8 +16,8 @@ TEMPLATE_CACHE = Hash[
     'spec_helper.rb',
     'navigator.rb',
     'navigator_spec.rb',
-    'surveyor.rb',
-    'surveyor_spec.rb'
+    'reducer.rb',
+    'reducer_spec.rb'
   ].map do |file|
     path = File.join(TEMPLATE_DIR, file) + '.erb'
     [ path, File.read(path) ]
@@ -62,7 +62,7 @@ eos
       end
 
       it "should generate required folders" do
-        expect(File.exist? File.join('test_app', 'app/surveyors')).to be_truthy
+        expect(File.exist? File.join('test_app', 'app/reducers')).to be_truthy
         expect(File.exist? File.join('test_app', 'app/navigators')).to be_truthy
         expect(File.exist? File.join('test_app', 'app/helpers')).to be_truthy
         expect(File.exist? File.join('test_app', 'spec/mementos')).to be_truthy
@@ -103,24 +103,24 @@ eos
     before { Crabfarm::Modes::Generator.generate_app(Dir.pwd, 'test_app') }
     let(:app_path) { File.join(Dir.pwd, 'test_app') }
 
-    describe "generate_surveyor" do
+    describe "generate_reducer" do
 
       it "should generate required files" do
-        Crabfarm::Modes::Generator.generate_surveyor(app_path, 'MyTable')
+        Crabfarm::Modes::Generator.generate_reducer(app_path, 'MyTable')
 
-        expect(File.exist? File.join(app_path, 'app/surveyors/my_table_surveyor.rb')).to be_truthy
-        expect(File.exist? File.join(app_path, 'spec/surveyors/my_table_surveyor_spec.rb')).to be_truthy
+        expect(File.exist? File.join(app_path, 'app/reducers/my_table_reducer.rb')).to be_truthy
+        expect(File.exist? File.join(app_path, 'spec/reducers/my_table_reducer_spec.rb')).to be_truthy
       end
 
       it "should fail is invalid class name is given" do
-        expect { Crabfarm::Modes::Generator.generate_surveyor(app_path, 'my_table') }.to raise_error Crabfarm::ArgumentError
+        expect { Crabfarm::Modes::Generator.generate_reducer(app_path, 'my_table') }.to raise_error Crabfarm::ArgumentError
       end
 
       it "should generate nested folders if a namespaced class is provided" do
-        Crabfarm::Modes::Generator.generate_surveyor(app_path, 'Platanus::Objects::MyTable')
+        Crabfarm::Modes::Generator.generate_reducer(app_path, 'Platanus::Objects::MyTable')
 
-        expect(File.exist? File.join(app_path, 'app/surveyors/platanus/objects/my_table_surveyor.rb')).to be_truthy
-        expect(File.exist? File.join(app_path, 'spec/surveyors/platanus/objects/my_table_surveyor_spec.rb')).to be_truthy
+        expect(File.exist? File.join(app_path, 'app/reducers/platanus/objects/my_table_reducer.rb')).to be_truthy
+        expect(File.exist? File.join(app_path, 'spec/reducers/platanus/objects/my_table_reducer_spec.rb')).to be_truthy
       end
 
     end

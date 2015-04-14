@@ -42,26 +42,26 @@ Crabfarm::Strategies.register :parser, :fake_engine_2, FakeParserEngine2
 
 class MockNavigatorA < Crabfarm::BaseNavigator
 
-  def crawl
+  def run
   end
 
 end
 
 class MockNavigatorB < Crabfarm::BaseNavigator
 
-  def crawl
+  def run
   end
 
 end
 
-class MockNavigatorAParser < Crabfarm::BaseParser
+class MockNavigatorAReducer < Crabfarm::BaseReducer
 
-  def parse
+  def run
   end
 
 end
 
-class FakeParser
+class FakeReducer
 
   attr_accessor :target, :params
 
@@ -70,7 +70,7 @@ class FakeParser
     @params = _params
   end
 
-  def parse
+  def run
   end
 
 end

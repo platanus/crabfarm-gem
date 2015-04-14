@@ -9,7 +9,7 @@ describe Crabfarm::Adapters::DriverWrapper::Watir do
   }
 
   after(:context) {
-    @driver.quit rescue nl
+    @driver.quit rescue nil
   }
 
   let(:browser) { Crabfarm::Adapters::DriverWrapper::Watir.wrap @driver }

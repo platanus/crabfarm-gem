@@ -29,36 +29,31 @@ describe Crabfarm::BaseNavigator do
 
   end
 
-  describe "parse" do
+  describe "reduce" do
 
     let(:nav) { MockNavigatorA.new fake_context, { arg: 'imateapot' } }
-    let(:parser) { nav.parse 'data', using: FakeParser, other_arg: 'param' }
+    let(:reducer) { nav.reduce 'data', using: FakeReducer, other_arg: 'param' }
 
-    it "should load parser specified in :using" do
-      expect(parser).to be_instance_of FakeParser
+    it "should load reducer specified in :using" do
+      expect(reducer).to be_instance_of FakeReducer
     end
 
-    it "should pass the first argument to the parser as the target" do
-      expect(parser.target).to eq('data')
+    it "should load reducer specified in :using as string or symbol" do
+      expect(nav.reduce 'data', using: :fake).to be_instance_of FakeReducer
     end
 
-    it "should pass the named arguments to the parser as the params" do
-      expect(parser.params[:arg]).to eq('imateapot')
-      expect(parser.params[:other_arg]).to eq('param')
-      expect(parser.params[:using]).to be_nil
+    it "should pass the first argument to the reducer as the target" do
+      expect(reducer.target).to eq('data')
     end
 
-    it "should infer the parser name from the navigator name if :using is not given" do
-      expect(nav.parse 'data').to be_instance_of MockNavigatorAParser
+    it "should pass the named arguments to the reducer as the params" do
+      expect(reducer.params[:arg]).to eq('imateapot')
+      expect(reducer.params[:other_arg]).to eq('param')
+      expect(reducer.params[:using]).to be_nil
     end
 
-  end
-
-  describe "parse_*" do
-
-    it "should call parse with the given target and params" do
-      expect(nav).to receive(:parse) { nil }.with('data', { using: FakeParser, other_arg: 'imateapot' })
-      nav.parse_fake 'data', other_arg: 'imateapot'
+    it "should infer the reducer name from the navigator name if :using is not given" do
+      expect(nav.reduce 'data').to be_instance_of MockNavigatorAReducer
     end
 
   end
@@ -76,15 +71,15 @@ describe Crabfarm::BaseNavigator do
       expect(nav.output[:values]).to eq([4,3,2,1,0])
     end
 
-    it "should provide same access to parsers as parent nav" do
-      parser1, parser2 = nil, nil
+    it "should provide same access to reducers as parent nav" do
+      reducer1, reducer2 = nil, nil
       nav.fork_each(1.times) do |value|
-        parser1 = parse 'data'
-        parser2 = parse_fake 'data'
+        reducer1 = reduce 'data'
+        reducer2 = reduce 'data', using: :fake
       end
 
-      expect(parser1).to be_instance_of MockNavigatorAParser
-      expect(parser2).to be_instance_of FakeParser
+      expect(reducer1).to be_instance_of MockNavigatorAReducer
+      expect(reducer2).to be_instance_of FakeReducer
     end
 
   end

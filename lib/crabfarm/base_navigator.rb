@@ -7,8 +7,6 @@ module Crabfarm
     include Assertion::Context
     extend Forwardable
 
-    PARSE_METHOD_RX = /^parse_(.*)$/
-
     attr_reader :params, :output
 
     def_delegators '@context', :http
@@ -46,16 +44,19 @@ module Crabfarm
       raise NotImplementedError.new
     end
 
-    def parse(_target=nil, _options={})
-      parser_class = _options.delete :using
+    def reduce(_target=nil, _options={})
+      reducer_class = _options.delete :using
 
-      if parser_class.nil?
-        parser_class = (self.class.name + 'Parser').constantize
-      end
+      reducer_class = case reducer_class
+      when nil
+        (self.class.name + 'Reducer').constantize
+      when String, Symbol
+        (Utils::Naming.decode_crabfarm_uri(reducer_class.to_s) + 'Reducer').constantize
+      else reducer_class end
 
-      parser = parser_class.new _target, @params.merge(_options)
-      parser.parse
-      return parser
+      reducer = reducer_class.new _target, @params.merge(_options)
+      reducer.run
+      return reducer
     end
 
     def fork_each(_enumerator, &_block)
@@ -66,20 +67,6 @@ module Crabfarm
         start_forked_navigation("th_session_#{session_id}", value, _block, mutex)
       end
       ThreadsWait.all_waits(*ths)
-    end
-
-    def method_missing(_method, *_args, &_block)
-      m = PARSE_METHOD_RX.match(_method)
-      if m
-        options = _args[1] || {}
-        options[:using] = (m[1].camelize + 'Parser').constantize
-        parse _args[0], options
-      else super end
-    end
-
-    def respond_to?(_method, _include_all=false)
-      return true if PARSE_METHOD_RX === _method
-      super
     end
 
   private

@@ -3,9 +3,9 @@ module Crabfarm
 
     class Error < Crabfarm::Error; end
 
-    def parse(_snapshot=nil, _options={})
+    def reduce(_snapshot=nil, _options={})
 
-      raise Error.new "Crawl is only available in parser specs" unless described_class < Crabfarm::BaseParser
+      raise Error.new "'reduce' is only available in reducer specs" unless described_class < Crabfarm::BaseReducer
 
       if _snapshot.is_a? Hash
         raise ArgumentException.new 'Invalid arguments' unless _options.nil?
@@ -17,14 +17,14 @@ module Crabfarm
       raise Error.new "Snapshot does not exist #{_snapshot}" unless File.exist? snapshot_path
 
       data = File.read snapshot_path
-      parser = described_class.new data, _options
-      parser.parse
-      parser
+      reducer = described_class.new data, _options
+      reducer.run
+      reducer
     end
 
     def navigate(_name=nil, _params={})
 
-      raise Error.new "Crawl is only available in state specs" if @context.nil?
+      raise Error.new "'navigate' is only available in navigator specs" if @context.nil?
 
       if _name.is_a? Hash
         _params = _name
@@ -43,16 +43,18 @@ module Crabfarm
       @state ||= navigate
     end
 
+    alias :navigator :state
+
     def last_state
       @last_state
     end
 
-    def parser
-      @parser ||= parse
+    def reducer
+      @reducer ||= reduce
     end
 
-    def driver(_session_id=nil)
-      @context.pool.driver(_session_id)
+    def browser(_session_id=nil)
+      @context.pool.browser(_session_id)
     end
 
   end
@@ -62,9 +64,9 @@ RSpec.configure do |config|
   config.include Crabfarm::RSpec
 
   config.around(:example) do |example|
-    if described_class < Crabfarm::BaseParser
-      if example.metadata[:parsing] || example[:parsing_with_params]
-        @parser = parse example.metadata[:parsing], example.metadata[:parsing_with_params] || {}
+    if described_class < Crabfarm::BaseReducer
+      if example.metadata[:reducing] || example[:reducing_with_params]
+        @reducer = reduce example.metadata[:reducing], example.metadata[:reducing_with_params] || {}
       end
       example.run
     elsif described_class < Crabfarm::BaseNavigator
