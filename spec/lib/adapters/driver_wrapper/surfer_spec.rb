@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'crabfarm/adapters/browser/surfer'
+require 'crabfarm/adapters/driver_wrapper/surfer'
 
-describe Crabfarm::Dsl::Surfer do
+describe Crabfarm::Adapters::DriverWrapper::Surfer do
 
   before(:context) {
     @driver = Selenium::WebDriver.for :phantomjs
@@ -11,7 +11,7 @@ describe Crabfarm::Dsl::Surfer do
     @driver.quit rescue nl
   }
 
-  let(:surfer) { Crabfarm::Adapters::Browser::Surfer.wrap @driver }
+  let(:surfer) { Crabfarm::Adapters::DriverWrapper::Surfer.wrap @driver }
 
   describe "goto" do
 

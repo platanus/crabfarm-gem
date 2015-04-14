@@ -1,9 +1,9 @@
-require "crabfarm/adapters/drivers/abstract_webdriver"
+require "crabfarm/adapters/browser/abstract_webdriver"
 require "crabfarm/phantom_runner"
 
 module Crabfarm
   module Adapters
-    module Drivers
+    module Browser
       class PhantomJs < AbstractWebdriver
 
         def prepare_driver_services

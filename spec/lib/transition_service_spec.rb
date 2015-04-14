@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Crabfarm::TransitionService do
 
   before {
-    Crabfarm.config.set_driver :noop
+    Crabfarm.config.set_browser :noop
   }
 
   let(:mock_class) {

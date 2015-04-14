@@ -36,8 +36,8 @@ end
 Crabfarm::Strategies.register :webdriver_dsl, :fake_dsl_1, FakeBrowserDsl1
 Crabfarm::Strategies.register :webdriver_dsl, :fake_dsl_2, FakeBrowserDsl2
 
-Crabfarm::Strategies.register :parser_engine, :fake_engine_1, FakeParserEngine1
-Crabfarm::Strategies.register :parser_engine, :fake_engine_2, FakeParserEngine2
+Crabfarm::Strategies.register :parser, :fake_engine_1, FakeParserEngine1
+Crabfarm::Strategies.register :parser, :fake_engine_2, FakeParserEngine2
 
 
 class MockStateA < Crabfarm::BaseState

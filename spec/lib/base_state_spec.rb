@@ -1,11 +1,11 @@
 require 'spec_helper'
-require 'crabfarm/adapters/drivers/noop'
+require 'crabfarm/adapters/browser/noop'
 
 describe Crabfarm::BaseState do
 
   let(:fake_context) { Class.new {
       def pool
-        Crabfarm::DriverPool.new Crabfarm::Adapters::Drivers::Noop.new
+        Crabfarm::DriverPool.new Crabfarm::Adapters::Browser::Noop.new
       end
     }.new
   }

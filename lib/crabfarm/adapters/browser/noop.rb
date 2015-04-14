@@ -1,6 +1,6 @@
 module Crabfarm
   module Adapters
-    module Drivers
+    module Browser
       class Noop
 
         def initialize(_proxy=nil)

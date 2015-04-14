@@ -1,13 +1,13 @@
 require 'spec_helper'
-require 'crabfarm/adapters/drivers/noop'
+require 'crabfarm/adapters/browser/noop'
 
 describe Crabfarm::DriverPool do
 
   before {
-    Crabfarm.config.set_driver :noop
+    Crabfarm.config.set_browser :noop
   }
 
-  let(:pool) { Crabfarm::DriverPool.new Crabfarm::Adapters::Drivers::Noop.new }
+  let(:pool) { Crabfarm::DriverPool.new Crabfarm::Adapters::Browser::Noop.new }
 
   describe "driver" do
 

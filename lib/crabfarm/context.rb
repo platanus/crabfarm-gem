@@ -50,7 +50,7 @@ module Crabfarm
 
     def init_driver_factory
       if @factory.nil?
-        @factory = Strategies.load(:driver, config.driver).new proxy
+        @factory = Strategies.load(:browser, config.browser).new proxy
         @factory.prepare_driver_services
       end
     end

@@ -43,21 +43,21 @@ module Crabfarm
   end
 
   module Strategies
-    # bundled navigation driver adapters
-    register :driver, :phantomjs, 'Crabfarm::Adapters::Drivers::PhantomJs', dependencies: ['selenium-webdriver']
-    register :driver, :firefox, 'Crabfarm::Adapters::Drivers::Firefox', dependencies: ['selenium-webdriver']
-    register :driver, :chrome, 'Crabfarm::Adapters::Drivers::Chrome', dependencies: ['selenium-webdriver']
-    register :driver, :remote, 'Crabfarm::Adapters::Drivers::RemoteWebdriver', dependencies: ['selenium-webdriver']
-    register :driver, :noop, 'Crabfarm::Adapters::Drivers::Noop'
+    # bundled browser adapters
+    register :browser, :phantomjs, 'Crabfarm::Adapters::Browser::PhantomJs', dependencies: ['selenium-webdriver']
+    register :browser, :firefox, 'Crabfarm::Adapters::Browser::Firefox', dependencies: ['selenium-webdriver']
+    register :browser, :chrome, 'Crabfarm::Adapters::Browser::Chrome', dependencies: ['selenium-webdriver']
+    register :browser, :remote, 'Crabfarm::Adapters::Browser::RemoteWebdriver', dependencies: ['selenium-webdriver']
+    register :browser, :noop, 'Crabfarm::Adapters::Browser::Noop'
 
     # bundled webdriver dsl adapters
-    register :webdriver_dsl, :surfer, 'Crabfarm::Adapters::Browser::Surfer'
-    register :webdriver_dsl, :watir, 'Crabfarm::Adapters::Browser::Watir', dependencies: ['watir-webdriver']
-    register :webdriver_dsl, :capybara, 'Crabfarm::Adapters::Browser::Capybara', dependencies: ['capybara']
+    register :webdriver_dsl, :surfer, 'Crabfarm::Adapters::DriverWrapper::Surfer'
+    register :webdriver_dsl, :watir, 'Crabfarm::Adapters::DriverWrapper::Watir', dependencies: ['watir-webdriver']
+    register :webdriver_dsl, :capybara, 'Crabfarm::Adapters::DriverWrapper::Capybara', dependencies: ['capybara']
 
     # bundled parsers dsl adapters
-    register :parser_engine, :nokogiri, 'Crabfarm::Adapters::Parser::Nokogiri', dependencies: ['nokogiri']
-    register :parser_engine, :pdf_reader, 'Crabfarm::Adapters::Parser::PdfReader', dependencies: ['pdf-reader']
+    register :parser, :nokogiri, 'Crabfarm::Adapters::Parser::Nokogiri', dependencies: ['nokogiri']
+    register :parser, :pdf_reader, 'Crabfarm::Adapters::Parser::PdfReader', dependencies: ['pdf-reader']
 
     # bundled state output builders
     register :output_builder, :hash, 'Crabfarm::Adapters::Output::Hash'

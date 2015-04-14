@@ -1,6 +1,6 @@
 module Crabfarm
   module Adapters
-    module Drivers
+    module Browser
       class AbstractWebdriver
 
         attr_accessor :config
@@ -45,11 +45,11 @@ module Crabfarm
 
         def load_driver_config
           {
-            capabilities: Crabfarm.config.driver_capabilities,
-            remote_host: Crabfarm.config.driver_remote_host,
-            remote_timeout: Crabfarm.config.driver_remote_timeout,
-            window_width: Crabfarm.config.driver_window_width,
-            window_height: Crabfarm.config.driver_window_height,
+            capabilities: Crabfarm.config.webdriver_capabilities,
+            remote_host: Crabfarm.config.webdriver_remote_host,
+            remote_timeout: Crabfarm.config.webdriver_remote_timeout,
+            window_width: Crabfarm.config.webdriver_window_width,
+            window_height: Crabfarm.config.webdriver_window_height,
             dsl: Crabfarm.config.webdriver_dsl
           }
         end

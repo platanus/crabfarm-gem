@@ -1,8 +1,8 @@
 require 'spec_helper'
 require 'watir-webdriver'
-require 'crabfarm/adapters/browser/watir'
+require 'crabfarm/adapters/driver_wrapper/watir'
 
-describe Crabfarm::Adapters::Browser::Watir do
+describe Crabfarm::Adapters::DriverWrapper::Watir do
 
   before(:context) {
     @driver = Selenium::WebDriver.for :phantomjs
@@ -12,7 +12,7 @@ describe Crabfarm::Adapters::Browser::Watir do
     @driver.quit rescue nl
   }
 
-  let(:browser) { Crabfarm::Adapters::Browser::Watir.wrap @driver }
+  let(:browser) { Crabfarm::Adapters::DriverWrapper::Watir.wrap @driver }
 
   context "when inside a simple page" do
 

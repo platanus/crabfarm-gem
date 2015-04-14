@@ -1,8 +1,8 @@
-require "crabfarm/adapters/drivers/abstract_webdriver"
+require "crabfarm/adapters/browser/abstract_webdriver"
 
 module Crabfarm
   module Adapters
-    module Drivers
+    module Browser
       class Chrome < AbstractWebdriver
 
       private

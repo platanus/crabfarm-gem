@@ -18,7 +18,7 @@ end
 
 module Crabfarm
   module Adapters
-    module Browser
+    module DriverWrapper
       class Watir
         def self.wrap(_driver)
           ::Watir::Browser.new _driver

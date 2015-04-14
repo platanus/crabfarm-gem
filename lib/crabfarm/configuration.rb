@@ -5,19 +5,20 @@ module Crabfarm
     class Option < Struct.new(:name, :type, :text); end
 
     OPTIONS = [
-      [:driver, ['chrome', 'firefox', 'phantomjs', 'remote'], 'Browser driver to be used, common options: phantomjs, chrome, firefox, remote.'],
-      [:parser_engine, :string, 'Default parser engine used by parsers'],
+      # Global options
+      [:browser, ['chrome', 'firefox', 'phantomjs', 'remote'], 'Browser engine to be used, common options: phantomjs, chrome, firefox, remote.'],
+      [:parser, :string, 'Default parser engine used by parsers'],
       [:output_builder, :string, 'Default json output builder used by states'],
       [:log_path, :string, 'Path where logs should be stored'],
       [:proxy, :string, 'If given, a proxy is used to connect to the internet if driver supports it'],
 
       # Webdriver configuration parameters
-      [:driver_host, :string, 'Remote host, only available in driver: remote'],
-      [:driver_port, :integer, 'Remote port, only available in driver: remote'],
-      [:driver_capabilities, :mixed, 'Driver capabilities, depends on selected driver.'],
-      [:driver_remote_timeout, :float, 'Request timeout in seconds, only available for remote or phatomjs driver.'],
-      [:driver_window_width, :integer, 'Initial browser window width.'],
-      [:driver_window_height, :integer, 'Initial browser window height.'],
+      [:webdriver_host, :string, 'Remote host, only available in driver: remote'],
+      [:webdriver_port, :integer, 'Remote port, only available in driver: remote'],
+      [:webdriver_capabilities, :mixed, 'Driver capabilities, depends on selected driver.'],
+      [:webdriver_remote_timeout, :float, 'Request timeout in seconds, only available for remote or phatomjs driver.'],
+      [:webdriver_window_width, :integer, 'Initial browser window width.'],
+      [:webdriver_window_height, :integer, 'Initial browser window height.'],
       [:webdriver_dsl, :string, 'Webdriver wrapper to use, built in options are watir and surfer'],
 
       # Phantom launcher configuration
@@ -49,18 +50,18 @@ module Crabfarm
 
     def reset
       @values = {
-        parser_engine: :nokogiri,
+        browser: 'phantomjs',
+        parser: :nokogiri,
         output_builder: :hash,
         driver_factory: nil,
         log_path: nil,
         proxy: nil,
-        driver: 'phantomjs',
-        driver_capabilities: nil,
-        driver_host: 'localhost',
-        driver_port: '8080',
-        driver_remote_timeout: 120,
-        driver_window_width: 1280,
-        driver_window_height: 800,
+        webdriver_capabilities: nil,
+        webdriver_host: 'localhost',
+        webdriver_port: '8080',
+        webdriver_remote_timeout: 120,
+        webdriver_window_width: 1280,
+        webdriver_window_height: 800,
         webdriver_dsl: :surfer,
         phantom_load_images: false,
         phantom_ssl: 'any',
@@ -74,10 +75,10 @@ module Crabfarm
       @values.merge! _options
     end
 
-    def driver_remote_host
-      if driver_host then nil
-      elsif driver_port then "http://#{driver_host}"
-      else "http://#{driver_host}:#{driver_port}"
+    def webdriver_remote_host
+      if webdriver_host then nil
+      elsif webdriver_port then "http://#{webdriver_host}"
+      else "http://#{webdriver_host}:#{webdriver_port}"
       end
     end
 

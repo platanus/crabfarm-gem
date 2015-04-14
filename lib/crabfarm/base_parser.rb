@@ -6,26 +6,26 @@ module Crabfarm
 
     attr_reader :params, :document
 
-    def self.parser_engine(_engine=nil)
-      @engine_name = _engine
+    def self.use_parser(_parser_name)
+      @parser_name = _parser_name
     end
 
-    def self.engine
-      @engine ||= Strategies.load(:parser_engine, @engine_name || Crabfarm.config.parser_engine)
+    def self.parser
+      @parser ||= Strategies.load(:parser, @parser_name || Crabfarm.config.parser)
     end
 
     def self.snapshot_path(_name=nil)
       _name = self.to_s.underscore if _name.nil?
-      File.join(GlobalState.snapshots_path, _name + '.' + engine.format)
+      File.join(GlobalState.snapshots_path, _name + '.' + parser.format)
     end
 
-    def engine
-      self.class.engine
+    def parser
+      self.class.parser
     end
 
     def initialize(_target, _params)
-      @parsed_data = engine.preprocess_parsing_target _target
-      @document = engine.parse @parsed_data
+      @parsed_data = parser.preprocess_parsing_target _target
+      @document = parser.parse @parsed_data
       @params = _params
 
       super @document

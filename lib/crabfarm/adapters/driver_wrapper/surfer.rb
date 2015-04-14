@@ -2,7 +2,7 @@ require 'crabfarm/dsl/surfer'
 
 module Crabfarm
   module Adapters
-    module Browser
+    module DriverWrapper
       class Surfer
         def self.wrap(_driver)
           Crabfarm::Dsl::Surfer::SurfContext.new _driver
