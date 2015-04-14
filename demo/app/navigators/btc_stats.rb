@@ -1,6 +1,6 @@
-class BtcStats < Crabfarm::BaseState
+class BtcStats < Crabfarm::BaseNavigator
 
-  def crawl
+  def run
     browser.goto('https://www.btc-e.com/')
 
     if params[:coin] == 'ltc'

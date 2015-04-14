@@ -40,21 +40,21 @@ Crabfarm::Strategies.register :parser, :fake_engine_1, FakeParserEngine1
 Crabfarm::Strategies.register :parser, :fake_engine_2, FakeParserEngine2
 
 
-class MockStateA < Crabfarm::BaseState
+class MockNavigatorA < Crabfarm::BaseNavigator
 
   def crawl
   end
 
 end
 
-class MockStateB < Crabfarm::BaseState
+class MockNavigatorB < Crabfarm::BaseNavigator
 
   def crawl
   end
 
 end
 
-class MockStateAParser < Crabfarm::BaseParser
+class MockNavigatorAParser < Crabfarm::BaseParser
 
   def parse
   end

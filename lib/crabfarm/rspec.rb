@@ -22,25 +22,25 @@ module Crabfarm
       parser
     end
 
-    def crawl(_state=nil, _params={})
+    def navigate(_name=nil, _params={})
 
       raise Error.new "Crawl is only available in state specs" if @context.nil?
 
-      if _state.is_a? Hash
-        _params = _state
-        _state = nil
+      if _name.is_a? Hash
+        _params = _name
+        _name = nil
       end
 
-      if _state.nil?
-        return nil unless described_class < BaseState # TODO: maybe raise an error here.
-        @state = @last_state = TransitionService.apply_state @context, described_class, _params
+      if _name.nil?
+        return nil unless described_class < BaseNavigator # TODO: maybe raise an error here.
+        @state = @last_state = TransitionService.transition @context, described_class, _params
       else
-        @last_state = TransitionService.apply_state @context, _state, _params
+        @last_state = TransitionService.transition @context, _name, _params
       end
     end
 
     def state
-      @state ||= crawl
+      @state ||= navigate
     end
 
     def last_state
@@ -67,8 +67,8 @@ RSpec.configure do |config|
         @parser = parse example.metadata[:parsing], example.metadata[:parsing_with_params] || {}
       end
       example.run
-    elsif described_class < Crabfarm::BaseState
-      Crabfarm::ContextFactory.with_context example.metadata[:crawling] do |ctx|
+    elsif described_class < Crabfarm::BaseNavigator
+      Crabfarm::ContextFactory.with_context example.metadata[:navigating] do |ctx|
         @context = ctx
         example.run
       end

@@ -14,7 +14,7 @@ require "crabfarm/state_store"
 require "crabfarm/context"
 require "crabfarm/context_factory"
 require "crabfarm/transition_service"
-require "crabfarm/base_state"
+require "crabfarm/base_navigator"
 require "crabfarm/base_parser"
 require "crabfarm/strategies"
 

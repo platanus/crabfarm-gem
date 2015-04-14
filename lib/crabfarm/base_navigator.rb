@@ -1,9 +1,9 @@
 require 'thwait'
-require 'crabfarm/forked_state'
+require 'crabfarm/forked_navigator'
 require "crabfarm/assertion/context"
 
 module Crabfarm
-  class BaseState
+  class BaseNavigator
     include Assertion::Context
     extend Forwardable
 
@@ -42,7 +42,7 @@ module Crabfarm
       @builder.serialize @output
     end
 
-    def crawl
+    def run
       raise NotImplementedError.new
     end
 
@@ -63,7 +63,7 @@ module Crabfarm
       mutex = Mutex.new
       ths = _enumerator.map do |value|
         session_id += 1
-        start_forked_state("th_session_#{session_id}", value, _block, mutex)
+        start_forked_navigation("th_session_#{session_id}", value, _block, mutex)
       end
       ThreadsWait.all_waits(*ths)
     end
@@ -88,11 +88,11 @@ module Crabfarm
       self.class.instance_variable_get :@class_output_builder
     end
 
-    def start_forked_state(_name, _value, _block, _mutex)
+    def start_forked_navigation(_name, _value, _block, _mutex)
       Thread.new {
-        sub_state = ForkedState.new @context, self, _name, _mutex
+        fork = ForkedNavigator.new @context, self, _name, _mutex
         begin
-          sub_state.instance_exec _value, &_block
+          fork.instance_exec _value, &_block
         ensure
           @context.pool.reset _name
         end

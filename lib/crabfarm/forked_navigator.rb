@@ -1,5 +1,5 @@
 module Crabfarm
-  class ForkedState < Delegator
+  class ForkedNavigator < Delegator
 
     def initialize(_context, _parent, _browser_name, _mutex)
       @context = _context
@@ -15,7 +15,7 @@ module Crabfarm
     end
 
     def output
-      raise ScriptError.new 'Use lock_output to access output in forked states'
+      raise ScriptError.new 'Use lock_output to access output in navigation forks'
     end
 
     def lock_output

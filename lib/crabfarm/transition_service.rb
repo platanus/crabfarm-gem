@@ -1,15 +1,15 @@
 module Crabfarm
   class TransitionService
 
-    def self.apply_state(_context, _name, _params={})
-      state_class = if _name.is_a? String or _name.is_a? Symbol
+    def self.transition(_context, _name, _params={})
+      navigator_class = if _name.is_a? String or _name.is_a? Symbol
         load_class_from_uri _name
       else _name end
 
       _context.prepare
-      state = state_class.new _context, _params
-      state.crawl
-      state
+      navigator = navigator_class.new _context, _params
+      navigator.run
+      navigator
     end
 
   private
