@@ -1,6 +1,7 @@
 require 'readline'
 require 'rainbow'
 require 'rainbow/ext/string'
+require 'json'
 require 'crabfarm/engines/sync_state_manager'
 
 module Crabfarm

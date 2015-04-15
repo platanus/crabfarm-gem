@@ -2,7 +2,6 @@ require "logger"
 require "forwardable"
 require "net/http"
 require "active_support/inflector"
-require "json"
 
 require "crabfarm/version"
 require "crabfarm/errors"
