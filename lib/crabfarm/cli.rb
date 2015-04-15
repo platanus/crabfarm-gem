@@ -89,10 +89,10 @@ module Crabfarm
       c.command :navigator do |sub|
 
         sub.desc "Specifies the navigator target url"
-        app.flag [:u, :url]
+        sub.flag [:u, :url]
 
         sub.desc "Whether to generate the homonymous reducer or not"
-        c.switch :reducer, :default_value => true
+        sub.switch :reducer, :default_value => true
 
         sub.action do |global_options,options,args|
           next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
