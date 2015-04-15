@@ -1,3 +1,4 @@
+require "active_support/core_ext/object/duplicable"
 require 'crabfarm/assertion/context'
 
 module Crabfarm
@@ -7,63 +8,48 @@ module Crabfarm
 
       module ClassMethods
 
-        def field(_name)
-          _name = _name.to_sym
+        def has_field(_name, _options={})
+          name = _name.to_sym
 
-          fields << _name
+          fields << name
+          field_defaults[name] = _options.delete :field_default
 
-          define_method "#{_name}=" do |_value|
-            field_hash[_name] = _value
+          assertion = _options.delete :field_assertion
+          if assertion
+            define_method("#{name}=") { |v| field_hash[name] = assert(v).send(assertion, _options) }
+          elsif not _options[:field_readonly]
+            define_method("#{name}=") { |v| field_hash[name] = v }
           end
 
-          define_method _name do
-            field_hash[_name]
-          end
+          define_method(name) { field_hash[name] }
         end
 
-        def array(_name)
-          _name = _name.to_sym
-
-          fields << _name
-          field_defaults[_name] = []
-
-          define_method _name do |_value|
-            field_hash[_name]
-          end
+        def has_asserted_field(_name, _assertion, _options={})
+          has_field(_name, _options.merge(field_assertion: _assertion))
         end
 
-        def asserted_field(_name, _assertion, _options={})
-          _name = _name.to_sym
-
-          fields << _name
-
-          define_method "#{_name}=" do |_value|
-            field_hash[_name] = assert(_value).send(_assertion, _options)
-          end
-
-          define_method _name do
-            field_hash[_name]
-          end
+        def has_array(_name)
+          has_field(_name, field_default: [], field_readonly: true)
         end
 
-        def integer(_name, _options={})
-          asserted_field _name, :is_integer, _options
+        def has_integer(_name, _options={})
+          has_asserted_field _name, :is_integer, _options
         end
 
-        def float(_name, _options={})
-          asserted_field _name, :is_float, _options
+        def has_float(_name, _options={})
+          has_asserted_field _name, :is_float, _options
         end
 
-        def string(_name, _options={})
-          asserted_field _name, :is_string, _options
+        def has_string(_name, _options={})
+          has_asserted_field _name, :is_string, _options
         end
 
-        def word(_name, _options={})
-          asserted_field _name, :is_word, _options
+        def has_word(_name, _options={})
+          has_asserted_field _name, :is_word, _options
         end
 
-        def boolean(_name, _options={})
-          asserted_field _name, :is_boolean, _options
+        def has_boolean(_name, _options={})
+          has_asserted_field _name, :is_boolean, _options
         end
 
         def fields
