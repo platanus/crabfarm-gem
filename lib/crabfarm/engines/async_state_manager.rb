@@ -108,7 +108,7 @@ module Crabfarm
                 logger.info "Transitioning state: #{@next_state_name}"
                 @elapsed = Benchmark.measure do
                   ActiveSupport::Dependencies.clear
-                  @doc = TransitionService.transition(@context, @next_state_name, @next_state_params).output_as_json
+                  @doc = TransitionService.transition(@context, @next_state_name, @next_state_params).document
                 end.real
 
                 logger.info "Transitioned in #{@elapsed.real}"

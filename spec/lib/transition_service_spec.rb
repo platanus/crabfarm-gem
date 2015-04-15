@@ -27,10 +27,10 @@ describe Crabfarm::TransitionService do
     end
   end
 
-  describe "output" do
-    it "should expose the last transition output" do
+  describe "document" do
+    it "should expose the last transition output document" do
       state.transition mock_class
-      expect(state.output).to eq :the_output
+      expect(state.document).to eq :the_output
     end
   end
 

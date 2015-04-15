@@ -5,7 +5,7 @@ module Crabfarm
       self.new(_context).transition(_name, _params)
     end
 
-    attr_reader :output, :navigator
+    attr_reader :document, :navigator
 
     def initialize(_context)
       @context = _context
@@ -18,15 +18,11 @@ module Crabfarm
 
       @context.prepare
       @navigator = navigator_class.new @context, _params
-      @output = @navigator.run
+
+      @document = @navigator.run
+      @document = @document.as_json if @document.respond_to? :as_json
 
       self
-    end
-
-    def output_as_json
-      if @output.respond_to? :as_json
-        @output.as_json
-      else @output end
     end
 
   private

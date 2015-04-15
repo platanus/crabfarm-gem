@@ -28,7 +28,7 @@ module Crabfarm
           output = { name: _name, params: _params }
 
           output[:elapsed] = Benchmark.measure do
-            output[:doc] = TransitionService.transition(@context, _name, _params).output_as_json
+            output[:doc] = TransitionService.transition(@context, _name, _params).document
           end
 
           OpenStruct.new output
