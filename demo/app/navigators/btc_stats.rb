@@ -7,8 +7,7 @@ class BtcStats < Crabfarm::BaseNavigator
       browser.search('.pairs li a')[4].click
     end
 
-    indicators = reduce browser, using: :indicators
-    output[:price] = indicators.btc_price
+    reduce using: :indicators
   end
 
 end

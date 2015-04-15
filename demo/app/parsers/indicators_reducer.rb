@@ -1,9 +1,9 @@
 class IndicatorsReducer < Crabfarm::BaseReducer
 
-  attr_accessor :btc_price
+  has_float :price, greater_than: 0.0
 
   def run
-    @btc_price = assert(at_css('.orderStats')).is_f greater_than: 0.0
+    self.price = at_css('.orderStats')
   end
 
 end
