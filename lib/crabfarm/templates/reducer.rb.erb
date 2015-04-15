@@ -3,7 +3,7 @@ class <%= reducer_class %> < Crabfarm::BaseReducer
   def run
     # You can replace the following line after running the owner navigator specs once.
     # Take a look at the 'Testing' section of the README.md for more information!
-    take_snapshot
+    take_snapshot_and_fail
   end
 
 end
