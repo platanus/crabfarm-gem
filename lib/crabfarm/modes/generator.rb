@@ -35,17 +35,15 @@ module Crabfarm
         end
       end
 
-      def generate_navigator(_target, _class_name, _skip_reducer=false)
+      def generate_navigator(_target, _class_name, _options={})
         validate_class_name _class_name
 
         route = Utils::Naming.route_from_constant _class_name
         with_base_path _target do
-          binding = { navigator_class: _class_name }
+          binding = { navigator_class: _class_name, navigator_url: _options[:url] }
           path(*(['app', 'navigators'] + route[0...-1] + [route.last + '.rb'])).render('navigator.rb', binding)
           path(*(['spec', 'navigators'] + route[0...-1] + [route.last + '_spec.rb'])).render('navigator_spec.rb', binding)
         end
-
-        generate_reducer(_target, _class_name) unless _skip_reducer
       end
 
       def generate_reducer(_target, _class_name)

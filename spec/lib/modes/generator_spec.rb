@@ -136,6 +136,12 @@ eos
         expect(File.exist? File.join(app_path, 'spec/navigators/my_page_spec.rb')).to be_truthy
       end
 
+      it "should generate navigator source file referencing url if given" do
+        Crabfarm::Modes::Generator.generate_navigator(app_path, 'MyPage', url: 'www.crabfarm.io')
+
+        expect(File.read File.join(app_path, 'app/navigators/my_page.rb')).to include('www.crabfarm.io')
+      end
+
     end
 
     describe "generate_struct" do
