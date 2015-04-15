@@ -98,8 +98,8 @@ module Crabfarm
           next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
 
           require "crabfarm/modes/generator"
-          Crabfarm::Modes::Generator.generate_navigator(GlobalState.app_path, args[0], _options)
-          Crabfarm::Modes::Generator.generate_reducer(GlobalState.app_path, args[0]) if _options[:reducer]
+          Crabfarm::Modes::Generator.generate_navigator(GlobalState.app_path, args[0], options)
+          Crabfarm::Modes::Generator.generate_reducer(GlobalState.app_path, args[0]) if options[:reducer]
         end
       end
 
