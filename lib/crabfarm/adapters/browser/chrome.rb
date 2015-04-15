@@ -1,3 +1,4 @@
+require 'crabfarm/support/webdriver_factory'
 require "crabfarm/adapters/browser/abstract_webdriver"
 
 module Crabfarm
@@ -8,14 +9,7 @@ module Crabfarm
       private
 
         def build_webdriver_instance
-          switches = []
-
-          if config[:proxy].present?
-            switches << "--proxy-server=#{config[:proxy]}"
-            switches << "--ignore-certificate-errors"
-          end
-
-          Selenium::WebDriver.for :chrome, :switches => switches
+          Support::WebdriverFactory.build_chrome_driver config
         end
 
       end

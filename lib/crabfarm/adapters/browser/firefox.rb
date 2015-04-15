@@ -1,3 +1,4 @@
+require 'crabfarm/support/webdriver_factory'
 require "crabfarm/adapters/browser/abstract_webdriver"
 
 module Crabfarm
@@ -8,16 +9,7 @@ module Crabfarm
       private
 
         def build_webdriver_instance
-          profile = Selenium::WebDriver::Firefox::Profile.new
-
-          if config.key? :proxy
-            profile.proxy = Selenium::WebDriver::Proxy.new({
-              :http => config[:proxy],
-              :ssl => config[:proxy]
-            })
-          end
-
-          Selenium::WebDriver.for :firefox, :profile => profile
+          Support::WebdriverFactory.build_firefox_driver config
         end
 
       end

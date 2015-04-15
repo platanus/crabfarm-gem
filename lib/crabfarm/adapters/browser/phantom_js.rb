@@ -1,5 +1,6 @@
-require "crabfarm/adapters/browser/abstract_webdriver"
-require "crabfarm/phantom_runner"
+require 'crabfarm/support/webdriver_factory'
+require 'crabfarm/adapters/browser/abstract_webdriver'
+require 'crabfarm/phantom_runner'
 
 module Crabfarm
   module Adapters
@@ -18,19 +19,7 @@ module Crabfarm
       private
 
         def build_webdriver_instance
-          client = Selenium::WebDriver::Remote::Http::Default.new
-          client.timeout = config[:remote_timeout]
-
-          driver = Selenium::WebDriver.for :remote, {
-            :url => phantom_url,
-            :http_client => client,
-            :desired_capabilities => config[:capabilities] || Selenium::WebDriver::Remote::Capabilities.firefox
-          }
-
-          # TODO: not sure if this is necessary...
-          # driver.send(:bridge).setWindowSize(config[:window_width], config[:window_height])
-
-          return driver
+          Support::WebdriverFactory.build_remote_driver driver_config
         end
 
         def load_and_start_phantom
@@ -49,8 +38,15 @@ module Crabfarm
           }
         end
 
-         def phantom_url
+        def phantom_url
           "http://localhost:#{@phantom.port}"
+        end
+
+        def driver_config
+          config.merge({
+            remote_host: phantom_url,
+            proxy: nil
+          })
         end
 
       end

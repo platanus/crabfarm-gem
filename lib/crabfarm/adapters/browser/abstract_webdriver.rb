@@ -19,12 +19,7 @@ module Crabfarm
         end
 
         def build_driver(_session_id)
-
-          # load driver and configure general selenium settings
-          driver = build_webdriver_instance
-          driver.manage.window.resize_to(config[:window_width], config[:window_height]) rescue nil
-
-          return wrap_driver driver
+          return wrap_driver build_webdriver_instance
         end
 
         def release_driver(_driver)
