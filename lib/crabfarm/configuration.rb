@@ -60,7 +60,7 @@ module Crabfarm
         webdriver_remote_timeout: 120,
         webdriver_window_width: 1280,
         webdriver_window_height: 800,
-        webdriver_dsl: :surfer,
+        webdriver_dsl: :watir,
         phantom_load_images: false,
         phantom_ssl: 'any',
         phantom_bin_path: 'phantomjs',
