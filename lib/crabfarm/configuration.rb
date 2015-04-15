@@ -65,7 +65,7 @@ module Crabfarm
         phantom_ssl: 'any',
         phantom_bin_path: 'phantomjs',
         crabtrap_bin_path: 'crabtrap',
-        recorder_driver: :firefox
+        recorder_driver: :chrome
       }
     end
 
