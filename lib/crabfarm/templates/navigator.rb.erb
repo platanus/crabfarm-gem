@@ -1,7 +1,19 @@
 class <%= navigator_class %> < Crabfarm::BaseNavigator
 
   def run
-    # Do some damage!
+  	<% if navigator_url.nil? %>
+  	# replace the following by your navigation code:
+	raise NotImplementedError.new 'You must provide some navigation code for <%= navigator_class %>'
+  	<% else %>
+  	browser.goto '<%= navigator_url %>'
+  	<% end %>
+
+  	# Call the homonymous reducer over the entire document and output it by default
+  	# You can call other reducers by using the `reduce` method, like this:
+  	#
+  	#     reduce browser.search('td').first, using: MyOtherReducer
+  	#
+  	reduce_with_defaults
   end
 
 end

@@ -14,13 +14,9 @@ module Crabfarm
       @browser ||= @context.pool.driver(@browser_name)
     end
 
-    def output
-      raise ScriptError.new 'Use lock_output to access output in navigation forks'
-    end
-
-    def lock_output
+    def synchronize
       @mutex.synchronize {
-        yield @parent.output
+        yield
       }
     end
 

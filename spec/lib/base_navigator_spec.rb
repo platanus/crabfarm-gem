@@ -21,14 +21,6 @@ describe Crabfarm::BaseNavigator do
 
   end
 
-  describe "output" do
-
-    it "should expose a hash object by default" do
-      expect(nav.output).to be_instance_of(Hash)
-    end
-
-  end
-
   describe "reduce" do
 
     let(:nav) { MockNavigatorA.new fake_context, { arg: 'imateapot' } }
@@ -63,12 +55,12 @@ describe Crabfarm::BaseNavigator do
     let(:nav) { MockNavigatorA.new fake_context, {} }
 
     it "should execute given block in paralell and wait for every thread to finish" do
-      nav.output[:values] = []
+      values = []
       nav.fork_each(5.times) do |value|
         sleep (10.0 - value) / 10.0
-        lock_output { |o| o[:values] << value }
+        synchronize { |o| values << value }
       end
-      expect(nav.output[:values]).to eq([4,3,2,1,0])
+      expect(values).to eq([4,3,2,1,0])
     end
 
     it "should provide same access to reducers as parent nav" do

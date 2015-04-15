@@ -12,17 +12,25 @@ describe Crabfarm::TransitionService do
 
       def run
         @run_called = true
+        :the_output
       end
     end
   }
 
   let(:context) { Crabfarm::Context.new }
+  let(:state) { Crabfarm::TransitionService.new context }
 
-  describe "change_state" do
-
+  describe "transition" do
     it "should load and call run on the loaded navigator" do
-      state = Crabfarm::TransitionService.transition context, mock_class
-      expect(state.run_called).to be(true)
+      state.transition mock_class
+      expect(state.navigator.run_called).to be(true)
+    end
+  end
+
+  describe "output" do
+    it "should expose the last transition output" do
+      state.transition mock_class
+      expect(state.output).to eq :the_output
     end
   end
 

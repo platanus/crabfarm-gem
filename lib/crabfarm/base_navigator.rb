@@ -7,21 +7,14 @@ module Crabfarm
     include Assertion::Context
     extend Forwardable
 
-    attr_reader :params, :output
+    attr_reader :params
 
     def_delegators '@context', :http
     def_delegators '@context.store', :get, :fetch
 
-    def self.output_builder(_builder)
-      @class_output_builder = _builder
-    end
-
     def initialize(_context, _params)
       @context = _context
       @params = _params
-
-      @builder = Strategies.load(:output_builder, class_output_builder || Crabfarm.config.output_builder)
-      @output = @builder.prepare
     end
 
     def browser(_name=nil)
@@ -32,32 +25,22 @@ module Crabfarm
       @context.http.get(_url).body
     end
 
-    def output
-      @output
-    end
-
-    def output_as_json
-      @builder.serialize @output
-    end
-
     def run
       raise NotImplementedError.new
     end
 
     def reduce(_target=nil, _options={})
-      reducer_class = _options.delete :using
+      if _target.is_a? Hash
+        _options = _target
+        _target = browser
+      elsif _target.nil?
+        _target = browser
+      end
 
-      reducer_class = case reducer_class
-      when nil
-        (self.class.name + 'Reducer').constantize
-      when String, Symbol
-        (Utils::Naming.decode_crabfarm_uri(reducer_class.to_s) + 'Reducer').constantize
-      else reducer_class end
-
-      reducer = reducer_class.new _target, @params.merge(_options)
-      reducer.run
-      return reducer
+      reduce_using(_options.delete(:using) || self.class.name, _target, _options)
     end
+
+    alias :reduce_with_defaults :reduce
 
     def fork_each(_enumerator, &_block)
       session_id = 0
@@ -71,8 +54,14 @@ module Crabfarm
 
   private
 
-    def class_output_builder
-      self.class.instance_variable_get :@class_output_builder
+    def reduce_using(_reducer_class, _target, _options={})
+      if _reducer_class.is_a? String or _reducer_class.is_a? Symbol
+        _reducer_class = (Utils::Naming.decode_crabfarm_uri(_reducer_class.to_s) + 'Reducer').constantize
+      end
+
+      reducer = _reducer_class.new _target, @params.merge(_options)
+      reducer.run
+      reducer
     end
 
     def start_forked_navigation(_name, _value, _block, _mutex)
