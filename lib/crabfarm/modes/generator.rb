@@ -23,8 +23,9 @@ module Crabfarm
           path(_name, '.crabfarm').render('dot_crabfarm', binding)
           path(_name, 'boot.rb').render('boot.rb', binding)
           path(_name, 'bin', 'crabfarm').render('crabfarm_bin', binding, 0755)
-          path(_name, 'app', 'reducers', '.gitkeep').render('dot_gitkeep')
           path(_name, 'app', 'navigators', '.gitkeep').render('dot_gitkeep')
+          path(_name, 'app', 'reducers', '.gitkeep').render('dot_gitkeep')
+          path(_name, 'app', 'structs', '.gitkeep').render('dot_gitkeep')
           path(_name, 'app', 'helpers', '.gitkeep').render('dot_gitkeep')
           path(_name, 'spec', 'spec_helper.rb').render('spec_helper.rb', binding)
           path(_name, 'spec', 'snapshots', '.gitkeep').render('dot_gitkeep')
@@ -34,7 +35,7 @@ module Crabfarm
         end
       end
 
-      def generate_navigator(_target, _class_name)
+      def generate_navigator(_target, _class_name, _skip_reducer=false)
         validate_class_name _class_name
 
         route = Utils::Naming.route_from_constant _class_name
@@ -43,6 +44,8 @@ module Crabfarm
           path(*(['app', 'navigators'] + route[0...-1] + [route.last + '.rb'])).render('navigator.rb', binding)
           path(*(['spec', 'navigators'] + route[0...-1] + [route.last + '_spec.rb'])).render('navigator_spec.rb', binding)
         end
+
+        generate_reducer(_target, _class_name) unless _skip_reducer
       end
 
       def generate_reducer(_target, _class_name)
@@ -54,6 +57,16 @@ module Crabfarm
           binding = { reducer_class: _class_name }
           path(*(['app', 'reducers'] + route[0...-1] + [route.last + '.rb'])).render('reducer.rb', binding)
           path(*(['spec', 'reducers'] + route[0...-1] + [route.last + '_spec.rb'])).render('reducer_spec.rb', binding)
+        end
+      end
+
+      def generate_struct(_target, _class_name)
+        validate_class_name _class_name
+
+        route = Utils::Naming.route_from_constant _class_name
+        with_base_path _target do
+          binding = { struct_class: _class_name }
+          path(*(['app', 'structs'] + route[0...-1] + [route.last + '.rb'])).render('struct.rb', binding)
         end
       end
 

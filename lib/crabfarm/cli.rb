@@ -85,6 +85,16 @@ module Crabfarm
         end
       end
 
+      c.desc "Generates a new crabfarm navigator and navigator spec"
+      c.command :navigator do |sub|
+        sub.action do |global_options,options,args|
+          next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
+
+          require "crabfarm/modes/generator"
+          Crabfarm::Modes::Generator.generate_navigator(GlobalState.app_path, args[0])
+        end
+      end
+
       c.desc "Generates a new crabfarm reducer and reducer spec"
       c.command :reducer do |sub|
         sub.action do |global_options,options,args|
@@ -95,13 +105,13 @@ module Crabfarm
         end
       end
 
-      c.desc "Generates a new crabfarm navigator and navigator spec"
-      c.command :navigator do |sub|
+      c.desc "Generates a new crabfarm struct"
+      c.command :reducer do |sub|
         sub.action do |global_options,options,args|
           next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
 
           require "crabfarm/modes/generator"
-          Crabfarm::Modes::Generator.generate_navigator(GlobalState.app_path, args[0])
+          Crabfarm::Modes::Generator.generate_struct(GlobalState.app_path, args[0])
         end
       end
     end

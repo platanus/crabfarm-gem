@@ -17,7 +17,8 @@ TEMPLATE_CACHE = Hash[
     'navigator.rb',
     'navigator_spec.rb',
     'reducer.rb',
-    'reducer_spec.rb'
+    'reducer_spec.rb',
+    'struct.rb'
   ].map do |file|
     path = File.join(TEMPLATE_DIR, file) + '.erb'
     [ path, File.read(path) ]
@@ -64,6 +65,7 @@ eos
       it "should generate required folders" do
         expect(File.exist? File.join('test_app', 'app/reducers')).to be_truthy
         expect(File.exist? File.join('test_app', 'app/navigators')).to be_truthy
+        expect(File.exist? File.join('test_app', 'app/structs')).to be_truthy
         expect(File.exist? File.join('test_app', 'app/helpers')).to be_truthy
         expect(File.exist? File.join('test_app', 'spec/mementos')).to be_truthy
         expect(File.exist? File.join('test_app', 'spec/snapshots')).to be_truthy
@@ -132,6 +134,16 @@ eos
 
         expect(File.exist? File.join(app_path, 'app/navigators/my_page.rb')).to be_truthy
         expect(File.exist? File.join(app_path, 'spec/navigators/my_page_spec.rb')).to be_truthy
+      end
+
+    end
+
+    describe "generate_struct" do
+
+      it "should generate required files" do
+        Crabfarm::Modes::Generator.generate_struct(app_path, 'MyData')
+
+        expect(File.exist? File.join(app_path, 'app/structs/my_data.rb')).to be_truthy
       end
 
     end
