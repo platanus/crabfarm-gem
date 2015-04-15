@@ -8,7 +8,6 @@ module Crabfarm
       # Global options
       [:browser, ['chrome', 'firefox', 'phantomjs', 'remote'], 'Browser engine to be used by navigators, common options: phantomjs, chrome, firefox, remote.'],
       [:parser, :string, 'Default parser engine used by reducers'],
-      [:output_builder, :string, 'Default json output builder used by navigators'],
       [:log_path, :string, 'Path where logs should be stored'],
       [:proxy, :string, 'If given, a proxy is used to connect to the internet if driver supports it'],
 
@@ -52,7 +51,6 @@ module Crabfarm
       @values = {
         browser: 'phantomjs',
         parser: :nokogiri,
-        output_builder: :hash,
         driver_factory: nil,
         log_path: nil,
         proxy: nil,

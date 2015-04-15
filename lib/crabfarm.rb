@@ -59,10 +59,5 @@ module Crabfarm
     # bundled parsers dsl adapters
     register :parser, :nokogiri, 'Crabfarm::Adapters::Parser::Nokogiri', dependencies: ['nokogiri']
     register :parser, :pdf_reader, 'Crabfarm::Adapters::Parser::PdfReader', dependencies: ['pdf-reader']
-
-    # bundled state output builders
-    register :output_builder, :hash, 'Crabfarm::Adapters::Output::Hash'
-    register :output_builder, :ostruct, 'Crabfarm::Adapters::Output::OStruct'
-    register :output_builder, :jbuilder, 'Crabfarm::Adapters::Output::Jbuilder', dependencies: ['jbuilder']
   end
 end
