@@ -87,11 +87,19 @@ module Crabfarm
 
       c.desc "Generates a new crabfarm navigator and navigator spec"
       c.command :navigator do |sub|
+
+        sub.desc "Specifies the navigator target url"
+        app.flag [:u, :url]
+
+        sub.desc "Whether to generate the homonymous reducer or not"
+        c.switch :reducer, :default_value => true
+
         sub.action do |global_options,options,args|
           next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
 
           require "crabfarm/modes/generator"
-          Crabfarm::Modes::Generator.generate_navigator(GlobalState.app_path, args[0])
+          Crabfarm::Modes::Generator.generate_navigator(GlobalState.app_path, args[0], _options)
+          Crabfarm::Modes::Generator.generate_reducer(GlobalState.app_path, args[0]) if _options[:reducer]
         end
       end
 
