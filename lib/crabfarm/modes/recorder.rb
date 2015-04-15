@@ -25,11 +25,9 @@ module Crabfarm
         crabtrap.start
 
         begin
-          driver_config = Crabfarm.config.driver_config
-          driver_config[:name] = Crabfarm.config.recorder_driver
-          driver_config[:proxy] = "127.0.0.1:#{crabtrap.port}"
-
-          driver = DefaultDriverFactory.new(driver_config).build_driver nil
+          browser_name = Crabfarm.config.recorder_driver
+          browser_factory = Strategies.load(:browser, browser_name).new "127.0.0.1:#{crabtrap.port}"
+          driver = browser_factory.build_driver nil
 
           begin
             puts "Press Ctrl-C or close browser to stop #{_replay ? 'playback' : 'capturing'}."
@@ -37,7 +35,7 @@ module Crabfarm
               driver.current_url
               sleep 1.0
             end
-          rescue Selenium::WebDriver::Error::WebDriverError, SystemExit, Interrupt
+          rescue Exception => e
             # noop
           end
 
