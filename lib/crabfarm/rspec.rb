@@ -43,8 +43,6 @@ module Crabfarm
       @state ||= navigate
     end
 
-    alias :navigator :state
-
     def last_state
       @last_state
     end
@@ -54,7 +52,7 @@ module Crabfarm
     end
 
     def browser(_session_id=nil)
-      @context.pool.browser(_session_id)
+      @context.pool.driver(_session_id)
     end
 
   end
