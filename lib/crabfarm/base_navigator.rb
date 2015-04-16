@@ -12,7 +12,7 @@ module Crabfarm
     def_delegators '@context', :http
     def_delegators '@context.store', :get, :fetch
 
-    def initialize(_context, _params)
+    def initialize(_context,  _params)
       @context = _context
       @params = _params
     end
@@ -60,8 +60,12 @@ module Crabfarm
       end
 
       reducer = _reducer_class.new _target, @params.merge(_options)
-      reducer.run
+      execute_reducer reducer
       reducer
+    end
+
+    def execute_reducer(_reducer)
+      _reducer.run
     end
 
     def start_forked_navigation(_name, _value, _block, _mutex)

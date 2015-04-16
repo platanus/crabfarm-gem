@@ -4,7 +4,7 @@ module Crabfarm
   class BaseReducer < Delegator
     include Assertion::Fields
 
-    attr_reader :params, :document
+    attr_reader :raw_document, :document, :params
 
     def self.use_parser(_parser_name)
       @parser_name = _parser_name
@@ -26,8 +26,8 @@ module Crabfarm
     def initialize(_target, _params)
       reset_fields
 
-      @parsed_data = parser.preprocess_parsing_target _target
-      @document = parser.parse @parsed_data
+      @raw_document = parser.preprocess_parsing_target _target
+      @document = parser.parse @raw_document
       @params = _params
 
       super @document
@@ -35,21 +35,6 @@ module Crabfarm
 
     def run
       raise NotImplementedError.new
-    end
-
-    def take_snapshot(_name=nil)
-      file_path = self.class.snapshot_path _name
-
-      dir_path = file_path.split(File::SEPARATOR)[0...-1]
-      FileUtils.mkpath dir_path.join(File::SEPARATOR) if dir_path.length > 0
-
-      File.write file_path, @parsed_data
-      file_path
-    end
-
-    def take_snapshot_and_fail(_name=nil)
-      file_path = take_snapshot _name
-      raise ArgumentError.new "New snapshot for #{self.class.to_s} generated in '#{file_path}'"
     end
 
     def as_json(_options=nil)
