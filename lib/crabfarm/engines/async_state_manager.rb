@@ -38,7 +38,7 @@ module Crabfarm
         start
       end
 
-      def transition(_name, _params={}, _wait=nil)
+      def navigate(_name, _params={}, _wait=nil)
         @lock.synchronize {
           if @fatal
             raise CrawlerError.new @fatal

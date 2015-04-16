@@ -23,7 +23,7 @@ module Crabfarm
         }
       end
 
-      def transition(_name, _params={})
+      def navigate(_name, _params={})
         @lock.synchronize {
           output = { name: _name, params: _params }
 

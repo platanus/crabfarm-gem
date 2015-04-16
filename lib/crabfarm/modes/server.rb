@@ -54,7 +54,7 @@ module Crabfarm
           optional :wait, type: Float
         end
         put :state do
-          print_state evaluator.transition params[:name], params[:params], wait
+          print_state evaluator.navigate params[:name], params[:params], wait
         end
       end
 
