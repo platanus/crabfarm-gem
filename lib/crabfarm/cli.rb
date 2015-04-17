@@ -114,7 +114,7 @@ module Crabfarm
       end
 
       c.desc "Generates a new crabfarm struct"
-      c.command :reducer do |sub|
+      c.command :struct do |sub|
         sub.action do |global_options,options,args|
           next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
 
