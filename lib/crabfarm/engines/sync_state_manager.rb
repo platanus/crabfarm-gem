@@ -5,12 +5,14 @@ module Crabfarm
   module Engines
     class SyncStateManager
 
+      attr_reader :context
+
       def initialize(_context)
         @context = _context
         @lock = Mutex.new
       end
 
-      def reload!
+      def reload
         @lock.synchronize {
           ActiveSupport::Dependencies.clear
           @context.reset
