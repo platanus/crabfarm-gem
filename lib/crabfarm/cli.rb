@@ -124,16 +124,42 @@ module Crabfarm
       end
     end
 
-    desc "Perform a memento recording for use in tests"
+    desc "Crawler fixture recorders"
     command [:record, :r] do |c|
-      c.desc "Run recorder in playback mode"
-      c.switch [:p, :playback], :default_value => false
 
-      c.action do |global_options, options, args|
-        next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
+      c.desc "Perform a memento recording for use in tests"
+      c.command :memento do |memento|
 
-        require "crabfarm/modes/recorder"
-        Crabfarm::Modes::Recorder.start args[0], options[:playback]
+        memento.desc "Run recorder in playback mode"
+        memento.switch [:p, :playback], :default_value => false
+
+        memento.action do |global_options, options, args|
+          next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
+
+          require "crabfarm/modes/recorder/memento"
+          Crabfarm::Modes::Recorder::Memento.start args[0], options[:playback]
+        end
+
+      end
+
+      c.desc "Take snapshots from a navigator run"
+      c.command [:snapshot, :snap] do |snap|
+
+        snap.desc "Navigate on a memento"
+        snap.flag [:m, :memento]
+
+        snap.desc "Navigation query string, if not given navigator is run in interactive mode"
+        snap.flag [:q, :query]
+
+        snap.action do |global_options, options, args|
+          next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
+
+          ContextFactory.with_context options[:memento] do |context|
+            require "crabfarm/modes/recorder/snapshot"
+            Crabfarm::Modes::Recorder::Snapshot.start context, args[0], options[:query]
+          end
+        end
+
       end
     end
 
