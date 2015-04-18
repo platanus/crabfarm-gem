@@ -12,207 +12,231 @@ Then generate a new crawler using the gem's generator, you can optionally pass t
 
     $ crabfarm g app new_crawler_folder --remote=platanus/demo
 
-The generator also provides tasks to generate parsers and states:
+The generator also provides tasks to generate navigators and reducers, more on that later:
 
-    $ crabfarm g parser PriceTable
-    $ crabfarm g state FrontPage
+    $ crabfarm g navigator FrontPage
+    $ crabfarm g reducer PriceTable
 
 To run the tests just call:
 
     $ rspec
 
-To use the crawler in development you can start it in server mode, just call `crabfarm s -p 3000`. Take a look at the API spec for the server.
+To use the crawler in development you can start it in server mode, just call `crabfarm s -p 3000`.
 
-## States
 
-States are responsible of navigation, calling parsers to extract data and building the API output.
+## Building your first crawler
 
-States represent steps in the crawling process, session information and browser connections and persisted between state transitions.
+One of our biggest advantages comes from having a structured developing process based on TDD.
 
-States have access to one or more webdriver sessions using the `browser` property. The `browser` property exposes the webdriver session wrapped in the selected *browser_dsl*. By default the **surfer** dsl is used, you can also use the **watir** dsl if you want.
+### 1. Install crawbfarm and create the crawler application
 
-States can also specify the crawler output document by interacting with the `output` property. By default the `output` property is just a hash. You can also use a **OpenStruct** or a **Jbuilder object**.
+Install the crabfarm gem:
 
-Every time a state is transitioned to, the crawler `state_name`, `state_params` and `doc` properties (exposed via the crawler api) are updated.
+    $ gem install crabfarm
 
-## Parsers
+Install crabtrap (a nodejs based recording proxy server used in tests)
 
-Parsers are resposible of extracting data from documents and exposing that data to states.
+    $ npm install crabtrap -g
 
-The most common parser is the one used to extract data from the HTML being crawled. You could use the `browser` property in the state to extract data, but is not recommended since webdriver is much slower than a HTML parser like Nokogiri and is also harder to test.
+Install phantomjs (only if you plan to use it as your browser)
 
-## Testing
+    $ npm install phantomjs -g
 
-Crabfarm provides a couple of tools to help you build the crawlers using TDD.
+Generate the application
 
-Every time a parser or a state is generated, a new empty spec is loaded into the specs directory.
+    $ crabfarm g app my_crawler
 
-Take a look at the demo folder to see the tests in action!
+Run bundler and rspec to check everything is in place
 
-### Testing the states
+    $ cd my_crawler
+    $ bundle
+    $ rspec
 
-To test a state you first need to generate a new **memento**. Mementos are a collection of cached HTTP requests that are recorded to a file and can be replayed to the crawler to test it.
 
-To generate a new memento just call
+### 2. Record a memento
 
-    $ crabfarm r <name>
+You start developing a crawler by recording a **memento**. A **memento** is a piece of the web that gets stored in a single file and is used to test the crawlers without loading any remote resources.
 
-This will launch the firefox browser, you should emulate the crawler navigation and then close the browser, the new memento should be available in the `/spec/mementos` directory.
+```
+crabfarm r memento my_memento
+```
 
-Next, you should write some test code using the generated memento, use the `crawling` attribute to select the memento to be loaded into each example.
+This will open your web browser, now you should pretend to be the crawler and access the pages and perform the actions you expect your crawler to perform. For this example, enter www.btc-e.com and press the LTC/BTC market button. Wait for page to load completely and the just close the browser, your new memento should be available at `/spec/mementos/my_memento.json.gz`.
+
+### 3. Generate a navigator
+
+Navigators are like your controllers, they receive some input parameters, navigate and interact with one or more web resources and then generate some usefull output.
+
+We are going to build a btc-e.com crawler to extract the last price for a given market:
+
+```
+crabfarm g navigator BtcStats -u www.btc-e.com
+```
+
+This should generate a navigator source file and a corresponding spec *(this will also generate a reducer, more on that later)*. You can see we passed the target url using the `-u` option in the generator, this is optional.
+
+Its time to take a look at the generated spec at `/specs/navigators/btc_price_spec.rb` and add some tests. Lets add an example to test that the navigator reached the correct page:
 
 ```ruby
-it "crawl using the given memento", crawling: 'my_memento' do
-  # Pending
+it "should navigate to correct market page", navigating: 'my_memento' do
+  navigate market: 'LTC/BTC'
+  expect(browser.li(class: 'pairs-selected').text.lines.first.strip).to eq('LTC/BTC')
 end
 ```
 
-You can access current state using the `state` property. The first time you call `state` it will run the crawler.
-
-You can also run the crawler manually using `crawl`, this can be usefull if you need to pass arguments to the crawler. After calling `crawl` the `state` property will return the same state returned by `crawl`. Calling `crawl` multiple times will run the crawler multiple times.
+Lets go line by line:
 
 ```ruby
-describe MyState do
+it "should navigate to correct market page", navigating: 'my_memento' do
+```
 
-  it "should extract all prices", crawling: 'my_happy_path_memento' do
-    expect(state.output.total_price).to eq(200)
-  end
+By adding the `navigating: 'my_memento'` metadata, we are telling the example to run the crawler over the recorded **memento** from step 2.
 
-  it "should extract all prices", crawling: 'my_happy_path_memento' do
-    expect(crawl(page: 2).output.total_price).to eq(200)
-  end
+```ruby
+navigate market: 'LTC/BTC'
+```
 
-  it "should fail if lands on an error page", crawling: 'my_error_memento' do
-    expect { state }.to raise_error
+Calling `navigate` executes the navigator, every keyed argument is passed to the **navigator**.
+
+```ruby
+expect(browser.li(class: 'pairs-selected').text.lines.first.strip).to eq('LTC/BTC')
+```
+
+The `browser` property exposes the browser session used by the **navigator**, it can be used to check the browser status right after the **navigator** finishes.
+
+We could also add a test to check that the **navigator** ouput has the proper structure.
+
+```ruby
+it "should provide the last, high and low prices", navigating: 'my_memento' do
+  expect(state.document).to have_key :last
+  expect(state.document).to have_key :high
+  expect(state.document).to have_key :low
+end
+```
+
+The main difference here is the use of the `state` method. It contains the crawling session state **AFTER** the **navigator** is called. If `state` is called before any calls to `navigate` then `navigate` is automatically called by `state`.
+
+Lets move to `/app/navigators/btc_price.rb` file now, that's where the navigator code is located. As you can see there is already some code there, just a call to `browser.goto` to load the requested url and another to `reduce_with_defaults` method that will run the default reducer. Lets add some additional navigation logic to select the required market.
+
+```ruby
+def run
+  browser.goto 'www.btc-e.com'
+
+  browser.ul(class: 'pairs').lis.find do |li|
+    li.text.include? params[:market]
+  }.click
+
+  reduce_with_defaults
+end
+```
+
+This is mainly [watir](http://watir.com/) code. You can access the current browser session using the `browser` property. You should be able to call `rspec` now and get the first example right.
+
+**TIP**: There is a very nice tool to help you with the HTML css selectors called [Selector Gadget](http://selectorgadget.com/).
+
+### 4. Code the reducer
+
+During the **navigator** generation a **reducer** with the same name was generated too. The reducer is responsible of extracting data from the document being crawled. The most common use case is having one **reducer** per **navigator**, but in some cases more than one reducer may be needed per navigator, so a reducer generator is included as well.
+
+As with the **navigator**, you start developing the **reducer** by generating a document **snapshot**. For HTML reducers, a **snapshot** is just a portion of HTML. A **snapshot** can be generated manually but we recommend using the snapshot recorder command.
+
+The snapshot recorder uses an already coded **navigator** to capture the html passed by it to the **reducer**. To generate a snapshot call:
+
+```
+crabfarm r snapshot btc_price -m my_memento -q market=LTC/BTC
+```
+
+The command above tells crabfarm to extract **snapshots** from the *btc_price* navigator using a memento (optional) and using a given set of parameters as a query string. If parameter are not given then crabfarm will ask for them.
+
+Crabfarm will ask you to give the snapshot a name, call it *my_snapshot*, notice it is stored in `/spec/snapshots/my_snapshot.html`.
+
+Now that you have the snapshot, lets write some **reducer** specs, go to `/spec/reducers/btc_price_reducer_spec.rb` and add the following example:
+
+```ruby
+it "should extract low, high and last values", reducing: 'my_snapshot' do
+  expect(reducer.low).to eq 0.0061
+  expect(reducer.high).to eq 0.0064
+  expect(reducer.last).to eq 0.0061
+end
+```
+
+Notice that the structure is very similar to a **navigator** spec, this time use the `reducing: 'my_snapshot'` option to select the snapshot to reduce and the `reducer` property to refer to the **reducer** **AFTER** processing the given snapshot.
+
+The last step is writting the **reducer** code, parsing code goes inside the `run` method. By default the **reducer** uses [nokogiri](https://github.com/sparklemotion/nokogiri) as parser for HTML, take a look at nokogiri docs to see what methods to use inside `run`.
+
+```ruby
+class BtcPriceReducer < Crabfarm::BaseReducer
+
+  has_float :last, less_than: 1.0
+  has_float :high, less_than: 1.0
+  has_float :low, less_than: 1.0
+
+  def run
+    self.last = at_css('.orderStats:nth-child(1) strong').text
+    self.low = at_css '.orderStats:nth-child(2) strong'
+    self.high = at_css '.orderStats:nth-child(3) strong'
   end
 
 end
 ```
 
-You can load other states by passing the state name to `crawl`, this will not update the `state` property though.
+Chunk by chunk:
 
-```ruby
-describe MyState do
-
-  before do
-    crawl :login, user: 'teapot'
-  end
-
-  it "should extract all prices", crawling: 'my_happy_path_memento' do
-    expect(state.output.total_price).to eq(200)
-  end
-
-end
+```
+has_float :last, less_than: 1.0
+has_float :high, less_than: 1.0
+has_float :low, less_than: 1.0
 ```
 
-Now you are ready to write the state code and stay very TDDstic at the same time!
+The **reducer** allows you to define fields that take care of the parsing and validation of text values for you. Also, declared fields help keep things dry since are included in `reducer.to_json`.
 
-### Testing the parsers
-
-Parsers can be tested using static HTML snapshots.
-
-We recommend using chrome or firefox inspect tool to extract the html to be parsed (for html parsers of course). These html snapshots should be stored in the `spec/snapshots` directory.
-
-With the snapshot in place, use the `parsing` attribute to load the proper snapshot and then use the `parser` property to access the parser instance inside the example:
-
-```ruby
-describe MyParser do
-
-  it "should extract total price", parsing: 'my_snapshot' do
-    expect(parser.total_price).to eq(200)
-  end
-
-end
+```
+self.last = at_css('.orderStats:nth-child(1) strong').text
 ```
 
-### Integration tests (multiple state)
+If you dig a little deeper, you will see that `last` is beign assigned something like "0.0061 BTC". The assertion framework is smart enough to extract just the floating  point number (since we declared `last` as float) and fail if no number can be extracted from string. `at_css` is just a nokogiri method, the reducer exposes every parser method.
 
-**IMPORTANT** No generator is available yet for integration tests, just add new tests to the `spec/integration` directory, also remember to require the `spec_helper.rb` file.
-
-Testing multiple states is very similar to testing just one.
-
-Just generate a **memento** and use the `crawl` and `last_state` methods (instead of `state`) to interact with the crawler.
-
-**IMPORTANT** You cannot call `crawl` with no state name in an integration test.
-
-```ruby
-describe "Some stuff" do
-
-  before do
-    crawl :login, user: 'blabla'
-  end
-
-  it "should extract all prices", crawling: 'my_happy_path_memento' do
-    crawl :open_orders
-    expect(last_state.output.orders.first.id).to eq(200)
-    crawl :cancel_order, order_id: last_state.output.orders.first.id
-    crawl :open_orders
-    expect(last_state.output.orders.first.id).to eq(201)
-  end
-
-end
+```
+self.low = at_css '.orderStats:nth-child(2) strong'
 ```
 
-## Assertive converters
+The only difference of the above line with the previous is that it shows that is not necessary to call `text` every time. The field setter detects if the passed value provides a `text` method and calls it.
 
-Crabfarm includes a set of validating data converters specially tunned for data extraction. To start converting/validating a value just call **assert** inside a state or a **parser**.
+And thats all!, run your specs, everything should check ok.
 
-```ruby
-# use it to convert
-self.price = assert(browser.search('#value').text).is_i # or
-self.price = assert(browser.search('#value')).is_i
+## Trying the crawler in the console
 
-# or just to validate
-assert(browser.search('.price').size).is_i greater_than: 10
+Run the crabfarm console when inside the crawler's root
+
+```
+crabfarm c
 ```
 
-Available converters:
+Call a **navigator** with some parameters, lets get the LTC/USD value using the BtcPrice **navigator** we built in the example above.
 
-* `is_i`: converts value to integer, validates that number is properly formatted. Accepts the following self-explaining options: `decimal_mark`, `thousand_mark`, `greater_than`, `less_than`, `greater_or_equal_to`, `less_or_equal_to`, `between`, `default`.
-* `is_f`: similar to `is_i` but always returns a float.
-* `is_s`: trims a string and removes consecutive spaces. Accepts the following options: `default`, `matches`.
-* `is_w`: similar to `is_s` but fails if string contains more than one word.
-* `is_b`: converts value to boolean. Truthy and falsy values can be specified using the `truthy` and `falsy` options. (that default to ['true'] and ['false', :empty] respectively)
-* `match`: executes a regular expression and returns the match object. Fails if regular expression does not match.
+```
+nav :btc_price, coin: 'LTC/USD'
+```
 
-## Server mode API
+You can make changes the crawler classes and reload the code in the console by calling `reload!`.
 
-The following API is exposed by the crawler server.
+You can also extract **snapshots** in the console:
 
-##### Get current state
+```
+snap :btc_price, coin: 'LTC/USD'
+```
 
-    GET /api/state
+## Integrating the crawler to your application
 
-Response
+Depending on your app's languaje, the following client libraries are available:
 
-    {
-      "name": "state_name",
-      "params": { /* optional state params */ },
-      "doc": { /* document structure */ }
-    }
+ * [Ruby/Rails - cangrejo gem](https://github.com/platanus/cangrejo-gem): The cangrejo gem has support for spawning your crawlers locally or in a crabfarm grid (crabfarm.io).
 
-##### Change current state
+If the languaje you are using is not listed here, you can submit an issue or better yet an implementation.
 
-    PUT /api/state
-    {
-      "name": "state_name",
-      "params": { /* optional state params */ }
-    }
+For more information on how to create a new client library refer to the [Crabfarm client developer guide](https://github.com/platanus/crabfarm-gem/wiki/client-developer-guide) and the cangrejo source.
 
-Response
+## About the Crabfarm.io service
 
-    {
-      "name": "state_name",
-      "params": { /* optional state params */ },
-      "doc": { /* document structure */ }
-    }
-
-##### Error codes
-
-Every error has an specific response structure.
-
-* 400: Bad request, response contain invalid attributes.
-* 408: Timeout, request still processing, response is empty.
-* 409: Conflict, attempted to update while crawler is busy.
-* 500: Crawler error, response contains error message and stacktrace.
+The best way to run your crawlers is on the crabfarm.io grid, it also provides monitoring and alert notifications for your crawlers. For more information visit [www.crabfarm.io](www.crabfarm.io).
 
