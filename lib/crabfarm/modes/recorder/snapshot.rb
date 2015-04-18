@@ -13,18 +13,23 @@ module Crabfarm
         def start(_context, _navigator, _query=nil)
           return puts "Must provide a navigator name" unless _navigator.is_a? String
 
-          puts "Navigating, waiting to hit a reducer...".color(Console::Colors::NOTICE)
-          service.with_navigator_decorator Shared::SnapshotDecorator do
-            if _query.nil?
-              service.with_navigator_decorator Shared::InteractiveDecorator do
-                service.transition _context, _navigator
+          begin
+            puts "Navigating, waiting to hit a reducer...".color(Console::Colors::NOTICE)
+            service.with_navigator_decorator Shared::SnapshotDecorator do
+              if _query.nil?
+                service.with_navigator_decorator Shared::InteractiveDecorator do
+                  service.transition _context, _navigator
+                end
+              else
+                _query = parse_query_string _query
+                service.transition _context, _navigator, _query
               end
-            else
-              _query = parse_query_string _query
-              service.transition _context, _navigator, _query
             end
+            puts "Navigation completed".color(Console::Colors::NOTICE)
+          rescue Exception => e
+            puts "#{e.to_s}".color Console::Colors::ERROR
+            puts e.backtrace
           end
-          puts "Navigation completed".color(Console::Colors::NOTICE)
         end
 
       private
