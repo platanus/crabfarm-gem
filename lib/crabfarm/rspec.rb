@@ -14,7 +14,7 @@ module Crabfarm
       end
 
       snapshot_path = described_class.snapshot_path _snapshot
-      raise Error.new "Snapshot does not exist #{_snapshot}" unless File.exist? snapshot_path
+      raise Error.new "Snapshot does not exist #{snapshot_path}" unless File.exist? snapshot_path
 
       data = File.read snapshot_path
       reducer = described_class.new data, _options
