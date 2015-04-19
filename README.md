@@ -70,7 +70,7 @@ Navigators are like your controllers, they receive some input parameters, naviga
 We are going to build a btc-e.com crawler to extract the last price for a given market:
 
 ```
-crabfarm g navigator BtcStats -u www.btc-e.com
+crabfarm g navigator BtcPrice -u www.btc-e.com
 ```
 
 This should generate a navigator source file and a corresponding spec *(this will also generate a reducer, more on that later)*. You can see we passed the target url using the `-u` option in the generator, this is optional.
@@ -122,9 +122,11 @@ Lets move to `/app/navigators/btc_price.rb` file now, that's where the navigator
 def run
   browser.goto 'www.btc-e.com'
 
-  browser.ul(class: 'pairs').lis.find do |li|
-    li.text.include? params[:market]
-  }.click
+  if params[:market]
+    browser.ul(class: 'pairs').lis.find { |li|
+      li.text.include? params[:market]
+    }.a.click
+  end
 
   reduce_with_defaults
 end
@@ -154,6 +156,8 @@ Now that you have the snapshot, lets write some **reducer** specs, go to `/spec/
 
 ```ruby
 it "should extract low, high and last values", reducing: 'my_snapshot' do
+  # the tested values depend on the ltc value at the time
+  # the snapshot/memento is recorded.
   expect(reducer.low).to eq 0.0061
   expect(reducer.high).to eq 0.0064
   expect(reducer.last).to eq 0.0061
@@ -167,9 +171,9 @@ The last step is writting the **reducer** code, parsing code goes inside the `ru
 ```ruby
 class BtcPriceReducer < Crabfarm::BaseReducer
 
-  has_float :last, less_than: 1.0
-  has_float :high, less_than: 1.0
-  has_float :low, less_than: 1.0
+  has_float :last, greater_or_equal_to: 0.0
+  has_float :high, greater_or_equal_to: 0.0
+  has_float :low, greater_or_equal_to: 0.0
 
   def run
     self.last = at_css('.orderStats:nth-child(1) strong').text
@@ -183,9 +187,9 @@ end
 Chunk by chunk:
 
 ```
-has_float :last, less_than: 1.0
-has_float :high, less_than: 1.0
-has_float :low, less_than: 1.0
+has_float :last, greater_or_equal_to: 0.0
+has_float :high, greater_or_equal_to: 0.0
+has_float :low, greater_or_equal_to: 0.0
 ```
 
 The **reducer** allows you to define fields that take care of the parsing and validation of text values for you. Also, declared fields help keep things dry since are included in `reducer.to_json`.
