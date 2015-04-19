@@ -53,7 +53,7 @@ files:
 - Gemfile.lock
 - boot.rb
 - app/**/*.*
-- bin/**/*.*
+- bin/*
 eos
         )
       end
@@ -91,7 +91,7 @@ files:
 - Gemfile.lock
 - boot.rb
 - app/**/*.*
-- bin/**/*.*
+- bin/*
 eos
         )
       end
