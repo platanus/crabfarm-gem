@@ -23,7 +23,7 @@ module Crabfarm
         end
 
         def release_driver(_driver)
-          @driver.quit rescue nil
+          _driver.quit rescue nil
         end
 
       private
