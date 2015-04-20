@@ -2,28 +2,6 @@
 
 This gem facilitates the creation of new crabfarm crawlers.
 
-## Usage
-
-Install it using:
-
-    $ gem install crabfarm
-
-Then generate a new crawler using the gem's generator, you can optionally pass the crawler [crabfarm.io](http://www.crabfarm.io) remote here.
-
-    $ crabfarm g app new_crawler_folder --remote=platanus/demo
-
-The generator also provides tasks to generate navigators and reducers, more on that later:
-
-    $ crabfarm g navigator FrontPage
-    $ crabfarm g reducer PriceTable
-
-To run the tests just call:
-
-    $ rspec
-
-To use the crawler in development you can start it in server mode, just call `crabfarm s -p 3000`.
-
-
 ## Building your first crawler
 
 One of our biggest advantages comes from having a structured developing process based on TDD.
