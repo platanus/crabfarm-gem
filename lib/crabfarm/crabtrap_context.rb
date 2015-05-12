@@ -72,7 +72,7 @@ module Crabfarm
 
     def stop_daemon
       unless @runner.nil?
-        @runner.stop
+        @runner.kill
         @runner = nil
       else nil end
     end

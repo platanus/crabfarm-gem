@@ -38,6 +38,15 @@ module Crabfarm
       end
     end
 
+    def kill
+      unless @process.nil?
+        logger.info "Killing crabtrap (PID: #{@process.pid})"
+        @process.stop 0
+        @process = nil
+        logger.info "Crabtrap stopped"
+      end
+    end
+
   private
 
     def spawn_crabtrap
