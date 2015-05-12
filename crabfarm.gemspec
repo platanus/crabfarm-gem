@@ -25,6 +25,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'puma','~> 2.10.2'
   spec.add_dependency 'git'
   spec.add_dependency 'childprocess','~> 0.5.5'
+  spec.add_dependency 'listen', '~> 2.7'
 
   spec.add_development_dependency "selenium-webdriver", "~> 2.45"
   spec.add_development_dependency "nokogiri", '~> 1.6.6'

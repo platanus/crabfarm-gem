@@ -5,6 +5,7 @@ require "crabfarm/assertion/context"
 module Crabfarm
   class BaseNavigator
     include Assertion::Context
+    include Live::Interactable
     extend Forwardable
 
     attr_reader :params

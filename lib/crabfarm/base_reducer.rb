@@ -3,6 +3,7 @@ require "crabfarm/assertion/fields"
 module Crabfarm
   class BaseReducer < Delegator
     include Assertion::Fields
+    include Live::Interactable
 
     attr_reader :raw_document, :document, :params
 

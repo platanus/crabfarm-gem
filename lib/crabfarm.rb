@@ -14,6 +14,7 @@ require "crabfarm/state_store"
 require "crabfarm/context"
 require "crabfarm/context_factory"
 require "crabfarm/transition_service"
+require "crabfarm/live/interactable"
 require "crabfarm/base_navigator"
 require "crabfarm/base_reducer"
 require "crabfarm/base_struct"
@@ -26,6 +27,7 @@ module Crabfarm
 
   @@config = Configuration.new
   @@logger = nil
+  @@live = nil
 
   def self.config
     @@config
@@ -41,6 +43,19 @@ module Crabfarm
 
   def self.read_crabfile(_path)
     @@config.instance_eval File.read _path
+  end
+
+  def self.install_live_backend
+    require "crabfarm/live/manager"
+    @@live = Live::Manager.new
+  end
+
+  def self.live
+    @@live
+  end
+
+  def self.live?
+    not @@live.nil?
   end
 
   module Strategies

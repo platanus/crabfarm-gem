@@ -27,6 +27,16 @@ module Crabfarm
       end
     end
 
+    desc "Starts the crawler in live mode"
+    command [:live, :i] do |c|
+      c.action do |global_options,options,args|
+        next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
+
+        require "crabfarm/modes/live"
+        Crabfarm::Modes::Live.start_watch
+      end
+    end
+
     desc "Starts the crawler in server mode"
     command [:server, :s] do |c|
       c.desc "Set the server host, defaults to 0.0.0.0"
