@@ -1,7 +1,9 @@
-require "crabfarm/assertion/fields"
+require 'crabfarm/base'
+require 'crabfarm/assertion/context'
 
 module Crabfarm
   class BaseStruct
+    include Base
     include Assertion::Fields
 
     def initialize(_values={})

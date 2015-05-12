@@ -25,10 +25,6 @@ module Crabfarm
 
       # TODO: Tooling
 
-      # def debugger
-      #   if Crabfarm.live? then else end
-      # end
-
       # def highlight(_element)
       #   if Crabfarm.live? then else end
       # end

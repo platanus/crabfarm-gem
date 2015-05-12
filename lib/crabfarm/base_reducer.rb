@@ -1,7 +1,10 @@
-require "crabfarm/assertion/fields"
+require 'crabfarm/base'
+require 'crabfarm/assertion/fields'
+require 'crabfarm/live/interactable'
 
 module Crabfarm
   class BaseReducer < Delegator
+    include Base
     include Assertion::Fields
     include Live::Interactable
 

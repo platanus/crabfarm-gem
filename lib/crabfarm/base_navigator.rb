@@ -1,9 +1,12 @@
 require 'thwait'
+require 'crabfarm/base'
+require 'crabfarm/assertion/context'
+require 'crabfarm/live/interactable'
 require 'crabfarm/forked_navigator'
-require "crabfarm/assertion/context"
 
 module Crabfarm
   class BaseNavigator
+    include Base
     include Assertion::Context
     include Live::Interactable
     extend Forwardable

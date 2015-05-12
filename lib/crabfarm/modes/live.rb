@@ -37,10 +37,12 @@ module Crabfarm
       def start_watch
         begin
           @last_change = nil
-          manager = Crabfarm.install_live_backend
-          manager.start
 
-          controller = Crabfarm::Live::Controller.new manager
+          Crabfarm.enable_debugging!
+          Crabfarm.install_live_backend!
+          Crabfarm.live.start
+
+          controller = Crabfarm::Live::Controller.new Crabfarm.live
 
           watcher = setup_watcher { |t| @last_change = t }
           watcher.start
@@ -61,7 +63,7 @@ module Crabfarm
           puts e.backtrace
         ensure
           puts 'Exiting'
-          manager.stop rescue nil
+          Crabfarm.live.stop rescue nil
           watcher.stop rescue nil
         end
       end
