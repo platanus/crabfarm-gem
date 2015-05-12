@@ -19,11 +19,17 @@ module Crabfarm
         end
 
         def build_driver(_session_id)
-          return wrap_driver build_webdriver_instance
+          wrap_driver(if Crabfarm.live?
+            build_live_instance _session_id
+          else
+            build_webdriver_instance
+          end)
         end
 
-        def release_driver(_driver)
-          _driver.quit rescue nil
+        def release_driver(_session_id, _driver)
+          unless Crabfarm.live? and _session_id == :default_driver
+            _driver.driver.quit rescue nil
+          end
         end
 
       private
@@ -36,6 +42,14 @@ module Crabfarm
 
         def build_webdriver_instance
           raise NotImplementedError.new
+        end
+
+        def build_live_instance(_session_id)
+          if _session_id == :default_driver
+            Crabfarm.live.primary_driver
+          else
+            Crabfarm.live.generate_support_driver
+          end
         end
 
         def load_driver_config
