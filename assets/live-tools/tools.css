@@ -19,7 +19,9 @@ div.crabfarm_dialog {
   background: white !important;
 }
 
-div.crabfarm_dialog h1, h3, a {
+div.crabfarm_dialog h1,
+div.crabfarm_dialog h3,
+div.crabfarm_dialog a {
   color: white;
 }
 
@@ -37,7 +39,8 @@ div.crabfarm_dialog .crabfarm_dialog_container {
   padding: 10px !important;
 }
 
-div.crabfarm_dialog h1, h3 {
+div.crabfarm_dialog h1,
+div.crabfarm_dialog h3 {
   margin: 0;
   margin-bottom: 5px;
   padding: 0;
