@@ -15,5 +15,9 @@ module Crabfarm
       field_hash
     end
 
+    def to_json(_options={})
+      field_hash.to_json(_options)
+    end
+
   end
 end
