@@ -7,7 +7,8 @@ module Crabfarm
         _driver.execute_script("
           (function() {
             var script = document.createElement('script');
-            script.setAttribute('src','#{_path}');
+            script.async = false;
+            script.src = '#{_path}';
             document.head.appendChild(script);
           })();
         ")
