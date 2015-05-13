@@ -33,11 +33,15 @@ module Crabfarm
       end
 
       def start_crabtrap(_mode, _memento_path=nil)
+
+        raise ConfigurationError.new "No memento found at #{_memento_path}" unless File.exists? _memento_path
+
         if @crabtrap.nil?
           options = {
             mode: _mode,
             bucket_path: _memento_path,
-            port: @port
+            port: @port,
+            virtual: File.expand_path('./assets/live-tools', Crabfarm.root)
           }
 
           @crabtrap = CrabtrapRunner.new config.crabtrap_config.merge(options)

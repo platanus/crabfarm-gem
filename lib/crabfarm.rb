@@ -29,6 +29,10 @@ module Crabfarm
   @@live = nil
   @@debug = false
 
+  def self.root
+    File.dirname __dir__
+  end
+
   def self.config
     @@config
   end

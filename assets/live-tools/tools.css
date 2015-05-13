@@ -1,0 +1,63 @@
+div.crabfarm_overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 999999999 !important;
+  background: rgba(0,0,0,0.6) !important;
+}
+
+div.crabfarm_dialog {
+  position: relative !important;
+  margin: auto !important;
+  margin-top: 20% !important;
+  width: 80% !important;
+  min-height: 60% !important;
+  border-radius: 4px !important;
+
+  background: white !important;
+}
+
+div.crabfarm_dialog.crabfarm_dialog_success {
+  border: 6px solid #00DD00;
+}
+
+div.crabfarm_dialog.crabfarm_dialog_error {
+  border: 6px solid #DD0000;
+}
+
+div.crabfarm_dialog h1 {
+  margin: 20px;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  font-size: 20px;
+  font-weight: bold;
+  vertical-align: baseline;
+  color: black;
+}
+
+div.crabfarm_dialog .crabfarm_dialog_content {
+  padding: 15px !important;
+}
+
+div.crabfarm_dialog .crabfarm_dialog_content pre {
+  margin: 5px;
+  max-height: 600px;
+  overflow: scroll;
+}
+
+div.crabfarm_dialog .crabfarm_dialog_close {
+  position: absolute !important;
+  top: 5px !important;
+  right: 9px !important;
+  border: none !important;
+  text-decoration: none !important;
+}
+
+div.crabfarm_dialog .string { color: green; }
+div.crabfarm_dialog .number { color: darkorange; }
+div.crabfarm_dialog .boolean { color: blue; }
+div.crabfarm_dialog .null { color: magenta; }
+div.crabfarm_dialog .key { color: red; }
