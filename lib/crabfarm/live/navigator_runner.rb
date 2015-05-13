@@ -53,6 +53,7 @@ module Crabfarm
       end
 
       def output
+        return nil if @transition.document.nil?
         JSON.pretty_generate(@transition.document).gsub(/(^|\\n)/, '  ')
       end
 
