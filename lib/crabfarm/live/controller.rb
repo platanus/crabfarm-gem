@@ -105,11 +105,17 @@ module Crabfarm
       end
 
       def load_web_ui
-        Helpers.inject_script @manager.primary_driver, 'https://www.crabtrap.io/selectorgadget_combined.js'
         Helpers.inject_style @manager.primary_driver, 'https://www.crabtrap.io/selectorgadget_combined.css'
-        Helpers.inject_script @manager.primary_driver, 'https://www.crabtrap.io/tools.js'
         Helpers.inject_style @manager.primary_driver, 'https://www.crabtrap.io/tools.css'
+        Helpers.inject_script @manager.primary_driver, 'https://www.crabtrap.io/selectorgadget_combined.js'
+        Helpers.inject_script @manager.primary_driver, 'https://www.crabtrap.io/tools.js'
+        wait_for_injection
+      end
 
+      def wait_for_injection
+        while @manager.primary_driver.execute_script "return (typeof window.crabfarm === 'undefined');"
+          sleep 1.0
+        end
       end
 
       def memento_path(_name)
