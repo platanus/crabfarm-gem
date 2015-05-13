@@ -75,8 +75,28 @@ module Crabfarm
 
       def display_feedback(_runner, _elapsed)
         load_web_ui
+
+        @manager.primary_driver.execute_script(
+          "window.crabfarm.showResults(arguments[0], arguments[1]);",
+          _runner.output,
+          _elapsed.real
+        );
+
         puts _runner.output.color Colors::RESULT
         puts "Completed in #{_elapsed.real} s".color Colors::NOTICE
+      end
+
+      def display_error_feedback(_exc)
+        load_web_ui
+
+        @manager.primary_driver.execute_script(
+          "window.crabfarm.showError(arguments[0], arguments[1]);",
+          "#{_exc.class.to_s}: #{_exc.to_s}",
+          _exc.backtrace.join("\n")
+        );
+
+        puts "#{_exc.class.to_s}: #{_exc.to_s}".color Colors::ERROR
+        puts _exc.backtrace
       end
 
       def display_warning_feedback(_exc)
@@ -84,13 +104,11 @@ module Crabfarm
         puts "Warning: #{_exc.to_s}".color Colors::WARNING
       end
 
-      def display_error_feedback(_exc)
-        load_web_ui
-        puts "#{_exc.class.to_s}: #{_exc.to_s}".color Colors::ERROR
-        puts _exc.backtrace
-      end
-
       def load_web_ui
+        Helpers.inject_script @manager.primary_driver, 'https://www.crabtrap.io/selectorgadget_combined.js'
+        Helpers.inject_style @manager.primary_driver, 'https://www.crabtrap.io/selectorgadget_combined.css'
+        Helpers.inject_script @manager.primary_driver, 'https://www.crabtrap.io/tools.js'
+        Helpers.inject_style @manager.primary_driver, 'https://www.crabtrap.io/tools.css'
 
       end
 
