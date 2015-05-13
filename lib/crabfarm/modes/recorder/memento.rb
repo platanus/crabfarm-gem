@@ -31,9 +31,12 @@ module Crabfarm
                 driver.window_handle
                 sleep 1.0
               end
+            rescue SystemExit, Interrupt
+              # Nothing for now
             rescue Exception => e
-              puts e
-              puts e.backtrace
+              # Nothing for now
+              # puts e.class.to_s
+              # puts e.backtrace
             end
 
             puts "Releasing crawling context".color(:green)
