@@ -28,11 +28,12 @@ module Crabfarm
             begin
               puts "Press Ctrl-C or close browser to stop #{_replay ? 'playback' : 'capturing'}."
               loop do
-                driver.current_url
+                driver.window_handle
                 sleep 1.0
               end
             rescue Exception => e
-              # noop
+              puts e
+              puts e.backtrace
             end
 
             puts "Releasing crawling context".color(:green)
