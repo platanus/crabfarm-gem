@@ -23,7 +23,7 @@ if(!window.crabfarm) {
 		});
 	};
 
-	var buildResultDialog = function(_styleClass, _title, _content) {
+	var buildResultDialog = function(_styleClass, _title, _subtitle, _content) {
 		var overlay = jQuerySG('<div>')
 			.addClass('selectorgadget_ignore')
 			.addClass('crabfarm_overlay');
@@ -31,6 +31,9 @@ if(!window.crabfarm) {
 		var dialog = jQuerySG('<div>')
 			.addClass('crabfarm_dialog')
 			.addClass(_styleClass);
+
+		var container = jQuerySG('<div>')
+			.addClass('crabfarm_dialog_container');
 
 		var button = jQuerySG('<a href="javascript:void(0);">')
 			.addClass('crabfarm_dialog_close')
@@ -48,21 +51,25 @@ if(!window.crabfarm) {
 			.addClass('crabfarm_dialog_content')
 			.append(_content);
 
+		container.append(jQuerySG('<h1>').text(_title));
+		container.append(jQuerySG('<h3>').text(_subtitle));
+		container.append(content);
+
 		dialog.append(button);
-		dialog.append(jQuerySG('<h1>').text(_title));
-		dialog.append(content);
+		dialog.append(container);
 		overlay.append(dialog);
 
 		jQuerySG('body').append(overlay);
 	};
 
 	window.crabfarm = {
-		showResults: function(_data) {
+		showResults: function(_data, _elapsed) {
 			_data = JSON.parse(_data);
 
 			buildResultDialog(
 				'crabfarm_dialog_success',
 				'Navigation completed!',
+				'The page was scrapped in ' + _elapsed + ' seconds',
 				jQuerySG('<pre>').html(syntaxHighlight(_data))
 			);
 		},
@@ -71,6 +78,7 @@ if(!window.crabfarm) {
 			buildResultDialog(
 				'crabfarm_dialog_error',
 				'Navigation error!',
+				_error,
 				jQuerySG('<pre>').text(_trace)
 			);
 		},

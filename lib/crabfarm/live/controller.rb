@@ -82,7 +82,7 @@ module Crabfarm
           _elapsed.real
         );
 
-        puts _runner.output.color Colors::RESULT
+        puts _runner.output.to_s.color Colors::RESULT
         puts "Completed in #{_elapsed.real} s".color Colors::NOTICE
       end
 

@@ -11,7 +11,7 @@ div.crabfarm_overlay {
 div.crabfarm_dialog {
   position: relative !important;
   margin: auto !important;
-  margin-top: 20% !important;
+  margin-top: 15% !important;
   width: 80% !important;
   min-height: 60% !important;
   border-radius: 4px !important;
@@ -19,33 +19,50 @@ div.crabfarm_dialog {
   background: white !important;
 }
 
+div.crabfarm_dialog h1, h3, a {
+  color: white;
+}
+
 div.crabfarm_dialog.crabfarm_dialog_success {
-  border: 6px solid #00DD00;
+  border: 6px solid #009000;
+  background: #009000 !important;
 }
 
 div.crabfarm_dialog.crabfarm_dialog_error {
   border: 6px solid #DD0000;
+  background: #DD0000 !important;
 }
 
-div.crabfarm_dialog h1 {
-  margin: 20px;
+div.crabfarm_dialog .crabfarm_dialog_container {
+  padding: 10px !important;
+}
+
+div.crabfarm_dialog h1, h3 {
+  margin: 0;
+  margin-bottom: 5px;
   padding: 0;
   border: 0;
   font: inherit;
   font-size: 20px;
   font-weight: bold;
   vertical-align: baseline;
-  color: black;
+}
+
+div.crabfarm_dialog h3 {
+  font-size: 14px;
+  font-weight: normal;
 }
 
 div.crabfarm_dialog .crabfarm_dialog_content {
-  padding: 15px !important;
+  margin: 10px;
+  border: none;
+  background: #DDD;
 }
 
 div.crabfarm_dialog .crabfarm_dialog_content pre {
-  margin: 5px;
   max-height: 600px;
   overflow: scroll;
+  color: black;
 }
 
 div.crabfarm_dialog .crabfarm_dialog_close {
