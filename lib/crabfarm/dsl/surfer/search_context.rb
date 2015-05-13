@@ -16,6 +16,10 @@ module Crabfarm
           @parent = _parent
         end
 
+        def webdriver_elements
+          @elements
+        end
+
         def root
           @parent.root
         end
