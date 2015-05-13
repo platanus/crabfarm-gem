@@ -68,6 +68,7 @@ module Crabfarm
       cmd << mode.to_s
       cmd << @config[:bucket_path] if mode != :pass
       cmd << "--port=#{port}"
+      cmd << "--virtual=#{@config[:virtual]}" if @config.key? :virtual
       cmd
     end
 
