@@ -28,7 +28,7 @@ module Crabfarm
     end
 
     desc "Starts the crawler in live mode"
-    command [:live, :i] do |c|
+    command [:live, :l] do |c|
       c.action do |global_options,options,args|
         next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
 
