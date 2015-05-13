@@ -26,6 +26,16 @@ module Crabfarm
         ")
       end
 
+      def set_style(_elements, _style)
+        return if _elements.size == 0
+        # Not sure about using a bridge method directly here...
+        _elements.first.send(:bridge).executeScript("
+          for(var i = 0, l = arguments[0].length; i < l; i++) {
+            arguments[0][i].setAttribute('style', arguments[1]);
+          }
+        ", _elements, _style)
+      end
+
     end
   end
 end

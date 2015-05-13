@@ -1,3 +1,5 @@
+require 'crabfarm/live/helpers'
+
 module Crabfarm
   module Live
     module Interactable
@@ -23,15 +25,21 @@ module Crabfarm
 
       end
 
-      # TODO: Tooling
+      # Tooling
 
-      # def highlight(_element)
-      #   if Crabfarm.live? then else end
-      # end
+      def highlight(_elements)
+        if Crabfarm.live?
+          if _elements.respond_to? :webdriver_elements
+            _elements = _elements.webdriver_elements
+          end
 
-      # def console
-      #   if Crabfarm.live? then else end
-      # end
+          if _elements.is_a? String
+            _elements = Crabfarm.live.primary_driver.find_elements(css: _elements)
+          end
+
+          Helpers.set_style _elements, "border: 3px solid yellow;"
+        end
+      end
 
     end
   end
