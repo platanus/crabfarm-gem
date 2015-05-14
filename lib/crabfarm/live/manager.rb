@@ -104,7 +104,7 @@ module Crabfarm
       end
 
       def memento_path(_name)
-        File.join(GlobalState.mementos_path, _name + '.json.gz')
+        File.join(GlobalState.mementos_path, _name.to_s + '.json.gz')
       end
 
     end
