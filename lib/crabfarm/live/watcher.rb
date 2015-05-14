@@ -43,7 +43,13 @@ module Crabfarm
         unless @candidates.nil?
           ActiveSupport::Dependencies.clear
           @candidates.each do |class_name|
-            target = class_name.constantize rescue nil
+            target = begin
+              class_name.constantize
+            rescue Exception => exc
+              puts "#{exc.class.to_s}: #{exc.to_s}".color Controller::Colors::ERROR
+              puts exc.backtrace
+            end
+
             if target and target < Crabfarm::Live::Interactable
               @controller.execute_live target
               break

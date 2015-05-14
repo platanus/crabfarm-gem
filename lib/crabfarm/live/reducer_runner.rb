@@ -14,7 +14,7 @@ module Crabfarm
           return navigator if navigator and navigator < BaseNavigator
         end
 
-        raise Controller::LiveWarning.new "Could not find a matching navigator for reducer #{_reducer.to_s}"
+        raise ConfigurationError.new "Could not find a matching navigator for reducer #{_reducer.to_s}"
       end
 
     end

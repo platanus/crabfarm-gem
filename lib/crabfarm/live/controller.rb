@@ -19,8 +19,6 @@ module Crabfarm
 
       Colors = Crabfarm::Modes::Console::Colors
 
-      class LiveWarning < StandardError; end
-
       def initialize(_manager)
         @manager = _manager
       end
@@ -31,8 +29,6 @@ module Crabfarm
           prepare_session_for runner
           elapsed = Benchmark.measure { runner.execute }
           display_feedback runner, elapsed
-        rescue LiveWarning => exc
-          display_warning_feedback exc
         rescue Exception => exc
           display_error_feedback exc
         ensure
@@ -43,7 +39,7 @@ module Crabfarm
     private
 
       def build_runner_for(_class)
-        raise LiveWarning.new "'#{_class.to_s} is not Interactable" unless _class < Interactable
+        raise ArgumentError.new "'#{_class.to_s} is not Interactable" unless _class < Interactable
 
         puts "Launching #{_class.to_s}".color Colors::NOTICE
 
@@ -55,7 +51,7 @@ module Crabfarm
           elsif _class < BaseReducer
             ReducerRunner
           else
-            raise LiveWarning.new "Don't know how to run #{_class.to_s}, you should provide a navigator or reducer as delegate."
+            raise ConfigurationError.new "Don't know how to run #{_class.to_s}, you should provide a navigator or reducer as delegate."
           end.new _class
         end
 
@@ -97,11 +93,6 @@ module Crabfarm
 
         puts "#{_exc.class.to_s}: #{_exc.to_s}".color Colors::ERROR
         puts _exc.backtrace
-      end
-
-      def display_warning_feedback(_exc)
-        load_web_ui
-        puts "Warning: #{_exc.to_s}".color Colors::WARNING
       end
 
       def load_web_ui
