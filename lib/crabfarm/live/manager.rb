@@ -7,7 +7,7 @@ module Crabfarm
 
       def initialize
         @port = Utils::PortDiscovery.find_available_port
-        @driver = Crabfarm.config.recorder_driver
+        @driver_name = Crabfarm.config.recorder_driver
       end
 
       def proxy_port
@@ -15,6 +15,7 @@ module Crabfarm
       end
 
       def start
+        reset
         load_primary_driver
       end
 
@@ -32,21 +33,27 @@ module Crabfarm
         build_driver
       end
 
-      def start_crabtrap(_mode, _memento_path=nil)
+      def reset(_memento=nil)
 
-        raise ConfigurationError.new "No memento found at #{_memento_path}" unless File.exists? _memento_path
+        reset_drivers
 
-        if @crabtrap.nil?
-          options = {
-            mode: _mode,
-            bucket_path: _memento_path,
-            port: @port,
-            virtual: File.expand_path('./assets/live-tools', Crabfarm.root)
-          }
-
-          @crabtrap = CrabtrapRunner.new config.crabtrap_config.merge(options)
-          @crabtrap.start
+        options = if _memento
+          path = memento_path _memento
+          raise ConfigurationError.new "No memento found at #{path}" unless File.exists? path
+          { mode: :replay, bucket_path: path }
+        else
+          { mode: :pass }
         end
+
+        options.merge!({
+          port: @port,
+          virtual: File.expand_path('./assets/live-tools', Crabfarm.root)
+        })
+
+        stop_crabtrap
+        @crabtrap = CrabtrapRunner.new config.crabtrap_config.merge(options)
+        @crabtrap.start
+
       end
 
       def stop_crabtrap
@@ -60,14 +67,25 @@ module Crabfarm
 
       def load_primary_driver
         @driver = build_driver
+        @driver.get('https://www.crabtrap.io/welcome.html')
       end
 
       def release_primary_driver
-        @driver.quit rescue nil unless @driver.nil?
+        unless @driver.nil?
+          @driver.quit rescue nil
+          @driver = nil
+        end
+      end
+
+      def reset_drivers
+        unless @driver.nil?
+          # TODO: manage window handles
+          @driver.get('https://www.crabtrap.io/instructions.html')
+        end
       end
 
       def build_driver
-        case @driver
+        case @driver_name
         when :firefox
           Crabfarm::Support::WebdriverFactory.build_firefox_driver driver_config
         when :chrome
@@ -83,6 +101,10 @@ module Crabfarm
 
       def config
         Crabfarm.config
+      end
+
+      def memento_path(_name)
+        File.join(GlobalState.mementos_path, _name + '.json.gz')
       end
 
     end
