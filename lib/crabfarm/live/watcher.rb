@@ -1,10 +1,12 @@
 require 'listen'
+require 'crabfarm/utils/console'
 
 module Crabfarm
   module Live
     class Watcher
 
       PATH_RGX = /^\/[^\/]+\/(.*?)\.rb$/i
+      SPEC_RGX = /^\/[^\/]+\/(.*?)_spec\.rb$/i
 
       def initialize(_controller)
         @controller = _controller
@@ -26,14 +28,20 @@ module Crabfarm
     private
 
       def start_listener
-        base_path = File.join CF_PATH, 'app'
-        @listener = Listen.to(base_path) do |modified, added, removed|
+        app_path = File.join CF_PATH, 'app'
+        spec_path = File.join CF_PATH, 'spec'
+        @listener = Listen.to(app_path, spec_path) do |modified, added, removed|
           @candidates = (added + modified).map do |path|
-            class_from_path path[base_path.length..-1]
+            if path.start_with? app_path
+              class_from_path path[app_path.length..-1], PATH_RGX
+            else
+              class_from_path path[spec_path.length..-1], SPEC_RGX
+            end
           end.reject &:nil?
         end
         @listener.start
       end
+
 
       def stop_listener
         @listener.stop if @listener
@@ -46,8 +54,7 @@ module Crabfarm
             target = begin
               class_name.constantize
             rescue Exception => exc
-              puts "#{exc.class.to_s}: #{exc.to_s}".color Controller::Colors::ERROR
-              puts exc.backtrace
+              Utils::Console.exception exc
             end
 
             if target and target < Crabfarm::Live::Interactable
@@ -60,9 +67,9 @@ module Crabfarm
         end
       end
 
-      def class_from_path(_filename)
+      def class_from_path(_filename, _regexp)
         _filename = _filename.gsub File::SEPARATOR, '/'
-        m = _filename.match PATH_RGX
+        m = _filename.match _regexp
         return nil if m.nil?
         Utils::Naming.decode_crabfarm_uri m[1]
       end
