@@ -34,7 +34,11 @@ module Crabfarm
           build_runner_for _class.live_delegate
         else
           if _class < BaseNavigator
-            NavigatorRunner
+            if _class.live_rspec?
+              NavigatorRspecRunner
+            else
+              NavigatorRunner
+            end
           elsif _class < BaseReducer
             ReducerRunner
           else

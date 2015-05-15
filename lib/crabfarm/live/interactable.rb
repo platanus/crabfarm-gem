@@ -1,4 +1,4 @@
-require 'crabfarm/live/helpers'
+require 'crabfarm/utils/webdriver'
 
 module Crabfarm
   module Live
@@ -13,6 +13,10 @@ module Crabfarm
         def live(_options={}, &_setup)
           @delegate = _options[:delegate]
           @setup = _setup
+        end
+
+        def live_rspec?
+          @setup.nil?
         end
 
         def live_delegate
@@ -37,7 +41,7 @@ module Crabfarm
             _elements = Crabfarm.live.primary_driver.find_elements(css: _elements)
           end
 
-          Helpers.set_style _elements, "border: 3px solid yellow;"
+          Utils::Webdriver.set_style _elements, "border: 3px solid yellow;"
         end
       end
 
