@@ -30,9 +30,25 @@ div.crabfarm_dialog.crabfarm_dialog_success {
   background: #009000 !important;
 }
 
+div.crabfarm_dialog.crabfarm_dialog_warning {
+  border: 6px solid #DD5500;
+  background: #DD5500 !important;
+}
+
 div.crabfarm_dialog.crabfarm_dialog_error {
   border: 6px solid #DD0000;
   background: #DD0000 !important;
+}
+
+div.crabfarm_dialog.crabfarm_dialog_neutral {
+  border: 6px solid #BBBBBB;
+  background: #EEEEEE !important;
+}
+
+div.crabfarm_dialog.crabfarm_dialog_neutral h1,
+div.crabfarm_dialog.crabfarm_dialog_neutral h3,
+div.crabfarm_dialog.crabfarm_dialog_neutral a {
+  color: black;
 }
 
 div.crabfarm_dialog .crabfarm_dialog_container {

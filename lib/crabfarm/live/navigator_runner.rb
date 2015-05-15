@@ -1,4 +1,5 @@
-require 'json'
+require 'benchmark'
+require 'crabfarm/utils/console'
 
 module Crabfarm
   module Live
@@ -14,7 +15,8 @@ module Crabfarm
         def_delegators :@runner, :use_memento, :use_params, :clear_params, :navigate_to
       end
 
-      def initialize(_target)
+      def initialize(_manager, _target)
+        @manager = _manager
         @target = _target
         @params = {}
       end
@@ -40,27 +42,37 @@ module Crabfarm
       end
 
       def navigate_to(_navigator, _params={})
+        # TODO.
       end
 
       def execute
-        context = Crabfarm::Context.new
-        begin
-          # TODO: execute prerequisites
-          @transition = TransitionService.transition context, @target, @params
-        ensure
-          context.release
+        Crabfarm::ContextFactory.with_context memento do |ctx|
+          @elapsed = Benchmark.measure do
+            @transition = TransitionService.transition ctx, @target, @params
+          end
         end
-      end
 
-      def output
-        return nil if @transition.document.nil?
-        JSON.pretty_generate(@transition.document).gsub(/(^|\\n)/, '  ')
+        show_result
       end
 
     private
 
       def memento_for(_class)
         Utils::Naming.route_from_constant(_class.to_s).join(File::SEPARATOR)
+      end
+
+      def show_result
+        @manager.inject_web_tools
+        @manager.show_dialog(
+          :neutral,
+          'Navigation completed!',
+          "The page was scrapped in #{@elapsed.real} seconds",
+          @transition.document.to_json,
+          :json
+        )
+
+        Utils::Console.json_result @transition.document
+        Utils::Console.info "Completed in #{@elapsed.real} s"
       end
 
     end

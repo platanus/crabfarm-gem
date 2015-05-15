@@ -2,9 +2,9 @@ module Crabfarm
   module Live
     class ReducerRunner < NavigatorRunner
 
-      def initialize(_target)
+      def initialize(_manager, _target)
         # use navigator runner for now.
-        super navigator_from_reducer _target
+        super _manager, navigator_from_reducer(_target)
       end
 
       def navigator_from_reducer _reducer

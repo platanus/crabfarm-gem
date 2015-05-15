@@ -1,6 +1,6 @@
 module Crabfarm
-  module Live
-    module Helpers
+  module Utils
+    module Webdriver
       extend self
 
       def inject_script(_driver, _path)

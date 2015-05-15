@@ -1,9 +1,14 @@
+require 'timeout'
+require 'crabfarm/utils/console'
+require 'crabfarm/utils/webdriver'
 require 'crabfarm/support/webdriver_factory'
 require 'crabfarm/crabtrap_runner'
 
 module Crabfarm
   module Live
     class Manager
+
+      INJECTION_TM = 5 # seconds
 
       def initialize
         @port = Utils::PortDiscovery.find_available_port
@@ -15,7 +20,7 @@ module Crabfarm
       end
 
       def start
-        reset
+        set_memento
         load_primary_driver
       end
 
@@ -33,9 +38,12 @@ module Crabfarm
         build_driver
       end
 
-      def reset(_memento=nil)
+      def reset_driver_status
+        # TODO: manage driver handles and recreate driver if needed
+        primary_driver.get('https://www.crabtrap.io/instructions.html')
+      end
 
-        reset_drivers
+      def set_memento(_memento=nil)
 
         options = if _memento
           path = memento_path _memento
@@ -63,6 +71,37 @@ module Crabfarm
         else nil end
       end
 
+      def inject_web_tools
+        Utils::Console.trap_errors 'injecting web tools' do
+          Utils::Webdriver.inject_style primary_driver, 'https://www.crabtrap.io/selectorgadget_combined.css'
+          Utils::Webdriver.inject_style primary_driver, 'https://www.crabtrap.io/tools.css'
+          Utils::Webdriver.inject_script primary_driver, 'https://www.crabtrap.io/selectorgadget_combined.js'
+          Utils::Webdriver.inject_script primary_driver, 'https://www.crabtrap.io/tools.js'
+          Timeout::timeout(INJECTION_TM) { wait_for_injection }
+        end
+      end
+
+      def show_dialog(_status, _title, _subtitle, _content=nil, _content_type=:text)
+        Utils::Console.trap_errors 'loading web dialog' do
+          primary_driver.execute_script(
+            "window.crabfarm.showDialog.apply(null, arguments);",
+            _status.to_s,
+            _title,
+            _subtitle,
+            _content,
+            _content_type.to_s
+          );
+        end
+      end
+
+      def show_selector_gadget()
+        Utils::Console.trap_errors 'loading selector gadget' do
+          primary_driver.execute_script(
+            'window.crabfarm.showSelectorGadget();'
+          )
+        end
+      end
+
     private
 
       def load_primary_driver
@@ -74,13 +113,6 @@ module Crabfarm
         unless @driver.nil?
           @driver.quit rescue nil
           @driver = nil
-        end
-      end
-
-      def reset_drivers
-        unless @driver.nil?
-          # TODO: manage window handles
-          @driver.get('https://www.crabtrap.io/instructions.html')
         end
       end
 
@@ -105,6 +137,12 @@ module Crabfarm
 
       def memento_path(_name)
         File.join(GlobalState.mementos_path, _name.to_s + '.json.gz')
+      end
+
+      def wait_for_injection
+        while primary_driver.execute_script "return (typeof window.crabfarm === 'undefined');"
+          sleep 1.0
+        end
       end
 
     end

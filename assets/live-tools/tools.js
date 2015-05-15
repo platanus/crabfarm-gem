@@ -23,64 +23,58 @@ if(!window.crabfarm) {
 		});
 	};
 
-	var buildResultDialog = function(_styleClass, _title, _subtitle, _content) {
-		var overlay = jQuerySG('<div>')
-			.addClass('selectorgadget_ignore')
-			.addClass('crabfarm_overlay');
-
-		var dialog = jQuerySG('<div>')
-			.addClass('crabfarm_dialog')
-			.addClass(_styleClass);
-
-		var container = jQuerySG('<div>')
-			.addClass('crabfarm_dialog_container');
-
-		var button = jQuerySG('<a href="javascript:void(0);">')
-			.addClass('crabfarm_dialog_close')
-			.text('x');
-
-		var removeOverlay = function() {
-			overlay.remove();
-			window.crabfarm.showSelectorGadget();
-		};
-
-		overlay.bind("click", removeOverlay);
-		button.bind("click", removeOverlay);
-
-		var content = jQuerySG('<div>')
-			.addClass('crabfarm_dialog_content')
-			.append(_content);
-
-		container.append(jQuerySG('<h1>').text(_title));
-		container.append(jQuerySG('<h3>').text(_subtitle));
-		container.append(content);
-
-		dialog.append(button);
-		dialog.append(container);
-		overlay.append(dialog);
-
-		jQuerySG('body').append(overlay);
+	var formatDialogContent = function(_content, _contentType) {
+		if(_contentType == 'json') {
+			_content = JSON.parse(_content);
+			return jQuerySG('<pre>').html(syntaxHighlight(_content));
+		} else {
+			return jQuerySG('<pre>').text(_content);
+		}
 	};
 
 	window.crabfarm = {
-		showResults: function(_data, _elapsed) {
-			_data = JSON.parse(_data);
+		showDialog: function(_type, _title, _subtitle, _content, _contentType) {
 
-			buildResultDialog(
-				'crabfarm_dialog_success',
-				'Navigation completed!',
-				'The page was scrapped in ' + _elapsed + ' seconds',
-				jQuerySG('<pre>').html(syntaxHighlight(_data))
-			);
-		},
+			var overlay = jQuerySG('<div>')
+				.addClass('selectorgadget_ignore')
+				.addClass('crabfarm_overlay');
 
-		showError: function(_error, _trace) {
-			buildResultDialog(
-				'crabfarm_dialog_error',
-				'Navigation error!',
-				_error,
-				jQuerySG('<pre>').text(_trace)
-			);
+			var dialog = jQuerySG('<div>')
+				.addClass('crabfarm_dialog')
+				.addClass('crabfarm_dialog_' + _type);
+
+			var container = jQuerySG('<div>')
+				.addClass('crabfarm_dialog_container');
+
+			var button = jQuerySG('<a href="javascript:void(0);">')
+				.addClass('crabfarm_dialog_close')
+				.text('x');
+
+			var removeOverlay = function() {
+				overlay.remove();
+				window.crabfarm.showSelectorGadget();
+			};
+
+			overlay.bind("click", removeOverlay);
+			button.bind("click", removeOverlay);
+
+			container.append(jQuerySG('<h1>').text(_title));
+			if(_subtitle) container.append(jQuerySG('<h3>').text(_subtitle));
+			if(_content) {
+				var inner = formatDialogContent(_content, _contentType);
+
+				var content = jQuerySG('<div>')
+					.addClass('crabfarm_dialog_content')
+					.append(inner);
+
+				container.append(content);
+			}
+
+			dialog.append(button);
+			dialog.append(container);
+			overlay.append(dialog);
+
+			jQuerySG('body').append(overlay);
 		},
 
 		showSelectorGadget: function() {
