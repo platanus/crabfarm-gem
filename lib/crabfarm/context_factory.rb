@@ -12,7 +12,10 @@ module Crabfarm
     end
 
     def build_context(_memento=nil)
-      if _memento.nil?
+      if Crabfarm.live?
+        Crabfarm.live.set_memento _memento
+        Crabfarm::Context.new
+      elsif _memento.nil?
         Crabfarm::Context.new
       else
         load_crabtrap_context _memento
