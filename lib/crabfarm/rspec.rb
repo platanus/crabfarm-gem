@@ -55,6 +55,13 @@ module Crabfarm
       @context.pool.driver(_session_id)
     end
 
+    def try_reducer
+      @reducer
+    end
+
+    def try_state
+      @state
+    end
   end
 end
 
@@ -62,16 +69,37 @@ RSpec.configure do |config|
   config.include Crabfarm::RSpec
 
   config.around(:example) do |example|
+
     if described_class < Crabfarm::BaseReducer
+
       if example.metadata[:reducing] || example[:reducing_with_params]
         @reducer = reduce example.metadata[:reducing], example.metadata[:reducing_with_params] || {}
       end
-      example.run
+
+      begin
+        example.run
+      ensure
+        if try_reducer
+          # store result in metadata so it can be accessed by formatters/reporters
+          example.metadata[:result] = try_reducer.as_json
+        end
+      end
+
     elsif described_class < Crabfarm::BaseNavigator
+
       Crabfarm::ContextFactory.with_context example.metadata[:navigating] do |ctx|
         @context = ctx
-        example.run
+
+        begin
+          example.run
+        ensure
+          if try_state
+            # store result in metadata so it can be accessed by formatters/reporters
+            example.metadata[:result] = try_state.document
+          end
+        end
       end
+
     else
       example.run
     end
