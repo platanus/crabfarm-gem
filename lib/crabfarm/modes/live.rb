@@ -1,5 +1,6 @@
 require 'crabfarm/live/watcher'
 require 'crabfarm/live/controller'
+require 'crabfarm/utils/console'
 
 module Crabfarm
   module Modes
@@ -7,6 +8,8 @@ module Crabfarm
       extend self
 
       def start_watch
+        Utils::Console.system 'Starting crabfarm live'
+
         begin
           Crabfarm.enable_debugging!
           Crabfarm.install_live_backend!
@@ -18,11 +21,11 @@ module Crabfarm
 
         rescue SystemExit, Interrupt
           # nothing
-        rescue Exception => e
-          puts "Fatal error: #{e.to_s}".color Console::Colors::ERROR
-          puts e.backtrace
+        rescue Exception => exc
+          Utils::Console.error "Fatal error!"
+          Utils::Console.exception exc
         ensure
-          puts 'Exiting'
+          Utils::Console.system 'Exiting'
           Crabfarm.live.stop rescue nil
         end
       end
