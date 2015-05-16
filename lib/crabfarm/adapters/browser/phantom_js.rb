@@ -1,6 +1,6 @@
 require 'crabfarm/support/webdriver_factory'
+require 'crabfarm/support/phantom_runner'
 require 'crabfarm/adapters/browser/abstract_webdriver'
-require 'crabfarm/phantom_runner'
 
 module Crabfarm
   module Adapters
@@ -23,7 +23,7 @@ module Crabfarm
         end
 
         def load_and_start_phantom
-          new_phantom = PhantomRunner.new phantom_config
+          new_phantom = Support::PhantomRunner.new phantom_config
           new_phantom.start
           return new_phantom
         end
