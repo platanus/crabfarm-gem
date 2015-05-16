@@ -1,5 +1,6 @@
 require 'crabfarm/utils/console'
 require 'crabfarm/utils/rspec_runner'
+require 'crabfarm/live/context'
 
 module Crabfarm
   module Live
@@ -14,8 +15,15 @@ module Crabfarm
         nil
       end
 
+      def prepare(_memento) # decorator
+        @manager.set_memento _memento
+        Context.new @manager
+      end
+
       def execute
-        examples = Utils::RSpecRunner.run_spec_for spec_for(@target), live: true
+        examples = Factories::Context.with_decorator self do
+          Utils::RSpecRunner.run_spec_for spec_for(@target), live: true
+        end
 
         @manager.inject_web_tools
         if examples.count == 0

@@ -1,5 +1,6 @@
 require 'benchmark'
 require 'crabfarm/utils/console'
+require 'crabfarm/live/context'
 
 module Crabfarm
   module Live
@@ -45,10 +46,17 @@ module Crabfarm
         # TODO.
       end
 
+      def prepare(_memento) # decorator
+        @manager.set_memento _memento
+        Context.new @manager
+      end
+
       def execute
-        Crabfarm::ContextFactory.with_context memento do |ctx|
-          @elapsed = Benchmark.measure do
-            @transition = TransitionService.transition ctx, @target, @params
+        Factories::Context.with_decorator self do
+          Crabfarm.with_context memento do |ctx|
+            @elapsed = Benchmark.measure do
+              @transition = TransitionService.transition ctx, @target, @params
+            end
           end
         end
 

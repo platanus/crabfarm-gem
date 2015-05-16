@@ -33,11 +33,6 @@ module Crabfarm
         @driver
       end
 
-      def generate_support_driver
-        # TODO: improve on this mechanics, maybe use a frame in the same driver for this
-        build_driver
-      end
-
       def reset_driver_status
         # TODO: manage driver handles and recreate driver if needed
         primary_driver.get('https://www.crabtrap.io/instructions.html')
@@ -99,6 +94,18 @@ module Crabfarm
           primary_driver.execute_script(
             'window.crabfarm.showSelectorGadget();'
           )
+        end
+      end
+
+      # Viewer implementation
+
+      def attach(_primary=true)
+        if _primary then primary_driver else build_driver end
+      end
+
+      def detach(_driver)
+        if _driver != primary_driver
+          _driver.quit rescue nil
         end
       end
 
