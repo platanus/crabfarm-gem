@@ -3,32 +3,35 @@ module Crabfarm
     module Browser
       class AbstractWebdriver
 
-        attr_accessor :config
+        attr_accessor :config, :viewer
 
-        def initialize(_proxy=nil)
+        def initialize(_proxy=nil, _viewer=nil)
           @config = load_driver_config
           @config[:proxy] = _proxy
+          @viewer = _viewer
         end
 
         def prepare_driver_services
-          # Nothing by default
+          start_server if viewer.nil?
         end
 
         def cleanup_driver_services
-          # Nothing by default
+          stop_server if viewer.nil?
         end
 
         def build_driver(_session_id)
-          wrap_driver(if Crabfarm.live?
-            build_live_instance _session_id
-          else
+          wrap_driver(if viewer.nil?
             build_webdriver_instance
+          else
+            viewer.attach _session_id == :default_driver
           end)
         end
 
-        def release_driver(_session_id, _driver)
-          unless Crabfarm.live? and _session_id == :default_driver
-            _driver.driver.quit rescue nil
+        def release_driver(_session_id, _wrapped)
+          if viewer.nil?
+            _wrapped.driver.quit rescue nil
+          else
+            viewer.detach _wrapped.driver
           end
         end
 
@@ -44,12 +47,12 @@ module Crabfarm
           raise NotImplementedError.new
         end
 
-        def build_live_instance(_session_id)
-          if _session_id == :default_driver
-            Crabfarm.live.primary_driver
-          else
-            Crabfarm.live.generate_support_driver
-          end
+        def start_server
+          # Nothing by default
+        end
+
+        def stop_server
+          # Nothing by default
         end
 
         def load_driver_config

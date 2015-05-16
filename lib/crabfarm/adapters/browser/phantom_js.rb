@@ -7,19 +7,19 @@ module Crabfarm
     module Browser
       class PhantomJs < AbstractWebdriver
 
-        def prepare_driver_services
-          @phantom = load_and_start_phantom if @phantom.nil? and not Crabfarm.live?
-        end
-
-        def cleanup_driver_services
-          @phantom.stop unless @phantom.nil?
-          @phantom = nil
-        end
-
       private
 
         def build_webdriver_instance
           Support::WebdriverFactory.build_remote_driver driver_config
+        end
+
+        def start_server
+          @phantom = load_and_start_phantom if @phantom.nil?
+        end
+
+        def stop_server
+          @phantom.stop unless @phantom.nil?
+          @phantom = nil
         end
 
         def load_and_start_phantom
