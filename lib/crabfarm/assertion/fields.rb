@@ -76,6 +76,14 @@ module Crabfarm
         end
       end
 
+      def attributes=(_hash)
+        _hash.each { |k,v| send(k.to_s+'=', v) }
+      end
+
+      def mock(_hash)
+        @field_hash = _hash
+      end
+
       def field_hash
         @field_hash
       end

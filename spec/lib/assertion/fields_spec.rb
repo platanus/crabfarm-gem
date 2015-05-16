@@ -33,6 +33,25 @@ describe Crabfarm::Assertion::Fields do
     it { expect(instance.respond_to? 'an_array=').to be false  }
   end
 
+  describe "attributes" do
+    it "should mass assign fields" do
+      instance.attributes = { a_float: '211', a_word: 'foo' }
+      expect(instance.a_float).to eq(211.0)
+      expect(instance.a_word).to eq('foo')
+    end
+
+    it "should validate" do
+      expect { instance.attributes = { a_float: 'notafloat' } }.to raise_error Crabfarm::AssertionError
+    end
+  end
+
+  describe "mock" do
+    it "should skip validations and completely replace values" do
+      expect { instance.mock({ a_float: 'notafloat' }) }.not_to raise_error
+      expect(instance.a_float).to eq('notafloat')
+    end
+  end
+
   describe "field_hash" do
 
     before {
