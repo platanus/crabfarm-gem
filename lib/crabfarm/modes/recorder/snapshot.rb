@@ -15,9 +15,9 @@ module Crabfarm
 
           begin
             puts "Navigating, waiting to hit a reducer...".color(Console::Colors::NOTICE)
-            service.with_navigator_decorator Shared::SnapshotDecorator do
+            Factories::Reducer.with_decorator Shared::SnapshotDecorator do
               if _query.nil?
-                service.with_navigator_decorator Shared::InteractiveDecorator do
+                Factories::Navigator.with_decorator Shared::InteractiveDecorator do
                   service.transition _context, _navigator
                 end
               else

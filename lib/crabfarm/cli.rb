@@ -20,7 +20,7 @@ module Crabfarm
 
         Crabfarm.config.set Support::GLI.parse_options options
 
-        ContextFactory.with_context options[:memento] do |context|
+        Crabfarm.with_context options[:memento] do |context|
           require "crabfarm/modes/console"
           Crabfarm::Modes::Console.process_input context
         end
@@ -72,7 +72,7 @@ module Crabfarm
         server_options[:Threads] = options[:threads] unless options[:threads].nil?
         server_options[:Verbose] = options[:verbose]
 
-        ContextFactory.with_context options[:memento] do |context|
+        Crabfarm.with_context options[:memento] do |context|
           require "crabfarm/modes/server"
           Crabfarm::Modes::Server.serve context, server_options
         end
@@ -164,7 +164,7 @@ module Crabfarm
         snap.action do |global_options, options, args|
           next puts "This command can only be ran inside a crabfarm application" unless GlobalState.inside_crawler_app?
 
-          ContextFactory.with_context options[:memento] do |context|
+          Crabfarm.with_context options[:memento] do |context|
             require "crabfarm/modes/recorder/snapshot"
             Crabfarm::Modes::Recorder::Snapshot.start context, args[0], options[:query]
           end

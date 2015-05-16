@@ -63,13 +63,9 @@ module Crabfarm
         _reducer_class = (Utils::Naming.decode_crabfarm_uri(_reducer_class.to_s) + 'Reducer').constantize
       end
 
-      reducer = _reducer_class.new _target, @params.merge(_options)
-      execute_reducer reducer
+      reducer = Factories::Reducer.build _reducer_class, _target, @params.merge(_options)
+      reducer.run
       reducer
-    end
-
-    def execute_reducer(_reducer)
-      _reducer.run
     end
 
     def start_forked_navigation(_name, _value, _block, _mutex)

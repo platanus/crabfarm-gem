@@ -61,7 +61,6 @@ module Crabfarm
             @i_params ||= InteractiveHash.new.merge! @params
           end
 
-          _navigator
         end
 
       end

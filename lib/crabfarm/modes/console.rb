@@ -61,7 +61,7 @@ module Crabfarm
           begin
             puts "Navigating, waiting to hit a reducer...".color Colors::NOTICE
             require 'crabfarm/modes/shared/snapshot_decorator'
-            TransitionService.with_navigator_decorator Shared::SnapshotDecorator do
+            Factories::Reducer.with_decorator Shared::SnapshotDecorator do
               @manager.navigate _name, _params
             end
             puts "Navigation completed".color Colors::NOTICE

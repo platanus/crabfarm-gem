@@ -3,25 +3,6 @@ module Crabfarm
 
     class Error < Crabfarm::Error; end
 
-    def reduce(_snapshot=nil, _options={})
-
-      raise Error.new "'reduce' is only available in reducer specs" unless described_class < Crabfarm::BaseReducer
-
-      if _snapshot.is_a? Hash
-        raise ArgumentException.new 'Invalid arguments' unless _options.nil?
-        _options = _snapshot
-        _snapshot = nil
-      end
-
-      snapshot_path = described_class.snapshot_path _snapshot
-      raise Error.new "Snapshot does not exist #{snapshot_path}" unless File.exist? snapshot_path
-
-      data = File.read snapshot_path
-      reducer = described_class.new data, _options
-      reducer.run
-      reducer
-    end
-
     def navigate(_name=nil, _params={})
 
       raise Error.new "'navigate' is only available in navigator specs" if @context.nil?
@@ -47,8 +28,20 @@ module Crabfarm
       @last_state
     end
 
+    def reduce(_snapshot, _params={})
+      raise Error.new "'reduce' is only available in reducer specs" unless described_class < Crabfarm::BaseReducer
+      raise Error.new 'Must provide a snapshot for reducer specs' if _snapshot.nil?
+
+      snap_path = described_class.snapshot_path _snapshot
+      raise Crabfarm::ArgumentError.new "Snapshot does not exist #{snap_path}" unless File.exist? snap_path
+
+      reducer = Factories::SnapshotReducer.build described_class, snap_path, _params
+      reducer.run
+      reducer
+    end
+
     def reducer
-      @reducer ||= reduce
+      @reducer ||= reduce(@reducer_snapshot, @reducer_params)
     end
 
     def browser(_session_id=nil)
@@ -71,10 +64,8 @@ RSpec.configure do |config|
   config.around(:example) do |example|
 
     if described_class < Crabfarm::BaseReducer
-
-      if example.metadata[:reducing] || example[:reducing_with_params]
-        @reducer = reduce example.metadata[:reducing], example.metadata[:reducing_with_params] || {}
-      end
+      @reducer_snapshot = example.metadata[:reducing]
+      @reducer_params = example[:reducing_with_params] || {}
 
       begin
         example.run
@@ -84,10 +75,8 @@ RSpec.configure do |config|
           example.metadata[:result] = try_reducer.as_json
         end
       end
-
     elsif described_class < Crabfarm::BaseNavigator
-
-      Crabfarm::ContextFactory.with_context example.metadata[:navigating] do |ctx|
+      Crabfarm.with_context example.metadata[:navigating] do |ctx|
         @context = ctx
 
         begin
@@ -99,7 +88,6 @@ RSpec.configure do |config|
           end
         end
       end
-
     else
       example.run
     end

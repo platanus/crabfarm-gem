@@ -12,12 +12,16 @@ require "crabfarm/http_client"
 require "crabfarm/phantom_runner"
 require "crabfarm/state_store"
 require "crabfarm/context"
-require "crabfarm/context_factory"
 require "crabfarm/transition_service"
 require "crabfarm/base_navigator"
 require "crabfarm/base_reducer"
 require "crabfarm/base_struct"
 require "crabfarm/strategies"
+
+require "crabfarm/factories/context"
+require "crabfarm/factories/navigator"
+require "crabfarm/factories/reducer"
+require "crabfarm/factories/snapshot_reducer"
 
 require "crabfarm/utils/port_discovery"
 require "crabfarm/utils/naming"
@@ -69,6 +73,16 @@ module Crabfarm
 
   def self.debug?
     @@debug
+  end
+
+  def self.with_context(_memento=nil)
+    ctx = Factories::Context.build _memento
+    begin
+      ctx.prepare
+      yield ctx
+    ensure
+      ctx.release
+    end
   end
 
   module Strategies
