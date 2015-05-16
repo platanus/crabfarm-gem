@@ -6,10 +6,8 @@ require "active_support/inflector"
 require "crabfarm/version"
 require "crabfarm/errors"
 require "crabfarm/configuration"
-require "crabfarm/global_state"
 require "crabfarm/driver_pool"
 require "crabfarm/http_client"
-require "crabfarm/phantom_runner"
 require "crabfarm/state_store"
 require "crabfarm/context"
 require "crabfarm/transition_service"
@@ -25,6 +23,7 @@ require "crabfarm/factories/snapshot_reducer"
 
 require "crabfarm/utils/port_discovery"
 require "crabfarm/utils/naming"
+require "crabfarm/utils/resolve"
 
 module Crabfarm
 
@@ -35,6 +34,14 @@ module Crabfarm
 
   def self.root
     File.dirname __dir__
+  end
+
+  def self.inside_crawler_app?
+    defined? CF_PATH
+  end
+
+  def self.app_path
+    CF_PATH
   end
 
   def self.config

@@ -11,10 +11,8 @@ module Crabfarm
       @context = _context
     end
 
-    def transition(_name, _params={})
-      navigator_class = if _name.is_a? String or _name.is_a? Symbol
-        load_class_from_uri _name
-      else _name end
+    def transition(_name_or_class, _params={})
+      navigator_class = Utils::Resolve.navigator_class _name_or_class
 
       @context.prepare
       @navigator = Factories::Navigator.build navigator_class, @context, _params
@@ -22,13 +20,6 @@ module Crabfarm
       @document = @document.as_json if @document.respond_to? :as_json
 
       self
-    end
-
-  private
-
-    def load_class_from_uri(_uri)
-      class_name = Utils::Naming.decode_crabfarm_uri _uri
-      class_name.constantize
     end
 
   end

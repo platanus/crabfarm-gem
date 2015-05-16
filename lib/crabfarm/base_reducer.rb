@@ -20,7 +20,7 @@ module Crabfarm
 
     def self.snapshot_path(_name=nil)
       _name = self.to_s.underscore if _name.nil?
-      File.join(GlobalState.snapshots_path, _name + '.' + parser.format)
+      Utils::Resolve.snapshot_path _name, parser.format
     end
 
     def parser

@@ -9,14 +9,10 @@ module Crabfarm
       module Memento
         extend self
 
-        def memento_path(_name)
-          File.join(GlobalState.mementos_path, _name + '.json.gz')
-        end
-
         def start(_target, _replay=false)
           return puts "Must provide a recording target" unless _target.is_a? String
 
-          target_path = memento_path _target
+          target_path = Utils::Resolve.memento_path _target
           return puts "Memento file does not exist: #{target_path}" if _replay and not File.exist? target_path
 
           start_crabtrap _replay, target_path

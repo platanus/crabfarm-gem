@@ -58,12 +58,9 @@ module Crabfarm
 
   private
 
-    def reduce_using(_reducer_class, _target, _options={})
-      if _reducer_class.is_a? String or _reducer_class.is_a? Symbol
-        _reducer_class = (Utils::Naming.decode_crabfarm_uri(_reducer_class.to_s) + 'Reducer').constantize
-      end
-
-      reducer = Factories::Reducer.build _reducer_class, _target, @params.merge(_options)
+    def reduce_using(_name_or_class, _target, _options={})
+      reducer_class = Utils::Resolve.reducer_class _name_or_class
+      reducer = Factories::Reducer.build reducer_class, _target, @params.merge(_options)
       reducer.run
       reducer
     end
