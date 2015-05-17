@@ -37,7 +37,7 @@ module Crabfarm
             else
               class_from_path path[spec_path.length..-1], SPEC_RGX
             end
-          end.reject &:nil?
+          end.reject(&:nil?)
         end
         @listener.start
       end
@@ -55,6 +55,7 @@ module Crabfarm
               class_name.constantize
             rescue Exception => exc
               Utils::Console.exception exc
+              nil
             end
 
             if target and target < Crabfarm::Live::Interactable
