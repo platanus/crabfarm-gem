@@ -45,6 +45,10 @@ module Crabfarm
       field_hash
     end
 
+    def to_json(_options=nil)
+      field_hash.to_json _options
+    end
+
     def __getobj__
       @document
     end
