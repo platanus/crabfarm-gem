@@ -54,7 +54,7 @@ module Crabfarm
             target = begin
               class_name.constantize
             rescue Exception => exc
-              Utils::Console.exception exc
+              @controller.display_external_error exc
               nil
             end
 

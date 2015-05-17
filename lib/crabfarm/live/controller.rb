@@ -10,6 +10,11 @@ module Crabfarm
         @manager = _manager
       end
 
+      def display_external_error(_exc)
+        @manager.reset_driver_status
+        display_error_feedback _exc
+      end
+
       def execute_live(_class)
         begin
           runner = build_runner_for _class
@@ -57,7 +62,7 @@ module Crabfarm
         @manager.inject_web_tools
         @manager.show_dialog(
           :error,
-          'Navigation error!',
+          'Crawler error!',
           "#{_exc.class.to_s}: #{_exc.to_s}",
           _exc.backtrace.join("\n")
         )
