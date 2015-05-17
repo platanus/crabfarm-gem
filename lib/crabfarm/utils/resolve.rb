@@ -21,7 +21,7 @@ module Crabfarm
 
       def snapshot_path(_name, _format)
         _name = self.to_s.underscore if _name.nil?
-        File.join(snapshots_path, _name + '.' + parser.format)
+        File.join(snapshots_path, _name + '.' + _format)
       end
 
     private
@@ -31,7 +31,7 @@ module Crabfarm
       end
 
       def snapshots_path
-        File.join(Crabfarm.app_path, 'spec/mementos')
+        File.join(Crabfarm.app_path, 'spec/snapshots')
       end
 
     end
