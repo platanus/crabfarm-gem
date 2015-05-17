@@ -1,37 +1,29 @@
 require 'crabfarm/utils/console'
 require 'crabfarm/utils/rspec_runner'
-require 'crabfarm/live/context'
 
 module Crabfarm
   module Live
-    class NavigatorRspecRunner
+    class NavigatorRunnerRSpec
 
       def initialize(_manager, _target)
         @manager = _manager
         @target = _target
       end
 
-      def dsl
-        nil
-      end
-
-      def prepare(_memento) # decorator
-        @manager.set_memento _memento
-        Context.new @manager
-      end
-
       def execute
-        examples = Factories::Context.with_decorator self do
+        @examples = Factories::Context.with_decorator self do
           Utils::RSpecRunner.run_spec_for spec_for(@target), live: true
         end
+      end
 
+      def show_results
         @manager.inject_web_tools
-        if examples.count == 0
+        if @examples.count == 0
           show_empty_warning
-        elsif examples.count == 1
-          show_example_output examples.first
+        elsif @examples.count == 1
+          show_example_output @examples.first
         else
-          show_example_summary examples
+          show_example_summary @examples
         end
       end
 

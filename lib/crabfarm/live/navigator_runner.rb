@@ -1,6 +1,6 @@
-require 'benchmark'
-require 'crabfarm/utils/console'
 require 'crabfarm/live/context'
+require 'crabfarm/live/navigator_runner_direct'
+require 'crabfarm/live/navigator_runner_rspec'
 
 module Crabfarm
   module Live
@@ -13,12 +13,13 @@ module Crabfarm
           @runner = _runner
         end
 
-        def_delegators :@runner, :use_memento, :use_params, :clear_params, :navigate_to
+        def_delegators :@runner, :use_memento, :use_params, :clear_params, :use_rspec, :navigate_to
       end
 
       def initialize(_manager, _target)
         @manager = _manager
         @target = _target
+        @rspec = true
         @params = {}
       end
 
@@ -32,14 +33,21 @@ module Crabfarm
 
       def use_memento(_memento)
         @memento = _memento
+        @rspec = false
       end
 
       def use_params(_params={})
         @params = @params.merge _params
+        @rspec = false
       end
 
       def clear_params
         @params = {}
+        @rspec = false
+      end
+
+      def use_rspec
+        @rspec = true
       end
 
       def navigate_to(_navigator, _params={})
@@ -52,15 +60,17 @@ module Crabfarm
       end
 
       def execute
-        Factories::Context.with_decorator self do
-          Crabfarm.with_context memento do |ctx|
-            @elapsed = Benchmark.measure do
-              @transition = TransitionService.transition ctx, @target, @params
-            end
-          end
+        strategy = if @rspec
+          NavigatorRunnerRSpec.new @manager, @target
+        else
+          NavigatorRunnerDirect.new @manager, memento, @target, @params
         end
 
-        show_result
+        Factories::Context.with_decorator self do
+          strategy.execute
+        end
+
+        strategy.show_results
       end
 
     private

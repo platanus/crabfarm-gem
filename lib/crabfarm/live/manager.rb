@@ -38,10 +38,19 @@ module Crabfarm
         primary_driver.get('https://www.crabtrap.io/instructions.html')
       end
 
+      def block_requests
+        begin
+          stop_crabtrap
+          return yield
+        ensure
+          set_memento nil
+        end
+      end
+
       def set_memento(_memento=nil)
 
         options = if _memento
-          path = memento_path _memento
+          path = Utils::Resolve.memento_path _memento
           raise ConfigurationError.new "No memento found at #{path}" unless File.exists? path
           { mode: :replay, bucket_path: path }
         else
@@ -140,10 +149,6 @@ module Crabfarm
 
       def config
         Crabfarm.config
-      end
-
-      def memento_path(_name)
-        File.join(GlobalState.mementos_path, _name.to_s + '.json.gz')
       end
 
       def wait_for_injection

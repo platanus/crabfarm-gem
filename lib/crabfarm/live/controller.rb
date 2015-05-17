@@ -1,6 +1,5 @@
 require 'crabfarm/utils/console'
 require 'crabfarm/live/navigator_runner'
-require 'crabfarm/live/navigator_rspec_runner'
 require 'crabfarm/live/reducer_runner'
 
 module Crabfarm
@@ -34,11 +33,7 @@ module Crabfarm
           build_runner_for _class.live_delegate
         else
           if _class < BaseNavigator
-            if _class.live_rspec?
-              NavigatorRspecRunner
-            else
-              NavigatorRunner
-            end
+            NavigatorRunner
           elsif _class < BaseReducer
             ReducerRunner
           else
