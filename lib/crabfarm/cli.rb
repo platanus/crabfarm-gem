@@ -108,8 +108,8 @@ module Crabfarm
           next puts "This command can only be ran inside a crabfarm application" unless Crabfarm.inside_crawler_app?
 
           require "crabfarm/modes/generator"
-          Crabfarm::Modes::Generator.generate_navigator(GlobalState.app_path, args[0], options)
-          Crabfarm::Modes::Generator.generate_reducer(GlobalState.app_path, args[0]) if options[:reducer]
+          Crabfarm::Modes::Generator.generate_navigator(Crabfarm.app_path, args[0], options)
+          Crabfarm::Modes::Generator.generate_reducer(Crabfarm.app_path, args[0]) if options[:reducer]
         end
       end
 
@@ -119,7 +119,7 @@ module Crabfarm
           next puts "This command can only be ran inside a crabfarm application" unless Crabfarm.inside_crawler_app?
 
           require "crabfarm/modes/generator"
-          Crabfarm::Modes::Generator.generate_reducer(GlobalState.app_path, args[0])
+          Crabfarm::Modes::Generator.generate_reducer(Crabfarm.app_path, args[0])
         end
       end
 
@@ -129,7 +129,7 @@ module Crabfarm
           next puts "This command can only be ran inside a crabfarm application" unless Crabfarm.inside_crawler_app?
 
           require "crabfarm/modes/generator"
-          Crabfarm::Modes::Generator.generate_struct(GlobalState.app_path, args[0])
+          Crabfarm::Modes::Generator.generate_struct(Crabfarm.app_path, args[0])
         end
       end
     end
@@ -187,7 +187,7 @@ module Crabfarm
         options[:remote] = args[0]
 
         require "crabfarm/modes/publisher"
-        Crabfarm::Modes::Publisher.publish GlobalState.app_path, options
+        Crabfarm::Modes::Publisher.publish Crabfarm.app_path, options
       end
     end
 
