@@ -17,12 +17,12 @@ module Crabfarm
       end
 
       def target
-        raise "'#{_original.to_s}' was not invoked" if calls.size == 0
+        raise "'#{@original.to_s}' was not invoked" if calls.size == 0
         calls.first.target
       end
 
       def params
-        raise "'#{_original.to_s}' was not invoked" if calls.size == 0
+        raise "'#{@original.to_s}' was not invoked" if calls.size == 0
         calls.first.params
       end
 
