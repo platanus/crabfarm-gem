@@ -29,7 +29,10 @@ module Crabfarm
       [:crabtrap_bin_path, :string, 'Crabtrap binary path.'],
 
       # Recorder configuration
-      [:recorder_driver, :string, 'Recorder driver name, defaults to \'firefox\'']
+      [:recorder_driver, :string, 'Recorder driver name, defaults to \'firefox\''],
+
+      # Live configurations
+      [:live_full_reload, :boolean, 'Whether to create a new driver session on every live reload or not']
     ]
     .map { |o| Option.new(*o) }
 
@@ -65,7 +68,8 @@ module Crabfarm
         phantom_ssl: 'any',
         phantom_bin_path: 'phantomjs',
         crabtrap_bin_path: 'crabtrap',
-        recorder_driver: :firefox
+        recorder_driver: :firefox,
+        live_full_reload: false
       }
     end
 

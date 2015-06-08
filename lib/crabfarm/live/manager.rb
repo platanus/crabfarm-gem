@@ -22,6 +22,7 @@ module Crabfarm
       def start
         set_memento
         load_primary_driver
+        primary_driver.get('https://www.crabtrap.io/welcome.html')
       end
 
       def stop
@@ -34,7 +35,14 @@ module Crabfarm
       end
 
       def reset_driver_status
-        # TODO: manage driver handles and recreate driver if needed
+        if Crabfarm.config.live_full_reload
+          # recreate driver if configured to do so
+          release_primary_driver
+          load_primary_driver
+        else
+          primary_driver.manage.delete_all_cookies
+        end
+
         primary_driver.get('https://www.crabtrap.io/instructions.html')
       end
 
@@ -122,7 +130,6 @@ module Crabfarm
 
       def load_primary_driver
         @driver = build_driver
-        @driver.get('https://www.crabtrap.io/welcome.html')
       end
 
       def release_primary_driver
