@@ -88,7 +88,7 @@ module Crabfarm
       end
 
       def validate_remote(_url)
-        return true if /^\w+\/\w+$/i === _url
+        return true if /^[\w\-]+\/[\w\-]+$/i === _url
         puts "Invalid remote syntax: #{_url}".color :red
         return false
       end
