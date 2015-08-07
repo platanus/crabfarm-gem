@@ -7,6 +7,9 @@ describe Crabfarm::BaseNavigator do
       def pool
         Crabfarm::DriverPool.new Crabfarm::Adapters::Browser::Noop.new
       end
+
+      def prepare
+      end
     }.new
   }
 
@@ -17,6 +20,27 @@ describe Crabfarm::BaseNavigator do
 
     it 'should provide the specified driver' do
       expect(nav.browser).to be(:default_driver)
+    end
+
+  end
+
+  describe "navigate" do
+
+    let(:other_nav_class) do
+      Class.new(Crabfarm::BaseNavigator) do
+        attr_accessor :run_called
+
+        def run
+          @run_called = true
+        end
+      end
+    end
+
+    it "should allow invoking another navigator" do
+      navigator = nav.navigate other_nav_class, { foo: :bar }
+      expect(navigator).to be_a(other_nav_class)
+      expect(navigator.params[:foo]).to eq :bar
+      expect(navigator.run_called).to be true
     end
 
   end

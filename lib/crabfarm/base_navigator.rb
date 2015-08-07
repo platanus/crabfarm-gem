@@ -21,6 +21,12 @@ module Crabfarm
       @params = _params
     end
 
+    def navigate(_name, _params={})
+      TransitionService.transition(@context, _name, _params).navigator
+    end
+
+    alias :nav :navigate
+
     def browser(_name=nil)
       @context.pool.driver(_name)
     end
