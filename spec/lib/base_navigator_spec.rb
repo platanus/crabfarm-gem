@@ -14,7 +14,7 @@ describe Crabfarm::BaseNavigator do
   }
 
   let(:nav_class) { Class.new(Crabfarm::BaseNavigator) }
-  let(:nav) { nav_class.new fake_context, { arg: 'imateapot' } }
+  let(:nav) { nav_class.new fake_context, { arg: 'imateapot', hello: 'world' } }
 
   describe "browser" do
 
@@ -41,6 +41,13 @@ describe Crabfarm::BaseNavigator do
       expect(navigator).to be_a(other_nav_class)
       expect(navigator.params[:foo]).to eq :bar
       expect(navigator.run_called).to be true
+    end
+
+    it "should merge original navigator params with call params" do
+      navigator = nav.navigate other_nav_class, { foo: :bar, hello: 'dude' }
+      expect(navigator.params[:foo]).to eq :bar
+      expect(navigator.params[:hello]).to eq 'dude'
+      expect(navigator.params[:arg]).to eq 'imateapot'
     end
 
   end
