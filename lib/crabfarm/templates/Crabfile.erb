@@ -3,8 +3,8 @@
 set_browser :phantomjs
 
 # The default parser engine for reducers that do not specify one.
-# Available options are :nokogiri and :pdf_parser. :pdf_parser requires an additional gem to be added to Gemfile
-set_parser :nokogiri
+# Available options are :pincers, :nokogiri and :pdf_parser. :pdf_parser requires an additional gem to be added to Gemfile
+set_parser :pincers
 
 # The path where every crawler log is stored.
 set_log_path 'logs'
@@ -17,9 +17,9 @@ set_log_path 'logs'
 
 # The following parameters only apply if using a webdriver based driver
 
-# Selects the webdriver wrapper library to be used, options are :surfer, :watir and :capybara.
+# Selects the webdriver wrapper library to be used, options are :pincers, :watir and :capybara.
 # Both watir and capybara require an additional gem to be added to Gemfile
-set_webdriver_dsl :watir
+set_webdriver_dsl :pincers
 
 # Set the selected webdriver capabilities (check the driver documentation for more details)
 # set_webdriver_capabilities

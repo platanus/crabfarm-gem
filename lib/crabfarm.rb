@@ -101,11 +101,12 @@ module Crabfarm
     register :browser, :noop, 'Crabfarm::Adapters::Browser::Noop'
 
     # bundled webdriver dsl adapters
-    register :webdriver_dsl, :surfer, 'Crabfarm::Adapters::DriverWrapper::Surfer'
+    register :webdriver_dsl, :pincers, 'Crabfarm::Adapters::DriverWrapper::Pincers', dependencies: ['pincers']
     register :webdriver_dsl, :watir, 'Crabfarm::Adapters::DriverWrapper::Watir', dependencies: ['watir-webdriver']
     register :webdriver_dsl, :capybara, 'Crabfarm::Adapters::DriverWrapper::Capybara', dependencies: ['capybara']
 
     # bundled parsers dsl adapters
+    register :parser, :pincers, 'Crabfarm::Adapters::Parser::Pincers', dependencies: ['pincers', 'nokogiri']
     register :parser, :nokogiri, 'Crabfarm::Adapters::Parser::Nokogiri', dependencies: ['nokogiri']
     register :parser, :pdf_reader, 'Crabfarm::Adapters::Parser::PdfReader', dependencies: ['pdf-reader']
   end
