@@ -1,4 +1,5 @@
 set_browser :phantomjs
-set_webdriver_dsl :surfer
 
 set_log_path 'logs'
+
+set_recorder_driver :chrome

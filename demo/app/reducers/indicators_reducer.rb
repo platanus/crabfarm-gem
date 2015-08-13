@@ -5,7 +5,7 @@ class IndicatorsReducer < Crabfarm::BaseReducer
   live delegate: BtcStats
 
   def run
-    self.price = at_css('.orderStats')
+    self.price = document.css('.orderStats')
   end
 
 end
