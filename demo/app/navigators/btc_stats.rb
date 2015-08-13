@@ -9,7 +9,7 @@ class BtcStats < Crabfarm::BaseNavigator
     browser.goto('https://www.btc-e.com/')
 
     if params[:coin] == 'ltc'
-      browser.search('.pairs li a')[4].click
+      browser.css('.pairs li a')[4].click
     end
 
     reduce using: :indicators

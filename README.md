@@ -101,16 +101,16 @@ def run
   browser.goto 'www.btc-e.com'
 
   if params[:market]
-    browser.ul(class: 'pairs').lis.find { |li|
+    browser.css('ul.pairs li').find { |li|
       li.text.include? params[:market]
-    }.a.click
+    }.css('a').click
   end
 
   reduce_with_defaults
 end
 ```
 
-This is mainly [watir](http://watir.com/) code. You can access the current browser session using the `browser` property. You should be able to call `rspec` now and get the first example right.
+This is mainly [pincers](https://github.com/platanus/pincers/) on webdriver code. You can access the current browser session using the `browser` property. You should be able to call `rspec` now and get the first example right.
 
 **TIP**: There is a very nice tool to help you with the HTML css selectors called [Selector Gadget](http://selectorgadget.com/).
 
@@ -144,7 +144,7 @@ end
 
 Notice that the structure is very similar to a **navigator** spec, this time use the `reducing: 'my_snapshot'` option to select the snapshot to reduce and the `reducer` property to refer to the **reducer** **AFTER** processing the given snapshot.
 
-The last step is writting the **reducer** code, parsing code goes inside the `run` method. By default the **reducer** uses [nokogiri](https://github.com/sparklemotion/nokogiri) as parser for HTML, take a look at nokogiri docs to see what methods to use inside `run`.
+The last step is writting the **reducer** code, parsing code goes inside the `run` method. By default the **reducer** uses [pincers](https://github.com/platanus/pincers) on nokogiri for parsing HTML.
 
 ```ruby
 class BtcPriceReducer < Crabfarm::BaseReducer
@@ -154,9 +154,9 @@ class BtcPriceReducer < Crabfarm::BaseReducer
   has_float :low, greater_or_equal_to: 0.0
 
   def run
-    self.last = at_css('.orderStats:nth-child(1) strong').text
-    self.low = at_css '.orderStats:nth-child(2) strong'
-    self.high = at_css '.orderStats:nth-child(3) strong'
+    self.last = css('.orderStats:nth-child(1) strong').text
+    self.low = css '.orderStats:nth-child(2) strong'
+    self.high = css '.orderStats:nth-child(3) strong'
   end
 
 end
@@ -176,7 +176,7 @@ The **reducer** allows you to define fields that take care of the parsing and va
 self.last = at_css('.orderStats:nth-child(1) strong').text
 ```
 
-If you dig a little deeper, you will see that `last` is beign assigned something like "0.0061 BTC". The assertion framework is smart enough to extract just the floating  point number (since we declared `last` as float) and fail if no number can be extracted from string. `at_css` is just a nokogiri method, the reducer exposes every parser method.
+If you dig a little deeper, you will see that `last` is beign assigned something like "0.0061 BTC". The assertion framework is smart enough to extract just the floating  point number (since we declared `last` as float) and fail if no number can be extracted from string. `css` is just a pincers method, the reducer exposes every parser method.
 
 ```
 self.low = at_css '.orderStats:nth-child(2) strong'

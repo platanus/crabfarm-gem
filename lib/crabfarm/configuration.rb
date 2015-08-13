@@ -15,10 +15,10 @@ module Crabfarm
       [:webdriver_host, :string, 'Remote host, only available in driver: remote'],
       [:webdriver_port, :integer, 'Remote port, only available in driver: remote'],
       [:webdriver_capabilities, :mixed, 'Driver capabilities, depends on selected driver.'],
-      [:webdriver_remote_timeout, :float, 'Request timeout in seconds, only available for remote or phatomjs driver.'],
+      [:webdriver_remote_timeout, :float, 'Request timeout in seconds, only available for remote or phantomjs driver.'],
       [:webdriver_window_width, :integer, 'Initial browser window width.'],
       [:webdriver_window_height, :integer, 'Initial browser window height.'],
-      [:webdriver_dsl, :string, 'Webdriver wrapper to use, built in options are watir and surfer'],
+      [:webdriver_dsl, :string, 'Webdriver wrapper to use, built in options are pincers and watir'],
 
       # Phantom launcher configuration
       [:phantom_load_images, :boolean, 'Phantomjs image loading, only for phantomjs driver.'],
@@ -53,7 +53,7 @@ module Crabfarm
     def reset
       @values = {
         browser: 'phantomjs',
-        parser: :nokogiri,
+        parser: :pincers,
         driver_factory: nil,
         log_path: nil,
         proxy: nil,
@@ -63,7 +63,7 @@ module Crabfarm
         webdriver_remote_timeout: 120,
         webdriver_window_width: 1280,
         webdriver_window_height: 800,
-        webdriver_dsl: :watir,
+        webdriver_dsl: :pincers,
         phantom_load_images: false,
         phantom_ssl: 'any',
         phantom_bin_path: 'phantomjs',
