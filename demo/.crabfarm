@@ -1,8 +1,8 @@
-host: http://www.crabfarm.pow
+host: http://grid.crabfarm.io
 files:
 - Crabfile
 - Gemfile
 - Gemfile.lock
 - boot.rb
 - app/**/*.*
-- bin/**/*.*
+remote: platanus/demo
