@@ -6,27 +6,29 @@ module Crabfarm
     extend self
 
     def build_chrome_driver(_options={})
-      switches = []
+      capabilities = Selenium::WebDriver::Remote::Capabilities.chrome
 
       if _options[:proxy].present?
-        switches << "--proxy-server=#{_options[:proxy]}"
-        switches << "--ignore-certificate-errors"
-      end
-
-      common_setup Selenium::WebDriver.for(:chrome, :switches => switches), _options
-    end
-
-    def build_firefox_driver(_options={})
-      profile = Selenium::WebDriver::Firefox::Profile.new
-
-      if _options[:proxy].present?
-        profile.proxy = Selenium::WebDriver::Proxy.new({
+        capabilities.proxy = Selenium::WebDriver::Proxy.new({
           :http => _options[:proxy],
           :ssl => _options[:proxy]
         })
       end
 
-      common_setup Selenium::WebDriver.for(:firefox, :profile => profile), _options
+      common_setup Selenium::WebDriver.for(:chrome, :desired_capabilities => capabilities), _options
+    end
+
+    def build_firefox_driver(_options={})
+      capabilities = Selenium::WebDriver::Remote::Capabilities.firefox
+
+      if _options[:proxy].present?
+        capabilities.proxy = Selenium::WebDriver::Proxy.new({
+          :http => _options[:proxy],
+          :ssl => _options[:proxy]
+        })
+      end
+
+      common_setup Selenium::WebDriver.for(:firefox, desired_capabilities: capabilities), _options
     end
 
     def build_remote_driver(_options={})
