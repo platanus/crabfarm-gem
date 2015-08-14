@@ -28,7 +28,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'listen', '~> 2.7'
   spec.add_dependency 'pry-byebug'
 
-  spec.add_development_dependency "selenium-webdriver", "~> 2.45"
+  spec.add_development_dependency "selenium-webdriver", "~> 2.47"
   spec.add_development_dependency "nokogiri", '~> 1.6.6'
   spec.add_development_dependency "pincers", '~> 0.2.1'
   spec.add_development_dependency "bundler", "~> 1.6"
