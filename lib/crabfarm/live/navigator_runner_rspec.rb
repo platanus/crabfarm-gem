@@ -11,13 +11,10 @@ module Crabfarm
       end
 
       def execute
-        @examples = Factories::Context.with_decorator self do
-          Utils::RSpecRunner.run_spec_for spec_for(@target), live: true
-        end
+        @examples = Utils::RSpecRunner.run_spec_for spec_for(@target), live: true
       end
 
       def show_results
-        @manager.inject_web_tools
         if @examples.count == 0
           show_empty_warning
         elsif @examples.count == 1
@@ -37,7 +34,7 @@ module Crabfarm
       end
 
       def show_empty_warning
-        @manager.show_dialog(
+        @manager.show_message(
           :warning,
           'No examples were found!',
           'Make sure you have tagged some specs with live: true'
@@ -52,7 +49,7 @@ module Crabfarm
         errored = (error > 0)
 
         if error > 0
-          @manager.show_dialog(
+          @manager.show_message(
             :error,
             'FAILED',
             "#{error} of #{total} tests failed"
@@ -60,7 +57,7 @@ module Crabfarm
 
           Utils::Console.error "#{total} examples, #{error} failures"
         else
-          @manager.show_dialog(
+          @manager.show_message(
             :success,
             'SUCCESS',
             "All #{total} tests passed!"
@@ -75,7 +72,7 @@ module Crabfarm
         handle_standard_errors _example
 
         if _example.exception
-          @manager.show_dialog(
+          @manager.show_message(
             :error,
             'FAILED',
             _example.exception.to_s,
@@ -87,7 +84,7 @@ module Crabfarm
           Utils::Console.error _example.exception.to_s
           Utils::Console.json_result _example.metadata[:result]
         else
-          @manager.show_dialog(
+          @manager.show_message(
             :success,
             'SUCCESS',
             "\"#{_example.full_description}\"",

@@ -26,7 +26,7 @@ module Crabfarm
           Utils::Console.exception exc
         ensure
           Utils::Console.system 'Exiting'
-          Crabfarm.live.stop rescue nil
+          Crabfarm.live.stop
         end
       end
 

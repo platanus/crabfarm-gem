@@ -11,15 +11,14 @@ module Crabfarm
       end
 
       def display_external_error(_exc)
-        @manager.reset_driver_status
+        @manager.reset
         display_error_feedback _exc
       end
 
       def execute_live(_class)
         begin
-          runner = build_runner_for _class
-          prepare_session_for runner
-          runner.execute
+          @manager.reset
+          build_runner_for(_class).execute
         rescue Exception => exc
           display_error_feedback exc
         ensure
@@ -50,17 +49,12 @@ module Crabfarm
         runner
       end
 
-      def prepare_session_for(_runner)
-        @manager.reset_driver_status
-      end
-
       def clean_up_session
         # leave crabtrap running for debugging purposes.
       end
 
       def display_error_feedback(_exc)
-        @manager.inject_web_tools
-        @manager.show_dialog(
+        @manager.show_message(
           :error,
           'Crawler error!',
           "#{_exc.class.to_s}: #{_exc.to_s}",

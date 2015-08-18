@@ -32,7 +32,7 @@ module Crabfarm
   private
 
     def load_services
-      init_driver_factory
+      init_browser_adapter
       init_driver_pool
       init_http_client
     end
@@ -45,27 +45,23 @@ module Crabfarm
     def unload_services
       release_http_client
       release_driver_pool
-      release_driver_factory
+      release_browser_adapter
     end
 
-    def init_driver_factory
-      if @factory.nil?
-        @factory = build_driver_factory
-        @factory.prepare_driver_services
+    def init_browser_adapter
+      if @browser_adapter.nil?
+        @browser_adapter = build_browser_adapter proxy
+        @browser_adapter.prepare_driver_services
       end
     end
 
-    def build_driver_factory
-      Strategies.load(:browser, config.browser).new proxy, viewer
-    end
-
-    def release_driver_factory
-      @factory.cleanup_driver_services unless @factory.nil?
-      @factory.nil?
+    def release_browser_adapter
+      @browser_adapter.cleanup_driver_services unless @browser_adapter.nil?
+      @browser_adapter.nil?
     end
 
     def init_driver_pool
-      @pool = DriverPool.new @factory if @pool.nil?
+      @pool = DriverPool.new @browser_adapter if @pool.nil?
     end
 
     def release_driver_pool
@@ -74,11 +70,15 @@ module Crabfarm
     end
 
     def init_http_client
-      @http = build_http_client if @http.nil?
+      @http = build_http_client proxy if @http.nil?
     end
 
-    def build_http_client
-      HttpClient.new proxy, viewer
+    def build_browser_adapter(_proxy)
+      Strategies.load(:browser, config.browser).new _proxy
+    end
+
+    def build_http_client(_proxy)
+      HttpClient.new _proxy
     end
 
     def release_http_client
@@ -87,10 +87,6 @@ module Crabfarm
 
     def proxy
       config.proxy
-    end
-
-    def viewer
-      nil # no viewer provided by default
     end
 
     def config

@@ -1,49 +1,37 @@
 require 'timeout'
-require 'crabfarm/utils/console'
-require 'crabfarm/utils/webdriver'
+require 'crabfarm/live/viewer'
 require 'crabfarm/support/webdriver_factory'
 require 'crabfarm/crabtrap_runner'
 
 module Crabfarm
   module Live
     class Manager
+      extend Forwardable
 
-      INJECTION_TM = 5 # seconds
+      attr_reader :primary_driver, :browser_adapter, :proxy_port
+
+      def_delegators :@viewer, :show_file, :show_message
 
       def initialize
-        @port = Utils::PortDiscovery.find_available_port
-        @driver_name = Crabfarm.config.recorder_driver
-      end
-
-      def proxy_port
-        @port
+        @proxy_port = Utils::PortDiscovery.find_available_port
       end
 
       def start
         set_memento
-        load_primary_driver
-        primary_driver.get('https://www.crabtrap.io/welcome.html')
+        load_browser_adapter
+        load_primary_driver_and_viewer
+        @viewer.welcome
       end
 
       def stop
-        stop_crabtrap
         release_primary_driver
+        release_viewer_driver
+        stop_crabtrap
       end
 
-      def primary_driver
-        @driver
-      end
-
-      def reset_driver_status
-        if Crabfarm.config.live_full_reload
-          # recreate driver if configured to do so
-          release_primary_driver
-          load_primary_driver
-        else
-          primary_driver.manage.delete_all_cookies
-        end
-
-        primary_driver.get('https://www.crabtrap.io/instructions.html')
+      def reset
+        reset_primary_driver
+        @viewer.reset
       end
 
       def block_requests
@@ -55,8 +43,13 @@ module Crabfarm
         end
       end
 
-      def set_memento(_memento=nil)
+      def show_primary_contents
+        unless @viewer_driver.nil?
+          # TODO: send primary driver contents to viewer
+        end
+      end
 
+      def set_memento(_memento=nil)
         options = if _memento
           path = Utils::Resolve.memento_path _memento
           raise ConfigurationError.new "No memento found at #{path}" unless File.exists? path
@@ -65,15 +58,53 @@ module Crabfarm
           { mode: :pass }
         end
 
-        options.merge!({
-          port: @port,
+        stop_crabtrap
+        start_crabtrap options
+      end
+
+    private
+
+      def load_browser_adapter
+        @browser_adapter = Strategies.load(:browser, config.browser).new crabtrap_address
+        @browser_adapter.prepare_driver_services
+      end
+
+      def load_primary_driver_and_viewer
+        @primary_driver = browser_adapter.build_driver :default_driver
+
+        # IDEA: improve this to allow different viewer modes
+        unless browser_adapter.headless?
+          primary_webdriver = browser_adapter.extract_webdriver @primary_driver
+          @viewer = Viewer.new primary_webdriver unless primary_webdriver.nil?
+        end
+
+        if @viewer.nil?
+          @viewer_driver = build_support_driver
+          @viewer = Viewer.new @viewer_driver
+        end
+      end
+
+      def build_support_driver
+        case config.recorder_driver
+        when :firefox
+          Crabfarm::Support::WebdriverFactory.build_firefox_driver driver_config
+        when :chrome
+          Crabfarm::Support::WebdriverFactory.build_chrome_driver driver_config
+        else return nil end
+      end
+
+      def reset_primary_driver
+        @browser_adapter.reset_driver @primary_driver
+      end
+
+      def start_crabtrap(_options)
+        _options = _options.merge({
+          port: @proxy_port,
           virtual: File.expand_path('./assets/live-tools', Crabfarm.root)
         })
 
-        stop_crabtrap
-        @crabtrap = CrabtrapRunner.new config.crabtrap_config.merge(options)
+        @crabtrap = CrabtrapRunner.new config.crabtrap_config.merge(_options)
         @crabtrap.start
-
       end
 
       def stop_crabtrap
@@ -83,85 +114,31 @@ module Crabfarm
         else nil end
       end
 
-      def inject_web_tools
-        Utils::Console.trap_errors 'injecting web tools' do
-          Utils::Webdriver.inject_style primary_driver, 'https://www.crabtrap.io/selectorgadget_combined.css'
-          Utils::Webdriver.inject_style primary_driver, 'https://www.crabtrap.io/tools.css'
-          Utils::Webdriver.inject_script primary_driver, 'https://www.crabtrap.io/selectorgadget_combined.js'
-          Utils::Webdriver.inject_script primary_driver, 'https://www.crabtrap.io/tools.js'
-          Timeout::timeout(INJECTION_TM) { wait_for_injection }
-        end
-      end
-
-      def show_dialog(_status, _title, _subtitle, _content=nil, _content_type=:text)
-        Utils::Console.trap_errors 'loading web dialog' do
-          primary_driver.execute_script(
-            "window.crabfarm.showDialog.apply(null, arguments);",
-            _status.to_s,
-            _title,
-            _subtitle,
-            _content,
-            _content_type.to_s
-          );
-        end
-      end
-
-      def show_selector_gadget()
-        Utils::Console.trap_errors 'loading selector gadget' do
-          primary_driver.execute_script(
-            'window.crabfarm.showSelectorGadget();'
-          )
-        end
-      end
-
-      # Viewer implementation
-
-      def attach(_primary=true)
-        if _primary then primary_driver else build_driver end
-      end
-
-      def detach(_driver)
-        if _driver != primary_driver
-          _driver.quit rescue nil
-        end
-      end
-
-    private
-
-      def load_primary_driver
-        @driver = build_driver
-      end
-
       def release_primary_driver
-        unless @driver.nil?
-          @driver.quit rescue nil
-          @driver = nil
-        end
+        @browser_adapter.release_driver @primary_driver
+        @browser_adapter.cleanup_driver_services
+        @primary_driver = nil
       end
 
-      def build_driver
-        case @driver_name
-        when :firefox
-          Crabfarm::Support::WebdriverFactory.build_firefox_driver driver_config
-        when :chrome
-          Crabfarm::Support::WebdriverFactory.build_chrome_driver driver_config
-        else return nil end
+      def release_viewer_driver
+        unless @viewer_driver.nil?
+          @viewer_driver.quit rescue nil
+          @viewer_driver = nil
+        end
       end
 
       def driver_config
         {
-          proxy: "127.0.0.1:#{@port}"
+          proxy: crabtrap_address
         }
+      end
+
+      def crabtrap_address
+        "127.0.0.1:#{@proxy_port}"
       end
 
       def config
         Crabfarm.config
-      end
-
-      def wait_for_injection
-        while primary_driver.execute_script "return (typeof window.crabfarm === 'undefined');"
-          sleep 1.0
-        end
       end
 
     end
