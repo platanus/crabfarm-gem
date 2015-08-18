@@ -11,22 +11,35 @@ module Crabfarm
       end
 
       def display_external_error(_exc)
-        @manager.reset
+        try_reset
+
         display_error_feedback _exc
       end
 
       def execute_live(_class)
+        try_reset
+
         begin
-          @manager.reset
           build_runner_for(_class).execute
         rescue Exception => exc
           display_error_feedback exc
-        ensure
-          clean_up_session
         end
       end
 
     private
+
+      def try_reset
+        begin
+          @manager.reset
+        rescue Exception => exc
+          # restart manager if reset failed
+          @manager.stop rescue nil
+          @manager.start
+
+          Utils::Console.error "Something went wrong, restarting live mode:"
+          Utils::Console.exception exc
+        end
+      end
 
       def build_runner_for(_class)
         raise ArgumentError.new "'#{_class.to_s} is not Interactable" unless _class < Interactable
@@ -47,10 +60,6 @@ module Crabfarm
 
         runner.dsl.instance_eval(&_class.live_setup) if _class.live_setup
         runner
-      end
-
-      def clean_up_session
-        # leave crabtrap running for debugging purposes.
       end
 
       def display_error_feedback(_exc)

@@ -130,6 +130,7 @@ module Crabfarm
         unless @viewer_driver.nil?
           @viewer_driver.quit rescue nil
           @viewer_driver = nil
+          @viewer = nil
         end
       end
 
