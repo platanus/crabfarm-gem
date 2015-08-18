@@ -14,11 +14,11 @@ module Crabfarm
       def_delegators :@viewer, :show_file, :show_message
 
       def initialize
-        @proxy_port = Utils::PortDiscovery.find_available_port
+        reserve_port
       end
 
       def start
-        set_memento
+        restart_crabtrap
         load_browser_adapter
         load_primary_driver_and_viewer
         @viewer.welcome
@@ -40,7 +40,7 @@ module Crabfarm
           stop_crabtrap
           return yield
         ensure
-          set_memento nil
+          restart_crabtrap nil
         end
       end
 
@@ -55,7 +55,7 @@ module Crabfarm
         end
       end
 
-      def set_memento(_memento=nil)
+      def restart_crabtrap(_memento=nil)
         options = if _memento
           path = Utils::Resolve.memento_path _memento
           raise ConfigurationError.new "No memento found at #{path}" unless File.exists? path
@@ -69,6 +69,10 @@ module Crabfarm
       end
 
     private
+
+      def reserve_port
+        @proxy_port = Utils::PortDiscovery.find_available_port
+      end
 
       def load_browser_adapter
         @browser_adapter = Strategies.load(:browser, config.browser).new crabtrap_address

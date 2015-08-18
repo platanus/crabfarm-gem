@@ -72,7 +72,7 @@ module Crabfarm
         end
 
         def prepare(_memento)
-          @manager.set_memento _memento
+          @manager.restart_crabtrap _memento
           inject_managed_context
         end
 
