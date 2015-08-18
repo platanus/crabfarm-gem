@@ -1,4 +1,5 @@
 require 'timeout'
+require 'tempfile'
 require 'crabfarm/live/viewer'
 require 'crabfarm/support/webdriver_factory'
 require 'crabfarm/crabtrap_runner'
@@ -45,7 +46,12 @@ module Crabfarm
 
       def show_primary_contents
         unless @viewer_driver.nil?
-          # TODO: send primary driver contents to viewer
+          temp_file = dump_to_temp_file primary_driver
+          begin
+            show_file temp_file.path # block requests? not sure
+          ensure
+            temp_file.unlink
+          end
         end
       end
 
@@ -125,6 +131,13 @@ module Crabfarm
           @viewer_driver.quit rescue nil
           @viewer_driver = nil
         end
+      end
+
+      def dump_to_temp_file(_browser)
+        temp = Tempfile.new 'cb_live'
+        temp.write _browser.to_html
+        temp.close
+        temp
       end
 
       def driver_config
