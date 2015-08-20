@@ -1,3 +1,4 @@
+require 'tempfile'
 require 'crabfarm/utils/console'
 require 'crabfarm/utils/webdriver'
 
@@ -15,8 +16,8 @@ module Crabfarm
       end
 
       def welcome
-        @injected = false
         driver.get 'https://www.crabtrap.io/welcome.html'
+        @injected = false
       end
 
       def reset
@@ -26,6 +27,19 @@ module Crabfarm
 
       def show_file(_path)
         driver.get "file://#{_path}"
+        @injected = false
+      end
+
+      def show_content(_content)
+        temp_file = Tempfile.new 'cb_live'
+        temp_file.write _content
+        temp_file.close
+
+        begin
+          show_file temp_file.path # block requests? not sure
+        ensure
+          temp_file.unlink
+        end
       end
 
       def show_message(_status, _title, _subtitle, _content=nil, _content_type=:text)
@@ -54,7 +68,7 @@ module Crabfarm
     private
 
       def inject_web_tools
-        return if @injecting
+        return if @injected
 
         Utils::Console.trap_errors 'injecting web tools' do
           Utils::Webdriver.inject_style driver, 'https://www.crabtrap.io/selectorgadget_combined.css'
