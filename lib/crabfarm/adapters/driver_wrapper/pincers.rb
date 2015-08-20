@@ -1,3 +1,9 @@
+class Pincers::Core::RootContext
+  def driver
+    document
+  end
+end
+
 class Pincers::Core::SearchContext
   def webdriver_elements
     elements

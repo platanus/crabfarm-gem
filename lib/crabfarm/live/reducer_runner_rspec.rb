@@ -1,13 +1,8 @@
-require 'crabfarm/utils/rspec_runner'
 require 'crabfarm/live/navigator_runner_rspec'
 
 module Crabfarm
   module Live
     class ReducerRunnerRSpec < NavigatorRunnerRSpec
-
-      def execute
-        @examples = Utils::RSpecRunner.run_spec_for spec_for(@target), live: true
-      end
 
     private
 

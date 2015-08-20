@@ -59,7 +59,12 @@ module Crabfarm
             end
 
             if target and target < Crabfarm::Live::Interactable
-              @controller.execute_live target
+              if @thread and @thread.alive?
+                @thread.terminate
+                @thread.join
+              end
+
+              @thread = Thread.new { @controller.execute_live target }
               break
             end
           end

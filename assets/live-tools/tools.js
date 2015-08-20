@@ -52,7 +52,6 @@ if(!window.crabfarm) {
 
 			var removeOverlay = function() {
 				overlay.remove();
-				window.crabfarm.showSelectorGadget();
 			};
 
 			overlay.bind("click", removeOverlay);

@@ -15,13 +15,14 @@ module Crabfarm
 
     def reset(_session_id=nil)
       if _session_id.nil?
-        @drivers.each { |k, d| @factory.release_driver(k, d) }
+        @drivers.values.each { |d| @factory.release_driver d }
         @drivers = Hash.new
       else
         _session_id = _session_id.to_sym
         driver = @drivers.delete _session_id
-        @factory.release_driver(_session_id, driver) unless driver.nil?
+        @factory.release_driver(driver) unless driver.nil?
       end
+      nil
     end
 
     def release

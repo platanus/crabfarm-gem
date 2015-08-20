@@ -6,16 +6,6 @@ module Crabfarm
   module Live
     class NavigatorRunner
 
-      class Dsl
-        extend Forwardable
-
-        def initialize(_runner)
-          @runner = _runner
-        end
-
-        def_delegators :@runner, :use_memento, :use_params, :clear_params, :use_rspec, :navigate_to
-      end
-
       def initialize(_manager, _target)
         @manager = _manager
         @target = _target
@@ -25,10 +15,6 @@ module Crabfarm
 
       def dsl
         @dsl ||= Dsl.new self
-      end
-
-      def memento
-        if @memento.nil? then memento_for(@target) else @memento end
       end
 
       def use_memento(_memento)
@@ -50,15 +36,6 @@ module Crabfarm
         @rspec = true
       end
 
-      def navigate_to(_navigator, _params={})
-        # TODO.
-      end
-
-      def prepare(_memento) # decorator
-        @manager.set_memento _memento
-        Context.new @manager
-      end
-
       def execute
         strategy = if @rspec
           NavigatorRunnerRSpec.new @manager, @target
@@ -66,31 +43,57 @@ module Crabfarm
           NavigatorRunnerDirect.new @manager, memento, @target, @params
         end
 
-        Factories::Context.with_decorator self do
-          strategy.execute
-        end
+        begin
+          Factories::Context.with_decorator navigator_decorator do
+            strategy.execute
+          end
 
-        strategy.show_results
+          @manager.show_primary_contents
+          strategy.show_results
+        rescue Crabfarm::LiveInterrupted
+          Utils::Console.info "Execution interrupted"
+        end
       end
 
     private
 
-      def memento_for(_class)
-        Utils::Naming.route_from_constant(_class.to_s).join(File::SEPARATOR)
+      def memento
+        if @memento.nil? then memento_for(@target) else @memento end
       end
 
-      def show_result
-        @manager.inject_web_tools
-        @manager.show_dialog(
-          :neutral,
-          'Navigation completed!',
-          "The page was scrapped in #{@elapsed.real} seconds",
-          @transition.document.to_json,
-          :json
-        )
+      def memento_for(_class)
+        Utils::Naming.route_from_constant(_class.to_s).join File::SEPARATOR
+      end
 
-        Utils::Console.json_result @transition.document
-        Utils::Console.info "Completed in #{@elapsed.real} s"
+      def navigator_decorator
+        @decorator ||= InterceptContextDecorator.new @manager
+      end
+
+      class InterceptContextDecorator
+
+        def initialize(_manager)
+          @manager = _manager
+        end
+
+        def prepare(_memento)
+          @manager.restart_crabtrap _memento
+          inject_managed_context
+        end
+
+        def inject_managed_context
+          Context.new @manager
+        end
+
+      end
+
+      class Dsl
+        extend Forwardable
+
+        def initialize(_runner)
+          @runner = _runner
+        end
+
+        def_delegators :@runner, :use_memento, :use_params, :clear_params, :use_rspec, :navigate_to
       end
 
     end

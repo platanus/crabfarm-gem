@@ -21,8 +21,7 @@ module Crabfarm
       end
 
       def show_results
-        @manager.inject_web_tools
-        @manager.show_dialog(
+        @manager.show_message(
           :neutral,
           'Navigation completed!',
           "The page was scrapped in #{@elapsed.real} seconds",

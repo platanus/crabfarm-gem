@@ -1,10 +1,14 @@
 require 'crabfarm/support/webdriver_factory'
-require "crabfarm/adapters/browser/abstract_webdriver"
+require 'crabfarm/adapters/browser/abstract_webdriver'
 
 module Crabfarm
   module Adapters
     module Browser
       class Chrome < AbstractWebdriver
+
+        def headless?
+          false
+        end
 
       private
 

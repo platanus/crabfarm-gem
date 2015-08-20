@@ -24,7 +24,7 @@ module Crabfarm
 
     attr_reader :proxy_addr, :proxy_port
 
-    def initialize(_proxy=nil, _viewer=nil)
+    def initialize(_proxy=nil)
       if _proxy.nil?
         @proxy_addr = nil
         @proxy_port = nil

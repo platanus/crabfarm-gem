@@ -2,12 +2,16 @@ require 'spec_helper'
 
 describe BtcStats do
 
-  it "should extract the bitcoin value", navigating: 'btce' do
-    expect(state.document[:price]).to eq(221.176);
+  let!(:reducer) { spy_reducer(:indicators).mock_with({ price: 0 }) }
+
+  it "should navigate to btc page by default", navigating: 'btce' do
+    navigate
+    expect(browser.text).to include('Buy BTC');
   end
 
-  it "should extract the litecoin value", navigating: 'btce-2' do
-    expect(navigate(coin: 'ltc').document[:price]).to eq(0.0079);
+  it "should navigate to a alt coin page", navigating: 'btce-2' do
+    navigate coin: 'ltc'
+    expect(browser.text).to include('Buy LTC')
   end
 
 end

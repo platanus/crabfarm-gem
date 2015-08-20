@@ -6,6 +6,10 @@ module Crabfarm
     module Browser
       class Firefox < AbstractWebdriver
 
+        def headless?
+          false
+        end
+
       private
 
         def build_webdriver_instance

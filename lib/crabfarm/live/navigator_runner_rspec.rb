@@ -5,25 +5,23 @@ module Crabfarm
   module Live
     class NavigatorRunnerRSpec
 
+      attr_reader :example
+
       def initialize(_manager, _target)
         @manager = _manager
         @target = _target
       end
 
       def execute
-        @examples = Factories::Context.with_decorator self do
-          Utils::RSpecRunner.run_spec_for spec_for(@target), live: true
-        end
+        @example = Utils::RSpecRunner.run_single_spec_for spec_for(@target), :live
+        bubble_standard_errors
       end
 
       def show_results
-        @manager.inject_web_tools
-        if @examples.count == 0
+        if example.nil?
           show_empty_warning
-        elsif @examples.count == 1
-          show_example_output @examples.first
         else
-          show_example_summary @examples
+          show_example_output
         end
       end
 
@@ -37,73 +35,54 @@ module Crabfarm
       end
 
       def show_empty_warning
-        @manager.show_dialog(
+        @manager.show_message(
           :warning,
-          'No examples were found!',
-          'Make sure you have tagged some specs with live: true'
+          "No examples were found!",
+          "You will need to write at least one spec for #{@target.to_s}"
         )
 
-        Utils::Console.warning 'No examples were found!'
+        console.warning 'No examples were found!'
       end
 
-      def show_example_summary(_examples)
-        total = _examples.count
-        error = _examples.select { |e| !e.exception.nil? }.count
-        errored = (error > 0)
-
-        if error > 0
-          @manager.show_dialog(
+      def show_example_output
+        if example.exception
+          @manager.show_message(
             :error,
             'FAILED',
-            "#{error} of #{total} tests failed"
-          )
-
-          Utils::Console.error "#{total} examples, #{error} failures"
-        else
-          @manager.show_dialog(
-            :success,
-            'SUCCESS',
-            "All #{total} tests passed!"
-          )
-
-          Utils::Console.result "#{total} examples, 0 failures"
-        end
-      end
-
-      def show_example_output(_example)
-
-        handle_standard_errors _example
-
-        if _example.exception
-          @manager.show_dialog(
-            :error,
-            'FAILED',
-            _example.exception.to_s,
-            _example.metadata[:result].to_json,
+            example.exception.to_s,
+            example.metadata[:result].to_json,
             :json
           )
 
-          Utils::Console.error "1 example, 1 failure"
-          Utils::Console.error _example.exception.to_s
-          Utils::Console.json_result _example.metadata[:result]
+          console.error "Example \"#{example.full_description}\" failed (line: #{example.metadata[:line_number]})"
+          console.error example.exception.to_s
+          console.json_result example.metadata[:result]
         else
-          @manager.show_dialog(
+          @manager.show_message(
             :success,
             'SUCCESS',
-            "\"#{_example.full_description}\"",
-            _example.metadata[:result].to_json,
+            "\"#{example.full_description}\"",
+            example.metadata[:result].to_json,
             :json
           )
 
-          Utils::Console.result "1 example, 0 failures"
-          Utils::Console.json_result _example.metadata[:result]
+          console.result "Example \"#{example.full_description}\" passed (line: #{example.metadata[:line_number]})"
+          console.json_result example.metadata[:result]
         end
       end
 
-      def handle_standard_errors(_example)
-        if _example.exception and not _example.exception.is_a? ::RSpec::Expectations::ExpectationNotMetError
-          raise _example.exception
+      def bubble_standard_errors
+        if example and example.exception and not example.exception.is_a? expectation_error
+          raise example.exception
         end
+      end
+
+      def expectation_error
+        ::RSpec::Expectations::ExpectationNotMetError
+      end
+
+      def console
+        Utils::Console
       end
 
     end

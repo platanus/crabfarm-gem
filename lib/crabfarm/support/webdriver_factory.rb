@@ -15,7 +15,7 @@ module Crabfarm
         })
       end
 
-      common_setup Selenium::WebDriver.for(:chrome, :desired_capabilities => capabilities), _options
+      common_setup Selenium::WebDriver.for(:chrome, detach: false, desired_capabilities: capabilities), _options
     end
 
     def build_firefox_driver(_options={})

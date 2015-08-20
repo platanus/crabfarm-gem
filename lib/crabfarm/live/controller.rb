@@ -11,23 +11,35 @@ module Crabfarm
       end
 
       def display_external_error(_exc)
-        @manager.reset_driver_status
+        try_reset
+
         display_error_feedback _exc
       end
 
       def execute_live(_class)
+        try_reset
+
         begin
-          runner = build_runner_for _class
-          prepare_session_for runner
-          runner.execute
+          build_runner_for(_class).execute
         rescue Exception => exc
           display_error_feedback exc
-        ensure
-          clean_up_session
         end
       end
 
     private
+
+      def try_reset
+        begin
+          @manager.reset
+        rescue Exception => exc
+          # restart manager if reset failed
+          @manager.stop rescue nil
+          @manager.start
+
+          Utils::Console.error "Something went wrong, restarting live mode:"
+          Utils::Console.exception exc
+        end
+      end
 
       def build_runner_for(_class)
         raise ArgumentError.new "'#{_class.to_s} is not Interactable" unless _class < Interactable
@@ -50,17 +62,8 @@ module Crabfarm
         runner
       end
 
-      def prepare_session_for(_runner)
-        @manager.reset_driver_status
-      end
-
-      def clean_up_session
-        # leave crabtrap running for debugging purposes.
-      end
-
       def display_error_feedback(_exc)
-        @manager.inject_web_tools
-        @manager.show_dialog(
+        @manager.show_message(
           :error,
           'Crawler error!',
           "#{_exc.class.to_s}: #{_exc.to_s}",

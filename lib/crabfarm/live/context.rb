@@ -1,3 +1,4 @@
+require 'crabfarm/adapters/browser/base'
 require 'crabfarm/utils/webdriver'
 
 module Crabfarm
@@ -9,11 +10,40 @@ module Crabfarm
       end
 
       def proxy
+        # override proxy so every context service points to crabtrap
         "127.0.0.1:#{@manager.proxy_port}"
       end
 
-      def viewer
-        @manager
+    private
+
+      def build_browser_adapter(_proxy)
+        # use a special browser adapter to override primary driver
+        return BrowserAdapter.new @manager
+      end
+
+      # TODO: override build_http_client, i would like to tap into the http requests and show downloaded data in viewer
+
+      class BrowserAdapter < Crabfarm::Adapters::Browser::Base
+
+        def initialize(_manager)
+          @manager = _manager
+        end
+
+        def build_driver(_session_id)
+          if _session_id == :default_driver
+            @manager.primary_driver
+          else
+            @manager.browser_adapter.build_driver _session_id
+          end
+        end
+
+        def release_driver(_driver)
+          if _driver != @manager.primary_driver
+            @manager.browser_adapter.release_driver _driver
+          end
+          nil
+        end
+
       end
 
     end

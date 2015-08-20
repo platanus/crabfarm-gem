@@ -1,38 +1,31 @@
+require 'crabfarm/adapters/browser/base'
+
 module Crabfarm
   module Adapters
     module Browser
-      class AbstractWebdriver
+      class AbstractWebdriver < Base
 
-        attr_accessor :config, :viewer
+        attr_accessor :config
 
-        def initialize(_proxy=nil, _viewer=nil)
+        def initialize(_proxy=nil)
           @config = load_driver_config
           @config[:proxy] = _proxy
-          @viewer = _viewer
-        end
-
-        def prepare_driver_services
-          start_server if viewer.nil?
-        end
-
-        def cleanup_driver_services
-          stop_server if viewer.nil?
         end
 
         def build_driver(_session_id)
-          wrap_driver(if viewer.nil?
-            build_webdriver_instance
-          else
-            viewer.attach _session_id == :default_driver
-          end)
+          wrap_driver build_webdriver_instance
         end
 
-        def release_driver(_session_id, _wrapped)
-          if viewer.nil?
-            _wrapped.driver.quit rescue nil
-          else
-            viewer.detach _wrapped.driver
-          end
+        def reset_driver(_wrapped)
+          _wrapped.driver.manage.delete_all_cookies # pincers exposes driver?
+        end
+
+        def extract_webdriver(_wrapped)
+          _wrapped.driver
+        end
+
+        def release_driver(_wrapped)
+          _wrapped.driver.quit rescue nil
         end
 
       private
@@ -45,14 +38,6 @@ module Crabfarm
 
         def build_webdriver_instance
           raise NotImplementedError.new
-        end
-
-        def start_server
-          # Nothing by default
-        end
-
-        def stop_server
-          # Nothing by default
         end
 
         def load_driver_config

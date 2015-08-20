@@ -23,8 +23,7 @@ module Crabfarm
       end
 
       def show_results
-        @manager.inject_web_tools
-        @manager.show_dialog(
+        @manager.show_message(
           :neutral,
           'Reducing completed!',
           "The page was parsed in #{@elapsed.real} seconds",

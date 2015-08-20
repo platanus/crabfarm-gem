@@ -1,5 +1,3 @@
-require 'crabfarm/utils/webdriver'
-
 module Crabfarm
   module Live
     module Interactable
@@ -29,19 +27,12 @@ module Crabfarm
 
       end
 
-      # Tooling
-
-      def highlight(_elements)
+      def examine(_tools=true)
         if Crabfarm.live?
-          if _elements.respond_to? :webdriver_elements
-            _elements = _elements.webdriver_elements
-          end
-
-          if _elements.is_a? String
-            _elements = Crabfarm.live.primary_driver.find_elements(css: _elements)
-          end
-
-          Utils::Webdriver.set_style _elements, "border: 3px solid yellow;"
+          Crabfarm.live.show_primary_contents if self.is_a? BaseNavigator
+          Crabfarm.live.show_content raw_document if self.is_a? BaseReducer
+          Crabfarm.live.show_selector_gadget if _tools
+          raise LiveInterrupted.new
         end
       end
 
