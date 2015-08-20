@@ -43,11 +43,11 @@ module Crabfarm
         end
 
         begin
-          Factories::SnapshotReducer.with_decorator reducer_decorator do
+          Factories::SnapshotReducer.with_decorator decorator do
             strategy.execute
           end
 
-          @manager.show_file reducer_decorator.last_path
+          @manager.show_file decorator.last_path unless decorator.last_path.nil?
           strategy.show_results
         rescue Crabfarm::LiveInterrupted
           Utils::Console.info "Execution interrupted"
@@ -56,7 +56,7 @@ module Crabfarm
 
     private
 
-      def reducer_decorator
+      def decorator
         @decorator ||= DisplayFileDecorator.new @manager
       end
 
