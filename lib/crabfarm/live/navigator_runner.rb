@@ -43,12 +43,16 @@ module Crabfarm
           NavigatorRunnerDirect.new @manager, memento, @target, @params
         end
 
-        Factories::Context.with_decorator navigator_decorator do
-          strategy.execute
-        end
+        begin
+          Factories::Context.with_decorator navigator_decorator do
+            strategy.execute
+          end
 
-        @manager.show_primary_contents
-        strategy.show_results
+          @manager.show_primary_contents
+          strategy.show_results
+        rescue Crabfarm::LiveInterrupted
+          Utils::Console.info "Execution interrupted"
+        end
       end
 
     private

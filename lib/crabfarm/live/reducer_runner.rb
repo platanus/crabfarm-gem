@@ -42,11 +42,16 @@ module Crabfarm
           ReducerRunnerDirect.new @manager, snapshot, @target, @params
         end
 
-        Factories::SnapshotReducer.with_decorator reducer_decorator do
-          @manager.block_requests { strategy.execute }
-        end
+        begin
+          Factories::SnapshotReducer.with_decorator reducer_decorator do
+            strategy.execute
+          end
 
-        strategy.show_results
+          @manager.show_file reducer_decorator.last_path
+          strategy.show_results
+        rescue Crabfarm::LiveInterrupted
+          Utils::Console.info "Execution interrupted"
+        end
       end
 
     private
@@ -71,12 +76,14 @@ module Crabfarm
 
       class DisplayFileDecorator
 
+        attr_reader :last_path
+
         def initialize(_manager)
           @manager = _manager
         end
 
         def prepare(_class, _path, _params)
-          @manager.show_file _path
+          @last_path = _path
           nil
         end
 

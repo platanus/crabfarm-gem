@@ -56,4 +56,6 @@ module Crabfarm
     end
   end
 
+  class LiveInterrupted < StandardError; end
+
 end
