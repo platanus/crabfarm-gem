@@ -120,13 +120,13 @@ During the **navigator** generation a **reducer** with the same name was generat
 
 As with the **navigator**, you start developing the **reducer** by generating a document **snapshot**. For HTML reducers, a **snapshot** is just a portion of HTML. A **snapshot** can be generated manually but we recommend using the snapshot recorder command.
 
-The snapshot recorder uses an already coded **navigator** to capture the html passed by it to the **reducer**. To generate a snapshot call:
+The snapshot recorder uses an already coded **navigator spec** to capture the html passed by the **navigator** to the **reducer**. To generate a snapshot call:
 
 ```
-crabfarm r snapshot btc_price -m my_memento -q market=LTC/BTC
+crabfarm r snapshot BtcPrice
 ```
 
-The command above tells crabfarm to extract **snapshots** from the *btc_price* navigator using a memento (optional) and using a given set of parameters as a query string. If parameter are not given then crabfarm will ask for them.
+The command above tells crabfarm to extract **snapshots** from the *BtcPrice* navigator using the last *BtcPrice* navigator spec.
 
 Crabfarm will ask you to give the snapshot a name, call it *my_snapshot*, notice it is stored in `/spec/snapshots/my_snapshot.html`.
 
