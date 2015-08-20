@@ -12,6 +12,7 @@ module Crabfarm
 
       def execute
         @examples = Utils::RSpecRunner.run_spec_for spec_for(@target), live: true
+        bubble_standard_errors
       end
 
       def show_results
@@ -68,9 +69,6 @@ module Crabfarm
       end
 
       def show_example_output(_example)
-
-        handle_standard_errors _example
-
         if _example.exception
           @manager.show_message(
             :error,
@@ -97,9 +95,13 @@ module Crabfarm
         end
       end
 
-      def handle_standard_errors(_example)
-        if _example.exception and not _example.exception.is_a? ::RSpec::Expectations::ExpectationNotMetError
-          raise _example.exception
+      def bubble_standard_errors
+        return if @examples.count != 1 # just bubble errors for one example runs for now
+
+        @examples.each do |example|
+          if example.exception and not example.exception.is_a? ::RSpec::Expectations::ExpectationNotMetError
+            raise example.exception
+          end
         end
       end
 
