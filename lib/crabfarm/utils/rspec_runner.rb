@@ -69,11 +69,13 @@ module Crabfarm
       def is_better_example?(_new, _old, _tag)
         return true if _old.nil?
 
-        new_tagged = !!(_new.metadata[_tag])
-        old_tagged = !!(_old.metadata[_tag])
+        if _tag
+          new_tagged = !!(_new.metadata[_tag])
+          old_tagged = !!(_old.metadata[_tag])
 
-        # preffer tagged
-        return new_tagged if new_tagged != old_tagged
+          # preffer tagged
+          return new_tagged if new_tagged != old_tagged
+        end
 
         # preffer higher line number
         return _new.metadata[:line_number] > _old.metadata[:line_number]

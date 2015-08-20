@@ -1,8 +1,8 @@
 require 'rainbow'
 require 'rainbow/ext/string'
 require 'crabfarm/modes/console'
+require 'crabfarm/utils/rspec_runner'
 require 'crabfarm/modes/shared/snapshot_decorator'
-require 'crabfarm/modes/shared/interactive_decorator'
 
 module Crabfarm
   module Modes
@@ -10,20 +10,13 @@ module Crabfarm
       module Snapshot
         extend self
 
-        def start(_context, _navigator, _query=nil)
+        def start(_context, _navigator)
           return puts "Must provide a navigator name" unless _navigator.is_a? String
 
           begin
-            puts "Navigating, waiting to hit a reducer...".color(Console::Colors::NOTICE)
+            puts "Navigating using last #{_navigator} spec, waiting to hit a reducer...".color(Console::Colors::NOTICE)
             Factories::Reducer.with_decorator Shared::SnapshotDecorator do
-              if _query.nil?
-                Factories::Navigator.with_decorator Shared::InteractiveDecorator do
-                  service.transition _context, _navigator
-                end
-              else
-                _query = parse_query_string _query
-                service.transition _context, _navigator, _query
-              end
+              @example = Utils::RSpecRunner.run_single_spec_for spec_for(_navigator)
             end
             puts "Navigation completed".color(Console::Colors::NOTICE)
           rescue Exception => e
@@ -34,20 +27,11 @@ module Crabfarm
 
       private
 
-        def service
-          TransitionService
-        end
-
-        def parse_query_string(_string)
-          result = {}
-
-          parts = _string.split '&'
-          parts.each do |part|
-            key, val = part.split '='
-            result[key.to_sym] = Shared::InteractiveDecorator::InteractiveHash.parse_input val
-          end
-
-          result
+        def spec_for(_class_name)
+          route = Utils::Naming.route_from_constant(_class_name)
+          route = route.join(File::SEPARATOR)
+          route = route + '_spec.rb'
+          File.join('spec','navigators', route)
         end
 
       end

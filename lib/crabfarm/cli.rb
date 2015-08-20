@@ -155,18 +155,12 @@ module Crabfarm
       c.desc "Take snapshots from a navigator run"
       c.command [:snapshot, :snap] do |snap|
 
-        snap.desc "Navigate on a memento"
-        snap.flag [:m, :memento]
-
-        snap.desc "Navigation query string, if not given navigator is run in interactive mode"
-        snap.flag [:q, :query]
-
         snap.action do |global_options, options, args|
           next puts "This command can only be ran inside a crabfarm application" unless Crabfarm.inside_crawler_app?
 
           Crabfarm.with_context options[:memento] do |context|
             require "crabfarm/modes/recorder/snapshot"
-            Crabfarm::Modes::Recorder::Snapshot.start context, args[0], options[:query]
+            Crabfarm::Modes::Recorder::Snapshot.start context, args[0]
           end
         end
 
