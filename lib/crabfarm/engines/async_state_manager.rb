@@ -1,4 +1,3 @@
-require 'benchmark'
 require 'ostruct'
 
 module Crabfarm
@@ -106,18 +105,19 @@ module Crabfarm
             if @working
               begin
                 logger.info "Transitioning state: #{@next_state_name}"
-                @elapsed = Benchmark.measure do
-                  ActiveSupport::Dependencies.clear
-                  @doc = TransitionService.transition(@context, @next_state_name, @next_state_params).document
-                end.real
+                ActiveSupport::Dependencies.clear
+                ts = TransitionService.transition(@context, @next_state_name, @next_state_params)
+                @elapsed = ts.elapsed
+                @doc = ts.document
+                @error = nil
 
                 logger.info "Transitioned in #{@elapsed.real}"
-                @error = nil
               rescue Exception => e
-                logger.error "Error during transition:"
-                logger.error e
                 @doc = nil
                 @error = e
+
+                logger.error "Error during transition:"
+                logger.error e
               end
 
               @lock.synchronize {

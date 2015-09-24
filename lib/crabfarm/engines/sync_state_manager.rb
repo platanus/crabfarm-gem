@@ -1,4 +1,3 @@
-require 'benchmark'
 require 'ostruct'
 
 module Crabfarm
@@ -27,13 +26,14 @@ module Crabfarm
 
       def navigate(_name, _params={})
         @lock.synchronize {
-          output = { name: _name, params: _params }
+          ts = TransitionService.transition(@context, _name, _params)
 
-          output[:elapsed] = Benchmark.measure do
-            output[:doc] = TransitionService.transition(@context, _name, _params).document
-          end
-
-          OpenStruct.new output
+          OpenStruct.new({
+            name: _name,
+            params: _params,
+            doc: ts.document,
+            elapsed: ts.elapsed
+          })
         }
       end
 

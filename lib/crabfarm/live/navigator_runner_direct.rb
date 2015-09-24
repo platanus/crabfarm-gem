@@ -1,4 +1,3 @@
-require 'benchmark'
 require 'crabfarm/utils/console'
 
 module Crabfarm
@@ -14,9 +13,7 @@ module Crabfarm
 
       def execute
         Crabfarm.with_context @memento do |ctx|
-          @elapsed = Benchmark.measure do
-            @transition = TransitionService.transition ctx, @target, (@params || {})
-          end
+          @transition = TransitionService.transition ctx, @target, (@params || {})
         end
       end
 
@@ -24,7 +21,7 @@ module Crabfarm
         @manager.show_message(
           :neutral,
           'Navigation completed!',
-          "The page was scrapped in #{@elapsed.real} seconds",
+          "The page was scrapped in #{@transition.elapsed} seconds",
           @transition.document.to_json,
           :json
         )
