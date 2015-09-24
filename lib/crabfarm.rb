@@ -50,9 +50,13 @@ module Crabfarm
 
   def self.logger
     if @@logger.nil?
-      @@logger = Logger.new(@@config.log_path.nil? ? STDOUT : File.join(@@config.log_path, 'crawler.log'))
-      @@logger.level = Logger::INFO
+      if @@config.log_path.nil? or @@config.log_path.empty?
+        @@logger = Logger.new STDOUT
+      else
+        @@logger = Logger.new File.join(@@config.log_path, 'crawler.log')
+      end
     end
+
     @@logger
   end
 
