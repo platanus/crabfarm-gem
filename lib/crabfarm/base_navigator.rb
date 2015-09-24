@@ -22,7 +22,7 @@ module Crabfarm
     end
 
     def navigate(_name, _params={})
-      TransitionService.transition(@context, _name, params.merge(_params)).navigator
+      TransitionService.transition(@context, _name, params.merge(_params))
     end
 
     alias :nav :navigate

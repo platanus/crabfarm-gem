@@ -37,17 +37,17 @@ describe Crabfarm::BaseNavigator do
     end
 
     it "should allow invoking another navigator" do
-      navigator = nav.navigate other_nav_class, { foo: :bar }
-      expect(navigator).to be_a(other_nav_class)
-      expect(navigator.params[:foo]).to eq :bar
-      expect(navigator.run_called).to be true
+      st = nav.navigate other_nav_class, { foo: :bar }
+      expect(st.navigator).to be_a(other_nav_class)
+      expect(st.navigator.params[:foo]).to eq :bar
+      expect(st.navigator.run_called).to be true
     end
 
     it "should merge original navigator params with call params" do
-      navigator = nav.navigate other_nav_class, { foo: :bar, hello: 'dude' }
-      expect(navigator.params[:foo]).to eq :bar
-      expect(navigator.params[:hello]).to eq 'dude'
-      expect(navigator.params[:arg]).to eq 'imateapot'
+      st = nav.navigate other_nav_class, { foo: :bar, hello: 'dude' }
+      expect(st.navigator.params[:foo]).to eq :bar
+      expect(st.navigator.params[:hello]).to eq 'dude'
+      expect(st.navigator.params[:arg]).to eq 'imateapot'
     end
 
   end
