@@ -31,6 +31,7 @@ module Crabfarm
         def phantom_config
           {
             load_images: Crabfarm.config.phantom_load_images,
+            log_level: Crabfarm.config.phantom_log_level,
             ssl: Crabfarm.config.phantom_ssl,
             bin_path: Crabfarm.config.phantom_bin_path,
             proxy: config[:proxy],

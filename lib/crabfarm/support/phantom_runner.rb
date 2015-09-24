@@ -55,7 +55,7 @@ module Crabfarm
         cmd << "--ssl-protocol=#{@config[:ssl]}" unless @config[:ssl].nil?
         cmd << "--ignore-ssl-errors=true"
         cmd << "--web-security=false"
-        cmd << "--webdriver-loglevel=WARN"
+        cmd << "--webdriver-loglevel=#{@config[:log_level].to_s.upcase}"
         cmd
       end
 

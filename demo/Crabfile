@@ -2,4 +2,6 @@ set_browser :phantomjs
 
 set_log_path 'logs'
 
+set_phantom_log_level :warn
+
 set_recorder_driver :firefox

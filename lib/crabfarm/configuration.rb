@@ -22,6 +22,7 @@ module Crabfarm
 
       # Phantom launcher configuration
       [:phantom_load_images, :boolean, 'Phantomjs image loading, only for phantomjs driver.'],
+      [:phantom_log_level, ['error', 'warn', 'info', 'debug'], 'Phantomjs log level.'],
       [:phantom_ssl, ['sslv3', 'sslv2', 'tlsv1', 'any'], 'Phantomjs ssl mode: sslv3, sslv2, tlsv1 or any, only for phantomjs driver.'],
       [:phantom_bin_path, :string, 'Phantomjs binary path, only for phantomjs driver.'],
 
@@ -64,6 +65,7 @@ module Crabfarm
         phantom_load_images: false,
         phantom_ssl: 'any',
         phantom_bin_path: 'phantomjs',
+        phantom_log_level: :warn,
         crabtrap_bin_path: 'crabtrap',
         recorder_driver: :firefox
       }
