@@ -2,6 +2,7 @@ require 'readline'
 require 'rainbow'
 require 'rainbow/ext/string'
 require 'json'
+require 'crabfarm/utils/console'
 require 'crabfarm/engines/sync_state_manager'
 
 module Crabfarm
@@ -23,58 +24,60 @@ module Crabfarm
         end
 
         def reload!
-          puts "Reloading crawler source".color Colors::NOTICE
+          console.info "Reloading crawler source"
           @manager.reload
           nil
         end
 
         def reset
-          puts "Resetting crawling context".color Colors::NOTICE
+          console.info "Resetting crawling context"
           @manager.reset
           nil
         end
 
         def navigate(_name=nil, _params={})
           if _name.nil?
-            puts "Must provide a navigator name".color Colors::ERROR
+            console.warning "Must provide a navigator name"
             return
           end
 
           begin
-            puts "Navigating...".color Colors::NOTICE
+            console.info "Navigating..."
             output = @manager.navigate _name, _params
-            puts JSON.pretty_generate(output.doc).gsub(/(^|\\n)/, '  ').color Colors::RESULT
-            puts "Completed in #{output.elapsed.real} s".color Colors::NOTICE
+            console.json_result output.doc
+            console.info "Completed in #{output.elapsed.real} s"
 
-          rescue Exception => e
-            puts "#{e.to_s}".color Colors::ERROR
-            puts e.backtrace
+          rescue Exception => exc
+            console.exception exc
           end
         end
 
         def snap(_name=nil, _params={})
           if _name.nil?
-            puts "Must provide a navigator name".color Colors::ERROR
+            console.warning "Must provide a navigator name"
             return
           end
 
           begin
-            puts "Navigating, waiting to hit a reducer...".color Colors::NOTICE
+            console.info "Navigating, waiting to hit a reducer..."
             require 'crabfarm/modes/shared/snapshot_decorator'
             Factories::Reducer.with_decorator Shared::SnapshotDecorator do
               @manager.navigate _name, _params
             end
-            puts "Navigation completed".color Colors::NOTICE
+            console.info "Navigation completed"
 
-          rescue Exception => e
-            puts "#{e.to_s}".color Colors::ERROR
-            puts e.backtrace
+          rescue Exception => exc
+            console.exception exc
           end
         end
 
         def help
-          puts "Ejem..."
+          console.info "Ejem..."
           nil
+        end
+
+        def console
+          Crabfarm::Utils::Console
         end
 
         alias :nav :navigate
@@ -88,16 +91,15 @@ module Crabfarm
             output = dsl.instance_eval Readline.readline("> ", true)
             puts output.inspect unless output.nil?
           rescue SyntaxError => se
-            puts "Syntax error: #{se.message}".color(Colors::ERROR)
+            Crabfarm::Utils::Console.exception se
           rescue SystemExit, Interrupt
             break
-          rescue => e
-            puts "#{e.to_s}".color(Colors::ERROR)
-            puts e.backtrace
+          rescue => exc
+            Crabfarm::Utils::Console.exception exc
           end
         end
 
-        puts "Exiting".color(Colors::NOTICE)
+        Crabfarm::Utils::Console.system "Exiting"
       end
 
     end
