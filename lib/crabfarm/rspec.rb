@@ -14,7 +14,7 @@ RSpec.configure do |config|
         example.run
       ensure
         # store result in metadata so it can be accessed by formatters/reporters
-        example.metadata[:result] = @reducer_state.as_json if @reducer_state
+        example.metadata[:result] = @reducer_state if @reducer_state
       end
     elsif described_class < Crabfarm::BaseNavigator
       Crabfarm.with_context example.metadata[:navigating] do |ctx|

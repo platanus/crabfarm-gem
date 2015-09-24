@@ -24,10 +24,10 @@ describe Crabfarm::BaseStruct do
     end
   end
 
-  describe "as_json" do
+  describe "to_json" do
     it 'should properly render the struct fields as json' do
-      expect(struct_class.new(a_field: 'imateapot', a_number: '$ 110').as_json).to eq(
-        { a_number: 110, a_field: "imateapot" }
+      expect(struct_class.new(a_field: 'imateapot', a_number: '$ 110').to_json).to eq(
+        "{\"a_number\":110,\"a_field\":\"imateapot\"}"
       )
     end
   end

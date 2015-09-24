@@ -17,7 +17,6 @@ module Crabfarm
       @context.prepare
       @navigator = Factories::Navigator.build navigator_class, @context, _params
       @document = @navigator.run
-      @document = @document.as_json if @document.respond_to? :as_json
 
       self
     end

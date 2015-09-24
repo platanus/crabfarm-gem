@@ -41,10 +41,6 @@ module Crabfarm
       raise NotImplementedError.new
     end
 
-    def as_json(_options=nil)
-      field_hash
-    end
-
     def to_json(_options=nil)
       field_hash.to_json _options
     end
