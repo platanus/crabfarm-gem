@@ -14,7 +14,7 @@ module Crabfarm
         prefix :api
 
         rescue_from Grape::Exceptions::ValidationErrors do |e|
-          rack_response({ errors: e.as_json }.to_json, 400)
+          rack_response({ errors: e }.to_json, 400)
         end
 
         rescue_from Crabfarm::ApiError do |e|
@@ -54,7 +54,7 @@ module Crabfarm
           optional :wait, type: Float
         end
         put :state do
-          print_state evaluator.navigate params[:name], params[:params], wait
+          print_state evaluator.navigate params[:name], params[:params] || {}, wait
         end
       end
 
