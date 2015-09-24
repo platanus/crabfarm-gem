@@ -69,6 +69,7 @@ module Crabfarm
       cmd << @config[:bucket_path] if mode != :pass
       cmd << "--port=#{port}"
       cmd << "--virtual=#{@config[:virtual]}" if @config.key? :virtual
+      cmd << "--log=#{@config[:log_level].to_s.upcase}"
       cmd
     end
 

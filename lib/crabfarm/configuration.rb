@@ -28,6 +28,7 @@ module Crabfarm
 
       # Crabtrap launcher configuration
       [:crabtrap_bin_path, :string, 'Crabtrap binary path.'],
+      [:crabtrap_log_level, ['error', 'warn', 'info', 'debug'], 'Crabtrap log level'],
 
       # Recorder configuration
       [:recorder_driver, :string, 'Recorder driver name, defaults to \'firefox\'']
@@ -67,6 +68,7 @@ module Crabfarm
         phantom_bin_path: 'phantomjs',
         phantom_log_level: :warn,
         crabtrap_bin_path: 'crabtrap',
+        crabtrap_log_level: :warn,
         recorder_driver: :firefox
       }
     end
@@ -85,6 +87,7 @@ module Crabfarm
     def crabtrap_config
       {
         bin_path: crabtrap_bin_path,
+        log_level: crabtrap_log_level,
         proxy: proxy
       }
     end
