@@ -101,9 +101,9 @@ def run
   browser.goto 'www.btc-e.com'
 
   if params[:market]
-    browser.css('ul.pairs li').find { |li|
+    browser.search('ul.pairs li').find { |li|
       li.text.include? params[:market]
-    }.css('a').click
+    }.search('a').click
   end
 
   reduce_with_defaults
@@ -154,9 +154,9 @@ class BtcPriceReducer < Crabfarm::BaseReducer
   has_float :low, greater_or_equal_to: 0.0
 
   def run
-    self.last = css('.orderStats:nth-child(1) strong').text
-    self.low = css '.orderStats:nth-child(2) strong'
-    self.high = css '.orderStats:nth-child(3) strong'
+    self.last = search('.orderStats:nth-child(1) strong').text
+    self.low = search '.orderStats:nth-child(2) strong'
+    self.high = search '.orderStats:nth-child(3) strong'
   end
 
 end
@@ -173,13 +173,13 @@ has_float :low, greater_or_equal_to: 0.0
 The **reducer** allows you to define fields that take care of the parsing and validation of text values for you. Also, declared fields help keep things dry since are included in `reducer.to_json`.
 
 ```
-self.last = at_css('.orderStats:nth-child(1) strong').text
+self.last = search('.orderStats:nth-child(1) strong').text
 ```
 
-If you dig a little deeper, you will see that `last` is beign assigned something like "0.0061 BTC". The assertion framework is smart enough to extract just the floating  point number (since we declared `last` as float) and fail if no number can be extracted from string. `css` is just a pincers method, the reducer exposes every parser method.
+If you dig a little deeper, you will see that `last` is beign assigned something like "0.0061 BTC". The assertion framework is smart enough to extract just the floating  point number (since we declared `last` as float) and fail if no number can be extracted from string. `search` is just a pincers method, the reducer exposes every parser method.
 
 ```
-self.low = at_css '.orderStats:nth-child(2) strong'
+self.low = search '.orderStats:nth-child(2) strong'
 ```
 
 The only difference of the above line with the previous is that it shows that is not necessary to call `text` every time. The field setter detects if the passed value provides a `text` method and calls it.
