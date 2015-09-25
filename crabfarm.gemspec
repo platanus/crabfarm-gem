@@ -32,6 +32,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "childprocess", "~> 0.5", ">= 0.5.5"
   spec.add_dependency "listen", "~> 2.7"
   spec.add_dependency "pry-byebug", "~> 3.2"
+  spec.add_dependency "linedump", "~> 0.1"
 
   spec.add_development_dependency "selenium-webdriver", "~> 2.47"
   spec.add_development_dependency "nokogiri", "~> 1.6", ">= 1.6.6"

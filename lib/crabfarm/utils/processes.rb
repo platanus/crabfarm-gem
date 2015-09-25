@@ -1,5 +1,5 @@
 require 'childprocess'
-require 'crabfarm/utils/stream_dumper'
+require 'linedump'
 
 ChildProcess.posix_spawn = true
 
@@ -22,8 +22,8 @@ module Crabfarm::Utils
       we.close
 
       # register log consumers
-      StreamDumper.register_stream(ro) { |l| _logger.info "[#{_name.upcase}] #{l}" }
-      StreamDumper.register_stream(re) { |l| _logger.warn "[#{_name.upcase}] #{l}" }
+      Linedump.each_line(ro) { |l| _logger.info "[#{_name.upcase}] #{l}" }
+      Linedump.each_line(re) { |l| _logger.warn "[#{_name.upcase}] #{l}" }
 
       proc
     end
