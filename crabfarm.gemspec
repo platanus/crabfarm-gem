@@ -28,7 +28,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "rainbow", "~> 2.0"
   spec.add_dependency "grape", "~> 0.10"
   spec.add_dependency "puma", "~> 2.10", ">= 2.10.2"
-  spec.add_dependency "git", "~> 2.12"
+  spec.add_dependency "git", "~> 1.2"
   spec.add_dependency "childprocess", "~> 0.5", ">= 0.5.5"
   spec.add_dependency "listen", "~> 2.7"
   spec.add_dependency "pry-byebug", "~> 3.2"
