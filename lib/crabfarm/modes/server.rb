@@ -17,8 +17,25 @@ module Crabfarm
           rack_response({ errors: e }.to_json, 400)
         end
 
-        rescue_from Crabfarm::ApiError do |e|
-          rack_response(e.to_json, e.code)
+        rescue_from Crabfarm::TimeoutError do |e|
+          rack_response('{}', 408)
+        end
+
+        rescue_from Crabfarm::StillWorkingError do |e|
+          rack_response('{}', 409)
+        end
+
+        rescue_from Crabfarm::CrawlerError do |e|
+          message = "#{e.original.message} (#{e.original.class.to_s})"
+          backtrace = e.original.backtrace.take_while { |t| !t.include? '/lib/crabfarm/' }
+          backtrace = e.original.backtrace if backtrace.count == 0
+
+          body = {
+            exception: message,
+            backtrace: backtrace
+          }
+
+          rack_response(body.to_json, 500)
         end
 
         helpers do

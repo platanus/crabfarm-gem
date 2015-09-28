@@ -23,37 +23,19 @@ module Crabfarm
 
   class ResourceNotFoundError < Crabfarm::Error; end
 
-  class ApiError < Error
-    def code; 500 end
-    def to_json; {} end
-  end
+  class StillWorkingError < Error; end
 
-  class StillWorkingError < ApiError
-    def code; 409 end
-  end
+  class TimeoutError < Error; end
 
-  class TimeoutError < ApiError
-    def code; 408 end
-  end
+  class CrawlerError < Error
 
-  class CrawlerBaseError < ApiError
-    def initialize(_msg, _trace)
-      @exc = _msg
-      @trace = _trace
-    end
+    attr_reader :original
 
-    def to_json
-      {
-        exception: @exc,
-        backtrace: @trace
-      }.to_json
-    end
-  end
-
-  class CrawlerError < CrawlerBaseError
     def initialize(_exc)
-      super _exc.to_s, _exc.backtrace
+      super
+      @original = _exc
     end
+
   end
 
   class LiveInterrupted < StandardError; end
