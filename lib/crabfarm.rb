@@ -1,13 +1,11 @@
 require "logger"
 require "forwardable"
-require "net/http"
 require "active_support/inflector"
 
 require "crabfarm/version"
 require "crabfarm/errors"
 require "crabfarm/configuration"
 require "crabfarm/driver_pool"
-require "crabfarm/http_client"
 require "crabfarm/state_store"
 require "crabfarm/context"
 require "crabfarm/transition_service"

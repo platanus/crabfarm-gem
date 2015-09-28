@@ -13,7 +13,6 @@ module Crabfarm
 
     attr_reader :params
 
-    def_delegators '@context', :http
     def_delegators '@context.store', :get, :fetch
 
     def initialize(_context,  _params)
@@ -29,10 +28,6 @@ module Crabfarm
 
     def browser(_name=nil)
       @context.pool.driver(_name)
-    end
-
-    def download(_url)
-      @context.http.get(_url).body
     end
 
     def run

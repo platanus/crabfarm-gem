@@ -2,7 +2,7 @@ module Crabfarm
   class Context
     extend Forwardable
 
-    attr_accessor :pool, :store, :http
+    attr_accessor :pool, :store
 
     def initialize
       @store = StateStore.new
@@ -34,7 +34,6 @@ module Crabfarm
     def load_services
       init_browser_adapter
       init_driver_pool
-      init_http_client
     end
 
     def reset_services
@@ -43,7 +42,6 @@ module Crabfarm
     end
 
     def unload_services
-      release_http_client
       release_driver_pool
       release_browser_adapter
     end
@@ -69,20 +67,8 @@ module Crabfarm
       @pool = nil
     end
 
-    def init_http_client
-      @http = build_http_client proxy if @http.nil?
-    end
-
     def build_browser_adapter(_proxy)
       Strategies.load(:browser, config.browser).new _proxy
-    end
-
-    def build_http_client(_proxy)
-      HttpClient.new _proxy
-    end
-
-    def release_http_client
-      @http = nil
     end
 
     def proxy

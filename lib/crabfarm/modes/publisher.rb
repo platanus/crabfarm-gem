@@ -8,6 +8,7 @@ require 'base64'
 require 'rainbow'
 require 'rainbow/ext/string'
 require 'digest/sha1'
+require 'net/http'
 
 module Crabfarm
   module Modes

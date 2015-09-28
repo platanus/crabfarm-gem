@@ -21,8 +21,6 @@ module Crabfarm
         return BrowserAdapter.new @manager
       end
 
-      # TODO: override build_http_client, i would like to tap into the http requests and show downloaded data in viewer
-
       class BrowserAdapter < Crabfarm::Adapters::Browser::Base
 
         def initialize(_manager)
