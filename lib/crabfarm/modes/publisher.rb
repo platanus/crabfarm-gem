@@ -9,6 +9,7 @@ require 'rainbow'
 require 'rainbow/ext/string'
 require 'digest/sha1'
 require 'net/http'
+require 'crabfarm/utils/console'
 
 module Crabfarm
   module Modes
@@ -23,12 +24,11 @@ module Crabfarm
         @options = _options
 
         load_config
-        return unless dry_run or check_credentials
-        detect_git_repo
+        return unless dry_run? or check_credentials
 
-        if inside_git_repo?
-          if not unsafe and is_tree_dirty?
-            puts "Aborting: Your working copy has uncommited changes! Use the --unsafe option to force.".color(:red)
+        if !unsafe? and detect_git_repo
+          if is_tree_dirty?
+            console.warning "Aborting: Your working copy has uncommited changes! Use the --unsafe option to force."
             return
           end
           load_files_from_git
@@ -40,16 +40,23 @@ module Crabfarm
         compress_package
         generate_signature
 
-        send_package if not dry_run and ensure_valid_remote
+        build_payload
+        send_package if not dry_run? and ensure_valid_remote
+
+        @payload
       end
 
     private
 
-      def dry_run
+      def verbose?
+        @options.fetch(:verbose, true)
+      end
+
+      def dry_run?
         @options.fetch(:dry, false)
       end
 
-      def unsafe
+      def unsafe?
         @options.fetch(:unsafe, false)
       end
 
@@ -78,7 +85,7 @@ module Crabfarm
 
       def ensure_valid_remote
         if @url.nil?
-          @url = Ask.input 'Enter default remote for crawler'
+          @url = console.question 'Enter default remote for crawler'
           return false unless validate_remote @url
           @local_config['remote'] = @url
           save_local_config
@@ -90,15 +97,15 @@ module Crabfarm
 
       def validate_remote(_url)
         return true if /^[\w\-]+\/[\w\-]+$/i === _url
-        puts "Invalid remote syntax: #{_url}".color :red
+        console.error "Invalid remote syntax: #{_url}"
         return false
       end
 
       def check_credentials
         if @token.nil?
-          puts 'No credential data found, please identify yourself'
-          email = Ask.input 'Enter your crabfarm.io email'
-          password = Ask.input 'Enter your crabfarm.io password'
+          console.info 'No credential data found, please identify yourself'
+          email = console.question 'Enter your crabfarm.io email'
+          password = console.question 'Enter your crabfarm.io password'
 
           resp = send_request Net::HTTP::Post, 'api/tokens', {
             'email' => email,
@@ -111,9 +118,9 @@ module Crabfarm
             @home_config['token'] = @token
             save_home_config
           when Net::HTTPUnauthorized
-            puts "The provided credentials are invalid!".color(:red)
+            console.error "The provided credentials are invalid!"
           else
-            puts "Unknown error when asking for token!".color(:red)
+            console.error "Unknown error when asking for token!"
           end
         end
 
@@ -149,7 +156,7 @@ module Crabfarm
           if File.exists? File.join(git_path, '.git')
             @git = Git.open git_path
             @rel_path = if path_to_git.count > 0 then File.join(*path_to_git.reverse!) else nil end
-            return
+            return true
           else
             path_to_git << File.basename(git_path)
             git_path = File.expand_path('..', git_path)
@@ -157,16 +164,13 @@ module Crabfarm
         end
 
         @git = nil
-      end
-
-      def inside_git_repo?
-        not @git.nil?
+        return false
       end
 
       def load_files_from_git
         @git.chdir do
           @ref = @git.log.first.sha
-          puts "Packaging files from current HEAD (#{@ref}):".color(:green)
+          console.result "Packaging files from current HEAD (#{@ref}):" if verbose?
           entries = @git.gtree(@ref).full_tree.map(&:split)
           entries = entries.select { |e| e[1] == 'blob' }
 
@@ -185,10 +189,12 @@ module Crabfarm
       end
 
       def load_files_from_fs
-        puts "Packaging files (no version control)".color(:green)
-        @file_list = Dir[*@include].map do |path|
-          full_path = File.join(@crawler_path, path)
-          [path, File.stat(full_path).mode, File.read(full_path)]
+        console.result "Packaging files (no version control)" if verbose?
+        Dir.chdir(@crawler_path) do
+          @file_list = Dir[*@include].map do |path|
+            full_path = File.join(@crawler_path, path)
+            [path, File.stat(full_path).mode, File.read(full_path)]
+          end
         end
         @ref = "filesystem"
       end
@@ -197,7 +203,7 @@ module Crabfarm
         @package = StringIO.new("")
         Gem::Package::TarWriter.new(@package) do |tar|
           @file_list.each do |f|
-            puts "+ #{f[0]} - #{f[1]}"
+            console.info "+ #{f[0]} - #{f[1]}" if verbose?
             path, mode, contents = f
             tar.add_file(path, mode) { |tf| tf.write contents }
           end
@@ -215,26 +221,30 @@ module Crabfarm
 
       def generate_signature
         @signature = Digest::SHA1.hexdigest @package.string
-        puts "Package SHA1: #{@signature}"
+        console.info "Package SHA1: #{@signature}" if verbose?
       end
 
-      def send_package
-        resp = send_request(Net::HTTP::Put, "api/bots/#{@url}", {
+      def build_payload
+        @payload = {
           "repo" => Base64.encode64(@cpackage.string),
           "sha" => @signature,
           "ref" => @ref
-        })
+        }
+      end
+
+      def send_package
+        resp = send_request(Net::HTTP::Put, "api/bots/#{@url}", @payload)
 
         case resp
         when Net::HTTPSuccess
           sha = JSON.parse(resp.body)['sha']
-          puts "#{@url} updated!"
+          console.result "#{@url} updated!"
         when Net::HTTPUnauthorized
-          puts "You are not authorized to update crawler: #{@url}".color(:red)
+          console.error "You are not authorized to update crawler: #{@url}"
         when Net::HTTPNotFound
-          puts "Crawler not found: #{@url}".color(:red)
+          console.error "Crawler not found: #{@url}"
         else
-          puts "Unknown error when updating crawler information!".color(:red)
+          console.error "Unknown error when updating crawler information!"
         end
       end
 
@@ -248,6 +258,10 @@ module Crabfarm
         Net::HTTP.start(uri.host, uri.port) do |http|
           http.request(req)
         end
+      end
+
+      def console
+        Crabfarm::Utils::Console
       end
 
     end
