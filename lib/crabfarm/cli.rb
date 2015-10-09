@@ -28,6 +28,16 @@ module Crabfarm
       end
     end
 
+    desc "Starts the crawler in memento analizer mode"
+    command [:analize, :a] do |c|
+      c.action do |global_options,options,args|
+        next puts "This command can only be ran inside a crabfarm application" unless Crabfarm.inside_crawler_app?
+
+        require "crabfarm/modes/analizer"
+        Crabfarm::Modes::Analizer.start args[0]
+      end
+    end
+
     desc "Starts the crawler in live mode"
     command [:live, :l] do |c|
       c.action do |global_options,options,args|
