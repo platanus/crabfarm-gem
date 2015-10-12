@@ -1,10 +1,13 @@
-require 'readline'
+require 'pry'
 require 'json'
 require 'zlib'
-require 'rainbow'
-require 'crabfarm/utils/console'
-require 'io/console'
 require 'base64'
+require 'nokogiri'
+require 'crabfarm/utils/shell/app'
+require 'crabfarm/utils/shell/layout_frame'
+require 'crabfarm/utils/shell/list_frame'
+require 'crabfarm/utils/shell/banner_frame'
+require 'crabfarm/utils/shell/viewer_frame'
 
 URI::DEFAULT_PARSER = URI::Parser.new(:UNRESERVED => URI::REGEXP::PATTERN::UNRESERVED + '|')
 
@@ -12,7 +15,7 @@ module Crabfarm
   module Modes
     class Analizer
 
-      class Request < Struct.new(:method, :url, :headers, :request_data, :response_data)
+      class Request < Struct.new(:method, :url, :sent_headers, :headers, :request_data, :response_data)
 
         TEXT_TYPES = ['application/javascript','application/x-javascript']
 
@@ -63,9 +66,6 @@ module Crabfarm
       end
 
       def self.start(_memento)
-
-        $stdout.sync = true
-
         unless _memento.is_a? String
           Crabfarm::Utils::Console.error "Must provide a recording target"
           return
@@ -85,7 +85,10 @@ module Crabfarm
 
       def initialize
         @memento = nil
-        @filtered = @requests = []
+        @requests = []
+        @selected = []
+        @filters = []
+        build_ui
         reset_ui
       end
 
@@ -96,230 +99,91 @@ module Crabfarm
         json = { 'version' => '0.1', 'stack' => json } if json.is_a? Array
 
         @version = json['version']
-        @filtered = @requests = parse_memento_stack json['stack']
+        @requests = parse_memento_stack json['stack']
+        @selected = []
+        @filters = []
+
         reset_ui
       end
 
-      def reset_ui
-        @selected = []
-        @filters = []
-        @scroll = 0
-        @cursor = 0
-        @focus = :requests
-        @mode = :explore
-        @current = nil
-      end
-
       def start
-        console.clear
-        console.detect
-        #set_help_flash
-
-        main_th = Thread.current
-        Signal.trap("SIGWINCH") do
-          main_th.raise StandardError.new 'resizing!'
-        end
-
-        loop do
-          begin
-            console.detect
-            render
-            #set_help_flash
-            wait_for_user
-          rescue SyntaxError => se
-            @flash = se.message.color(:red)
-            # Crabfarm::Utils::Console.exception se
-          rescue SystemExit, Interrupt
-            break
-          rescue => exc
-            @flash = exc.message.color(:red)
-            # Crabfarm::Utils::Console.exception exc
-          end
-        end
+        @ui_app.start
       end
 
     private
 
-      attr_reader :selected, :requests, :scroll, :focus, :mode
+      def build_ui
+        @ui_details = Crabfarm::Utils::Shell::LayoutFrame.new
+        @ui_banner = Crabfarm::Utils::Shell::BannerFrame.new 'Analizer v0.1'
 
-      def wait_for_user
-        case @mode
-        when :explore
-          capture_actions
-        when :search
-          query = Readline.readline("search> ", true)
-          add_filter :search, query if query.length > 0
-          @mode = :explore
-        when :run
-          # TODO.
-        end
+        @ui_all = Crabfarm::Utils::Shell::ListFrame.new
+        @ui_all.item_action('select item', "a") { |i| @ui_selected << i }
+        prepare_request_list_view @ui_all
+
+        @ui_selected = Crabfarm::Utils::Shell::ListFrame.new
+        @ui_selected.title = "-- Selected Requests"
+        @ui_selected.render_header = false
+        prepare_request_list_view @ui_selected
+
+        @ui_dashboard = Crabfarm::Utils::Shell::LayoutFrame.new
+        @ui_dashboard.add_frame @ui_banner, min_lines: 2
+        @ui_dashboard.add_frame @ui_all
+        @ui_dashboard.add_frame @ui_selected, min_lines: 10, weight: 0.5
+
+        @ui_dashboard.action('search', "s") { add_search_filter }
+        @ui_dashboard.action('undo filter', "u") { remove_last_filter }
+
+        @ui_sent_header_viewer = Crabfarm::Utils::Shell::ViewerFrame.new
+        @ui_sent_header_viewer.title = "-- Request Headers"
+        @ui_header_viewer = Crabfarm::Utils::Shell::ViewerFrame.new
+        @ui_header_viewer.title = "-- Response Headers"
+        @ui_request_viewer = Crabfarm::Utils::Shell::ViewerFrame.new
+        @ui_request_viewer.title = "-- Request Content"
+        @ui_response_viewer = Crabfarm::Utils::Shell::ViewerFrame.new
+        @ui_response_viewer.title = "-- Response Content"
+
+        @ui_details = Crabfarm::Utils::Shell::LayoutFrame.new
+        @ui_details.add_frame @ui_banner, min_lines: 2
+        @ui_details.add_frame @ui_sent_header_viewer
+        @ui_details.add_frame @ui_header_viewer
+        @ui_details.add_frame @ui_response_viewer
+        @ui_details.add_frame @ui_request_viewer
+        @ui_details.action('back to list', "\e") { load_dashboard }
+
+        @ui_app = Crabfarm::Utils::Shell::App.new
       end
 
-      def render
-        if @current
-          render_request @current
-        else
-          render_dashboard
-        end
+      def prepare_request_list_view(_list_frame)
+        _list_frame.column(:method, width: 7)
+        _list_frame.column(:url)
+        _list_frame.column(label: 'Content type', width: 30) { |i| i.headers['content-type'] }
+        _list_frame.column(label: 'Sets cookies', width: 20) { |i| i.headers['set-cookie'].nil? }
+
+        _list_frame.item_action(nil, "\r") { |i| load_details i }
+        _list_frame.item_action(nil, "h") { |i| add_filter :host, i.host }
+        _list_frame.item_action(nil, "c") { |i| add_filter :content_type, i.content_type }
       end
 
-      def render_layout
-        console.origin
-        console.jump_line
-        console.write_line "Crabfarm v#{Crabfarm::VERSION} Analizer by Platanus".color(:blue)
-        console.jump_line
+      def reset_ui
+        @ui_app.main_frame = @ui_dashboard
+        @ui_selected.list = []
+        @ui_all.title = "-- All Requests [#{@requests.count}]"
+        @ui_all.list = @requests
       end
 
-      def render_dashboard
-        render_layout
+      # def render_request(_req)
+      #   render_layout
+      #   render_separator " + Request Details"
 
-        render_separator " + Selected Requests"
-
-        selected_space = [selected.count, 5].max
-        render_requests selected, selected_space, 0, (focus == :selected ? @cursor : nil)
-
-        console.jump_line
-        render_separator " + #{render_list_header}"
-
-        render_requests @filtered, console.lines - selected_space - 11, scroll, (focus == :requests ? @cursor : nil)
-        render_separator
-
-        if @flash
-          console.write_line @flash
-          @flash = nil
-        else
-          console.write_line ""
-        end
-
-        console.clear_line
-      end
-
-      def render_request(_req)
-        render_layout
-        render_separator " + Request Details"
-
-        console.write_line "Method: #{_req.method}"
-        console.write_line "URL: #{_req.url}"
-        render_separator " Resquest Data"
-        console.write_line _req.request_data
-        render_separator " Response Headers"
-        console.write_line _req.headers
-        render_separator " Response Data"
-        console.write_line _req.response_data
-      end
-
-      def render_list_header
-        if @filters.length > 0
-          "#{@filtered.count} of #{@requests.count} Requests [Filters: #{@filters.map(&:inspect).join(', ')}]"
-        else
-          "All Requests [#{@requests.count}]"
-        end
-      end
-
-      def render_separator(_string="")
-        separator = if _string.length > 0
-          _string + ' ' + ('-' * (console.columns - _string.length - 1))
-        else
-          '-' * console.columns
-        end
-        console.write_line separator
-      end
-
-      def render_requests(_list, _max, _offset, _cursor)
-        if !_cursor.nil? && _cursor > _offset + _max
-          _offset = _cursor - _max
-        end
-
-        max_idx = _offset + _max
-        end_idx = [_list.count-1, max_idx].min
-
-        (_offset..end_idx).each do |i|
-          row = [
-            render_column("[#{i}]", 5),
-            render_column(_list[i].method, 4),
-            render_column(_list[i].url, console.columns - (31 + 21 + 5 + 6 + 1)),
-            render_column(_list[i].headers['content-type'].to_s, 30),
-            render_column((!_list[i].headers['set-cookie'].nil?).to_s, 20)
-          ]
-
-          row = row.join
-          row = row.color(:green) if _cursor == i
-
-          console.write_line row
-        end
-
-        # padding
-        (max_idx - end_idx).times { console.jump_line } if max_idx > end_idx
-      end
-
-      def render_column(_data, _width)
-        _data = _data[0.._width-1] if _data.length > _width
-        _data += ' ' * (_width - _data.length) if _data.length < _width
-        _data + ' '
-      end
-
-      def capture_actions
-        char = console.read_char
-        case char
-        when "\t"
-          switch_focus
-        when "\r"
-          @current = current_request
-        when "\e"
-          if @current
-            @current = nil
-          else
-            remove_last_filter
-          end
-        when "["
-          move_cursor(-10)
-        when "]"
-          move_cursor(10)
-        when "\e[A"
-          move_cursor(-1)
-        when "\e[B"
-          move_cursor(1)
-        when "\u0003", "q"
-          exit(1)
-        when "h" # filter by same host
-          add_filter :host, current_request.host
-        when "c" # filter by same content type
-          add_filter :content_type, current_request.content_type
-        when "u"
-          remove_last_filter
-        when "v"
-          toggle_view
-        when "s"
-          @mode = :search
-        else
-          @flash = char.inspect
-        end
-      end
-
-      def current_request
-        list = @focus == :requests ? @filtered : @selected
-        list[@cursor]
-      end
-
-      def switch_focus
-        @focus = case @focus
-        when :requests
-          :selected
-        else
-          :requests
-        end
-      end
-
-      def move_cursor(_amount)
-        list = @focus == :requests ? @filtered : @selected
-
-        @cursor = @cursor + _amount
-        if @cursor < 0
-          @cursor = 0
-        elsif @cursor > list.length-1
-          @cursor = list.length - 1
-        end
-      end
+      #   console.write_line "Method: #{_req.method}"
+      #   console.write_line "URL: #{_req.url}"
+      #   render_separator " Resquest Data"
+      #   console.write_line _req.request_data
+      #   render_separator " Response Headers"
+      #   console.write_line _req.headers
+      #   render_separator " Response Data"
+      #   console.write_line _req.response_data
+      # end
 
       def add_filter(_type, _value)
         @filters << Filter.new(_type, _value)
@@ -332,14 +196,33 @@ module Crabfarm
       end
 
       def apply_filters
-        @filtered = @requests.select do |req|
+        filtered = @requests.select do |req|
           @filters.all? { |f| f.accept? req }
         end
-        @cursor = 0
+
+        @ui_all.title = "-- #{filtered.count} of #{@requests.count} Requests [Filters: #{@filters.map(&:inspect).join(', ')}]"
+        @ui_all.list = filtered
+      end
+
+      def add_search_filter
+        q = @ui_app.prompt('What are you looking for?', 'search')
+        add_filter :search, q if q != ''
+      end
+
+      def load_dashboard
+        @ui_app.main_frame = @ui_dashboard
+      end
+
+      def load_details(_req)
+        @ui_sent_header_viewer.text = _req.sent_headers.map { |k,v| " + #{k}: #{v}" }.join("\n")
+        @ui_header_viewer.text = _req.headers.map { |k,v| " + #{k}: #{v}" }.join("\n")
+        @ui_response_viewer.text = format_response _req.response_data, _req.headers['content-type']
+        @ui_request_viewer.text = _req.request_data
+        @ui_app.main_frame = @ui_details
       end
 
       def parse_memento_stack(_stack)
-        _stack.map { |r| Request.new r['method'], r['url'], r['headers'], r['data'], Base64.decode64(r['content']) }
+        _stack.map { |r| Request.new r['method'], r['url'], r['sent_headers'] || {}, r['headers'], r['data'], Base64.decode64(r['content']) }
       end
 
       def inflate(_file)
@@ -348,63 +231,12 @@ module Crabfarm
         }
       end
 
-      module Utils
-        extend self
-
-        def read_char
-          $stdin.echo = false
-          $stdin.raw!
-
-          input = $stdin.getc.chr
-          if input == "\e" then
-            input << $stdin.read_nonblock(3) rescue nil
-            input << $stdin.read_nonblock(2) rescue nil
-          end
-        ensure
-          $stdin.echo = true
-          $stdin.cooked!
-
-          return input
+      def format_response(_response, _content_type)
+        if /text\/html/.match _content_type
+          Nokogiri::HTML(_response).to_xhtml(indent: 3)
+        else
+          _response
         end
-
-        def detect
-          @lines = %x[tput lines].to_i
-          @columns = %x[tput cols].to_i - 1
-        end
-
-        def clear
-          system 'clear'
-        end
-
-        def origin(_row=0, _col=0)
-          $stdout.write "\e[#{_row};#{_col}H"
-        end
-
-        def clear_line
-          $stdout.write "\e[0K"
-        end
-
-        def jump_line
-          clear_line
-          $stdout.write "\n"
-        end
-
-        def write_line(_string)
-          $stdout.write _string
-          jump_line
-        end
-
-        def lines
-          @lines
-        end
-
-        def columns
-          @columns
-        end
-      end
-
-      def console
-        Utils
       end
 
     end

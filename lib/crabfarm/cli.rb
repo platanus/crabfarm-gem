@@ -33,8 +33,13 @@ module Crabfarm
       c.action do |global_options,options,args|
         next puts "This command can only be ran inside a crabfarm application" unless Crabfarm.inside_crawler_app?
 
-        require "crabfarm/modes/analizer"
-        Crabfarm::Modes::Analizer.start args[0]
+        begin
+          require "crabfarm/modes/analizer"
+          Crabfarm::Modes::Analizer.start args[0]
+        rescue Exception => exc
+          puts exc.message
+          puts exc.backtrace
+        end
       end
     end
 
