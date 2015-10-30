@@ -6,7 +6,7 @@ module Crabfarm
 
     OPTIONS = [
       # Global options
-      [:browser, ['chrome', 'firefox', 'phantomjs', 'remote'], 'Browser engine to be used by navigators, common options: phantomjs, chrome, firefox, remote.'],
+      [:browser, ['chrome', 'firefox', 'phantomjs', 'remote', 'chenso'], 'Browser engine to be used by navigators, common options: phantomjs, chrome, firefox, remote.'],
       [:parser, :string, 'Default parser engine used by reducers'],
       [:log_path, :string, 'Path where logs should be stored'],
       [:proxy, :string, 'If given, a proxy is used to connect to the internet if driver supports it'],

@@ -100,6 +100,7 @@ module Crabfarm
     register :browser, :firefox, 'Crabfarm::Adapters::Browser::Firefox', dependencies: ['selenium-webdriver']
     register :browser, :chrome, 'Crabfarm::Adapters::Browser::Chrome', dependencies: ['selenium-webdriver']
     register :browser, :remote, 'Crabfarm::Adapters::Browser::RemoteWebdriver', dependencies: ['selenium-webdriver']
+    register :browser, :chenso, 'Crabfarm::Adapters::Browser::Chenso', dependencies: ['pincers']
     register :browser, :noop, 'Crabfarm::Adapters::Browser::Noop'
 
     # bundled webdriver dsl adapters
