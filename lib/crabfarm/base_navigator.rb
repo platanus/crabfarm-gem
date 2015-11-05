@@ -9,15 +9,16 @@ module Crabfarm
     include Base
     include Assertion::Context
     include Live::Interactable
-    extend Forwardable
 
     attr_reader :params
-
-    def_delegators '@context.store', :get, :fetch
 
     def initialize(_context,  _params)
       @context = _context
       @params = _params
+    end
+
+    def session
+      @context.store
     end
 
     def navigate(_name, _params={})

@@ -1,20 +1,20 @@
 module Crabfarm
-  class StateStore
+  class StateStore < Hash
 
     def initialize
-      reset
+      super
     end
 
-    def fetch(key, &block)
-      @data.fetch(key.to_sym, &block)
+    def set(_key, _value=true)
+      self[_key] = _value
     end
 
-    def set(key, value)
-      @data[key.to_sym] = value
+    def is?(_key)
+      !!fetch(_key, false)
     end
 
     def reset
-      @data = Hash.new
+      clear
     end
 
   end
