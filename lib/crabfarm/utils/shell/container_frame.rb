@@ -40,7 +40,7 @@ module Crabfarm::Utils::Shell
 
     def initialize
       super
-      @childs = []
+      @children = []
       @focused = nil
     end
 
@@ -56,13 +56,13 @@ module Crabfarm::Utils::Shell
     end
 
     def focus_next
-      return false if @childs.length == 0
+      return false if @children.length == 0
 
       focus_idx = if @focused.nil?
-        @focused = @childs.first.frame
+        @focused = @children.first.frame
         0
       else
-        @childs.index { |c| c.frame == @focused }
+        @children.index { |c| c.frame == @focused }
       end
 
       # binding.pry
@@ -71,11 +71,11 @@ module Crabfarm::Utils::Shell
         focus_idx += 1
         @focused.reset_focus
 
-        if focus_idx >= @childs.length
+        if focus_idx >= @children.length
           @focused = nil
           return false
         else
-          @focused = @childs[focus_idx].frame
+          @focused = @children[focus_idx].frame
         end
       end
 
@@ -93,16 +93,12 @@ module Crabfarm::Utils::Shell
 
     def add_frame(_frame, _options={})
       _frame.reset_focus
-      @childs << Child.new(_frame, _options)
-    end
-
-    def prepare
-      @childs.each(&:prepare)
+      @children << Child.new(_frame, _options)
     end
 
   private
 
-    attr_reader :childs
+    attr_reader :children
 
   end
 end

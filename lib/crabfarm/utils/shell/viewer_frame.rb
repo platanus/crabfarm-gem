@@ -30,20 +30,6 @@ module Crabfarm::Utils::Shell
       @offset = 0 if @offset < 0
     end
 
-    # TODO: line wrapping
-
-    def min_lines
-      1
-    end
-
-    def req_content_lines
-      if wrapping == :none
-        @lines.count
-      else
-        Float::INFINITY
-      end
-    end
-
     def new_search(_app)
       @term = _app.prompt('What are you looking for?', 'search')
       @term_location = -1
@@ -60,6 +46,21 @@ module Crabfarm::Utils::Shell
       else
         @term_location += rel_location + 1
         @offset = @term_location
+      end
+    end
+
+  private
+
+    def min_content_lines(_lines)
+      1
+    end
+
+    def required_content_lines(_lines, _columns)
+      if wrapping == :none
+        @lines.count
+      else
+        # TODO: line wrapping
+        Float::INFINITY
       end
     end
 

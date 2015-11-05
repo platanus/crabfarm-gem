@@ -25,28 +25,28 @@ module Crabfarm::Utils::Shell
       end
     end
 
-    def min_lines
+    def min_lines(_lines)
       1
     end
 
-    def min_columns
+    def min_columns(_lines)
       1
     end
 
-    def req_lines
+    def max_lines(_lines)
+      nil
+    end
+
+    def max_columns(_lines)
+      nil
+    end
+
+    def required_lines(_lines, _columns)
       0
     end
 
-    def req_columns
+    def required_columns(_lines, _columns)
       0
-    end
-
-    def grows?
-      true
-    end
-
-    def prepare
-      # abstract
     end
 
     def render(_context)

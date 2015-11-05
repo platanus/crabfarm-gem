@@ -7,24 +7,52 @@ module Crabfarm::Utils::Shell
 
     def render(_context)
       unless title.nil?
-        _context.write_line prepared_title(_context.columns), title_color
+        _context.write_line prepared_title(_context.columns), color: title_color
         _context = _context.child_context 1, 0, _context.lines-1, _context.columns
       end
 
       render_content _context
     end
 
-    def req_lines
+    def min_lines(_lines)
       if title.nil?
-        req_content_lines
+        min_content_lines(_lines)
       else
-        req_content_lines + 1
+        min_content_lines(_lines - 1) + 1
       end
+    end
+
+    def required_lines(_lines, _columns)
+      if title.nil?
+        required_content_lines(_lines, _columns)
+      else
+        required_content_lines(_lines - 1, _columns) + 1
+      end
+    end
+
+    def min_columns(_columns)
+      min_content_columns(_columns)
+    end
+
+    def required_columns(_lines, _columns)
+      required_content_columns(_lines, _columns)
     end
 
   private
 
-    def req_content_lines
+    def min_content_lines(_lines)
+      0
+    end
+
+    def min_content_columns(_columns)
+      0
+    end
+
+    def required_content_lines(_lines, _columns)
+      0
+    end
+
+    def required_content_columns(_lines, _columns)
       0
     end
 

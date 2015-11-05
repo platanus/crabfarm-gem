@@ -34,8 +34,8 @@ module Crabfarm
         next puts "This command can only be ran inside a crabfarm application" unless Crabfarm.inside_crawler_app?
 
         begin
-          require "crabfarm/modes/analizer"
-          Crabfarm::Modes::Analizer.start args[0]
+          require "crabfarm/modes/analizer/main"
+          Crabfarm::Modes::Analizer::Main.start args[0]
         rescue Exception => exc
           puts exc.message
           puts exc.backtrace

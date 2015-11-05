@@ -1,135 +1,118 @@
 require 'crabfarm/utils/shell/container_frame'
+require 'crabfarm/utils/shell/layout_engine'
 
 module Crabfarm::Utils::Shell
 
   class LayoutFrame < ContainerFrame
 
-    def req_lines
-      @req_lines
+    def vertical
+      true
     end
 
-    def min_lines
-      @min_lines
+    def required_lines(_lines, _columns)
+      if vertical
+        solver = solve_vertical_dims _lines, _columns
+        solver.required_dims.inject &:+
+      else
+        solver = solve_horizontal_dims _lines, _columns
+        solver.dims.each_with_index.map do |dim, i|
+          children[i].required_lines(_lines, dim)
+        end.max
+      end
     end
 
-    def prepare
-      super # prepare childs first
+    def required_columns(_lines, _columns)
+      if vertical
+        solver = solve_vertical_dims _lines, _columns
+        solver.dims.each_with_index.map do |dim, i|
+          children[i].required_columns(dim, _columns)
+        end.max
+      else
+        solver = solve_horizontal_dims _lines, _columns
+        solver.required_dims.inject &:+
+      end
+    end
 
-      @req_dims = load_required_dims
-      @req_lines = @req_dims.inject(0, &:+)
-      @min_lines = load_required_dims.inject(0, &:+)
+    def min_lines(_lines)
+      result = children_boundary(:min_lines, _lines)
+      vertical ? result.inject(&:+) : result.max
+    end
+
+    def min_columns(_columns)
+      result = children_boundary(:min_columns, _columns)
+      vertical ? result.max : result.inject(&:+)
+    end
+
+    def max_lines(_lines)
+      result = children_boundary(:max_lines, _lines)
+      return nil if result.any? &:nil?
+      vertical ? result.inject(&:+) : result.max
+    end
+
+    def max_columns(_columns)
+      result = children_boundary(:max_columns, _columns)
+      return nil if result.any? &:nil?
+      vertical ? result.max : result.inject(&:+)
     end
 
     def render(_context)
-      dims = @req_dims
-      total_dims = @req_lines
-      if total_dims > _context.lines
-        dims = ensure_minimum _context.lines
-        total_dims = dims.inject(&:+)
-      end
-
-      if _context.lines > total_dims
-        distribute_excess(dims, _context.lines - total_dims)
-      end
-
-      offset = render_childs _context, dims
-      render_spacer _context, offset if offset < _context.lines
-    end
-
-    def load_required_dims
-      childs.map(&:req_lines)
-    end
-
-    def load_minimum_dims
-      childs.map(&:min_lines)
-    end
-
-    def ensure_minimum(_space, _fixed=[])
-      total_w = childs.reject { |c| _fixed.include? c }.map(&:weight).inject(0.0, &:+)
-      real_space = (_space - _fixed.map(&:min_lines).inject(0, &:+)).to_f
-
-      childs.map do |child|
-        if _fixed.include? child
-          child.min_lines
-        else
-          dim = (child.weight * real_space / total_w).round
-          if dim < child.min_lines
-            return load_weighted_dims(_space, _fixed << child)
-          elsif dim > child.req_lines
-            dim = child.req_lines
-          end
-          dim
-        end
-      end
-    end
-
-    def distribute_excess(_dims, _excess)
-      remaining = distribute_excess_to_needed _dims, _excess
-      remaining = distribute_excess_to_growable _dims, remaining if remaining > 0
-      remaining
-    end
-
-    def distribute_excess_to_needed(_dims, _excess)
-      need_excess = []
-      total_w = 0.0
-
-      _dims.each_with_index do |dim, i|
-        if dim < childs[i].req_lines
-          total_w += childs[i].weight
-          need_excess << i
-        end
-      end
-
-      return _excess if need_excess.length == 0
-
-      need_excess.each do |i|
-        assigned = (_excess.to_f * childs[i].weight / total_w).round
-        assigned = childs[i].req_lines - _dims[i] if _dims[i] + assigned > childs[i].req_lines
-
-        _excess -= assigned
-        total_w -= childs[i].weight
-        _dims[i] += assigned
-      end
-
-      return 0 if _excess == 0
-
-      distribute_excess_to_needed _dims, _excess
-    end
-
-    def distribute_excess_to_growable(_dims, _excess)
-      growable = []
-      available = _excess
-      total_w = 0.0
-
-      _dims.each_with_index do |dim, i|
-        if childs[i].grows?
-          growable << i
-          available += dim
-          total_w += childs[i].weight
-        end
-      end
-
-      growable.each do |i|
-        new_dim = (available.to_f * childs[i].weight / total_w).round
-        assigned = new_dim < _dims[i] ? 0 : (new_dim - _dims[i])
-        assigned = new_dim - _dims[i]
-        assigned = _excess if assigned > _excess
-
-        total_w -= childs[i].weight
-        _excess -= assigned
-        _dims[i] += assigned
-      end
-
-      _excess
-    end
-
-    def render_childs(_context, _dims)
       offset = 0
-      childs.each_with_index do |child, i|
-        child.render _context.child_context(offset, 0, _dims[i], _context.columns)
-        offset += _dims[i]
+      if vertical
+        solver = solve_line_dims _context.lines, _context.columns
+        solver.dims.each_with_index do |dim, i|
+          render_child _context, children[i], offset, 0, dim, _context.columns
+          offset += dim
+        end
+      else
+        solver = solve_column_dims _context.lines, _context.columns
+        solver.dims.each_with_index do |dim, i|
+          render_child _context, children[i], 0, offset, _context.lines, dim
+          offset -= dim
+        end
       end
-      return offset
+
+      # render_spacer _context, offset if offset < _context.lines
+    end
+
+  private
+
+    def children_boundary(_name, _reference)
+      children.map do |child|
+        # TODO: support percentual boundaries based on reference
+        child.options.fetch _name, child.frame.send(_name, _reference)
+      end
+    end
+
+    def children_weight
+      childs.map { |c| c.options.fetch(:weight, 1.0) }
+    end
+
+    def solve_vertical_dims(_lines, _columns)
+      children_min_lines = children_boundary(:min_lines, _lines)
+      children_max_lines = children_boundary(:max_lines, _lines)
+
+      engine = LayoutEngine.new _lines, children_min_lines, children_max_lines, children_weight
+      engine.solve(1) do |dims|
+        dims.each_with_index.map do |dim, i|
+          children[i].required_lines(dim, _columns)
+        end
+      end
+    end
+
+    def solve_horizontal_dims(_lines, _columns)
+      children_min_columns = children_boundary(:min_columns, _columns)
+      children_max_columns = children_boundary(:max_columns, _columns)
+
+      engine = LayoutEngine.new _columns, children_min_columns, children_max_columns, children_weight
+      engine.solve(1) do |dims|
+        dims.each_with_index.map do |dim, i|
+          children[i].required_columns(_lines, dim)
+        end
+      end
+    end
+
+    def render_child(_context, _child, _line, _column, _height, _width)
+      child.render _context.child_context(_line, _column, _height, _width)
     end
 
     def render_spacer(_context, _offset)

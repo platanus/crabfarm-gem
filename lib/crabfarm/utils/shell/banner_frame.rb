@@ -15,12 +15,12 @@ module Crabfarm::Utils::Shell
       false
     end
 
-    def min_lines
+    def min_lines(_lines)
       2
     end
 
-    def grows?
-      false
+    def max_lines(_lines)
+      2
     end
 
     def render(_context)

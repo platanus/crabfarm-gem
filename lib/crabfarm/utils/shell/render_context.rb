@@ -5,7 +5,8 @@ module Crabfarm::Utils::Shell
 
     attr_accessor :parent, :lines, :columns
 
-    def initialize(_parent, _line_offset, _column_offset, _lines, _columns)
+    def initialize(_screen, _parent, _line_offset, _column_offset, _lines, _columns)
+      @screen = _screen
       @parent = _parent
       @line_offset = _line_offset
       @column_offset = _column_offset
@@ -13,45 +14,38 @@ module Crabfarm::Utils::Shell
       @columns = _columns
 
       @line_cursor = 0
-      @max_width = @columns - @column_offset
     end
 
     def child_context(_line_offset, _column_offset, _lines, _columns)
+      _line_offset = @lines if _line_offset > @lines
+      _column_offset = @columns if _column_offset > @columns
+      _lines = @lines - _line_offset if _lines > @lines - _line_offset
+      _columns = @columns - _column_offset if _columns > @columns - _column_offset
+
       self.class.new(
+        @screen,
         self,
         @line_offset + _line_offset,
         @column_offset + _column_offset,
-        [_lines, @lines - _line_offset].min,
-        [_columns, @columns - _column_offset].min
+        _lines,
+        _columns
       )
     end
 
-    def write_line(_line, _color=nil)
-      return nil if @line_cursor >= @lines
-
-      _line = sanitize _line
-
-      # crop line if needed
-      _line = _line[0..@max_width] if _line.length > @max_width
-      _line = Rainbow(_line).color(_color) if _color
-
-      utils.origin @line_offset + @line_cursor, @column_offset
-      utils.clear_line # TODO: clear max
-      utils.write _line
+    def write_line(_line, _style=nil)
+      if @line_cursor >= 0 and @line_cursor < @lines
+        @screen.paint(@line_offset + @line_cursor, @column_offset, _line, @columns, _style)
+      end
 
       @line_cursor += 1
     end
 
     def skip_line
-      write_line("")
+      @line_cursor += 1
     end
 
     def goto_line(_offset)
       @line_cursor = _offset
-    end
-
-    def sanitize(_string)
-      _string.gsub "\n", " "
     end
 
   private

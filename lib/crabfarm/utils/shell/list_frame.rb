@@ -7,10 +7,10 @@ module Crabfarm::Utils::Shell
 
     def initialize
       super
-      action('pg up', "[") { move_cursor(-10) }
-      action('pg down', "]") { move_cursor(10) }
-      action('up', "\e[A") { move_cursor(-1) }
-      action('down', "\e[B") { move_cursor(1) }
+      action(nil, "[") { move_cursor(-10) }
+      action(nil, "]") { move_cursor(10) }
+      action(nil, "\e[A") { move_cursor(-1) }
+      action(nil, "\e[B") { move_cursor(1) }
 
       self.list = []
       self.render_header = true
@@ -55,7 +55,11 @@ module Crabfarm::Utils::Shell
 
   private
 
-    def req_content_lines
+    def min_content_columns(_columns)
+      min_columns
+    end
+
+    def required_content_lines(_lines, _columns)
       if render_header
         @list.length + 1
       else
@@ -98,7 +102,7 @@ module Crabfarm::Utils::Shell
       (@scroll...end_idx).each do |i|
         row = render_row widths, @list[i]
         row = crop_to_width("[#{i}]", count_column) + row if count_column > 0
-        _context.write_line row, row_color(i)
+        _context.write_line row, color: row_color(i)
       end
     end
 
