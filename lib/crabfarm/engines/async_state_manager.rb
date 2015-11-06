@@ -105,7 +105,7 @@ module Crabfarm
             if @working
               begin
                 logger.info "Transitioning state: #{@next_state_name}"
-                ActiveSupport::Dependencies.clear
+                ActiveSupport::Dependencies.clear if defined? ActiveSupport::Dependencies
                 ts = TransitionService.transition(@context, @next_state_name, @next_state_params)
                 @elapsed = ts.elapsed
                 @doc = ts.document

@@ -18,6 +18,7 @@ module Crabfarm
       c.action do |global_options,options,args|
         next puts "This command can only be ran inside a crabfarm application" unless Crabfarm.inside_crawler_app?
 
+        Support::GLI.setup_autoload
         Crabfarm.config.set Support::GLI.parse_options options
 
         Crabfarm.with_context options[:memento] do |context|
@@ -31,6 +32,8 @@ module Crabfarm
     command [:live, :l] do |c|
       c.action do |global_options,options,args|
         next puts "This command can only be ran inside a crabfarm application" unless Crabfarm.inside_crawler_app?
+
+        Support::GLI.setup_autoload
 
         require "crabfarm/modes/live"
         Crabfarm::Modes::Live.start_watch
@@ -64,7 +67,11 @@ module Crabfarm
 
         Crabfarm.config.set Support::GLI.parse_options options
 
-        ActiveSupport::Dependencies.mechanism = :require unless options[:reload]
+        if options[:reload]
+          Support::GLI.setup_autoload
+        else
+          Support::GLI.require_all
+        end
 
         server_options = {}
         server_options[:Host] = options[:host] unless options[:host].nil?

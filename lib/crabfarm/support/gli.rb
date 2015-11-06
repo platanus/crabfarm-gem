@@ -10,6 +10,15 @@ module Crabfarm
         end
       end
 
+      def self.setup_autoload
+        require 'active_support/dependencies'
+        ActiveSupport::Dependencies.autoload_paths += Dir.glob File.join(CF_PATH, 'app', '**')
+      end
+
+      def self.require_all
+        Dir.glob(File.join(CF_PATH, 'app', '**/*.rb')).each { |p| require p }
+      end
+
       def self.parse_options(_options)
         config_overrides = {}
         Configuration::OPTIONS.each do |opt|
