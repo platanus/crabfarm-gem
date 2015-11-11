@@ -18,6 +18,7 @@ describe Crabfarm::Assertion::Context do
       it { expect(ctx.assert('  im a   teapot').is_s).to eq('im a teapot') }
       it { expect(ctx.assert('  teapot').is_w).to eq('teapot') }
       it { expect(ctx.assert('true').is_b).to eq(true) }
+      it { expect(ctx.assert('10').is_i { |i| i >= 10 }).to eq(10) }
     end
 
     describe "when given invalid values" do
@@ -26,6 +27,7 @@ describe Crabfarm::Assertion::Context do
       it { expect { ctx.assert('hello world').is_w }.to raise_error Crabfarm::AssertionError }
       it { expect { ctx.assert(nil).is_s }.to raise_error Crabfarm::AssertionError }
       it { expect { ctx.assert('bar').matches(/foo/) }.to raise_error Crabfarm::AssertionError }
+      it { expect { ctx.assert('10').is_i { |i| i < 10 } }.to raise_error Crabfarm::AssertionError }
     end
 
   end

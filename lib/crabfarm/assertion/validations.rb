@@ -19,8 +19,9 @@ module Crabfarm
         fail_with "#{_value} does not match expression" if _options.key? :matches and not _options[:matches] === _value
       end
 
-      def validate_general _value, _options={}
+      def validate_general _value, _options={}, &_block
         fail_with "#{_value} is not recognized" if _options.key? :in and not _options[:in].include? _value
+        fail_with "#{_value} is not valid" if _block and !_block.call(_value)
       end
 
     end

@@ -15,48 +15,49 @@ module Crabfarm
         @context = _context
       end
 
-      def is_integer(_options={})
+      def is_integer(_options={}, &_block)
         perform_assertion(_options) {
           @value = parse_integer @value, _options
           validate_number @value, _options
-          validate_general @value, _options
+          validate_general @value, _options, &_block
         }
       end
 
       alias :is_i :is_integer
 
-      def is_float(_options={})
+      def is_float(_options={}, &_block)
         perform_assertion(_options) {
           @value = parse_float @value, _options
           validate_number @value, _options
-          validate_general @value, _options
+          validate_general @value, _options, &_block
         }
       end
 
       alias :is_f :is_float
 
-      def is_word(_options={})
+      def is_word(_options={}, &_block)
         perform_assertion(_options) {
           @value = parse_phrase @value, _options
           validate_word @value, _options
-          validate_general @value, _options
+          validate_general @value, _options, &_block
         }
       end
 
       alias :is_w :is_word
-      def is_string(_options={})
+
+      def is_string(_options={}, &_block)
         perform_assertion(_options) {
           @value = parse_phrase @value, _options
           validate_string @value, _options
-          validate_general @value, _options
+          validate_general @value, _options, &_block
         }
       end
 
       alias :is_s :is_string
 
-      def is_boolean(_options={})
+      def is_boolean(_options={}, &_block)
         perform_assertion(_options) {
-          @value = parse_boolean @value, _options
+          @value = parse_boolean @value, _options, &_block
         }
       end
 

@@ -49,6 +49,8 @@ describe Crabfarm::Assertion::Validations do
   describe "validate_general" do
     it { expect { srv.validate_general('foo', in: ['bar', 'pow']) }.to raise_error Crabfarm::AssertionError }
     it { expect { srv.validate_general('bar', in: ['foo', 'bar']) }.not_to raise_error }
+    it { expect { srv.validate_general('bar') { |f| f == 'bar' }  }.not_to raise_error }
+    it { expect { srv.validate_general('bar') { |f| f == 'foo' }  }.to raise_error Crabfarm::AssertionError }
   end
 
 end
