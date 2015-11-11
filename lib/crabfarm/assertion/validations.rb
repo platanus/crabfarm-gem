@@ -17,6 +17,7 @@ module Crabfarm
 
       def validate_string _value, _options={}
         fail_with "#{_value} does not match expression" if _options.key? :matches and not _options[:matches] === _value
+        fail_with "#{_value} does not contain substring" if _options.key? :contains and !_value.include? _options[:contains]
       end
 
       def validate_general _value, _options={}, &_block

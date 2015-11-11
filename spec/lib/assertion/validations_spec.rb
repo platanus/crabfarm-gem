@@ -39,6 +39,8 @@ describe Crabfarm::Assertion::Validations do
   describe "validate_string" do
     it { expect { srv.validate_string('hello world', matches: /frog/) }.to raise_error Crabfarm::AssertionError }
     it { expect { srv.validate_string('hello frog', matches: /frog/) }.not_to raise_error }
+    it { expect { srv.validate_string('foo bar cow', contains: 'cat') }.to raise_error Crabfarm::AssertionError }
+    it { expect { srv.validate_string('foo bar cow', contains: 'bar') }.not_to raise_error }
   end
 
   describe "validate_word" do
