@@ -1,5 +1,8 @@
 require 'crabfarm/rspec/navigator_spec_helpers'
 require 'crabfarm/rspec/reducer_spec_helpers'
+require 'active_support/dependencies'
+
+ActiveSupport::Dependencies.autoload_paths += Dir.glob File.join(CF_PATH, 'app', '**')
 
 RSpec.configure do |config|
   config.include Crabfarm::RSpec::NavigatorSpecHelpers
