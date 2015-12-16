@@ -3,7 +3,7 @@ require 'crabfarm/utils/shell/screen_builder'
 module Crabfarm::Utils::Shell
   class Screen
 
-    ESCAPED_CHARS = "\r\n\e"
+    ESCAPED_CHARS = ["\r", "\n", "\e", 0x7F]
 
     attr_reader :lines, :columns, :data_buffer, :style_buffer
 
@@ -51,7 +51,9 @@ module Crabfarm::Utils::Shell
 
     def sanitize(_char)
       return ' ' if _char == "\t" # TODO: tab size!
-      if ESCAPED_CHARS.include? _char then '?' else _char end
+      return '?' if _char.ord < 0x20
+      return '?' if _char.ord >= 0x7F and _char.ord < 0xC0
+      _char
     end
 
     def reset_buffers

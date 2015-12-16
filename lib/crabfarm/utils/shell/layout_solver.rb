@@ -2,16 +2,17 @@ require 'crabfarm/utils/shell/container_frame'
 
 module Crabfarm::Utils::Shell
 
-  class LayoutEngine
+  class LayoutSolver
 
     attr_reader :dims
 
     def initialize(_available, _minimum, _maximum, _weight)
       @available = _available
+      @count = _minimum.length
       @minimum = _minimum
       @maximum = _maximum
       @weight = _weight
-      @required = [0] ** @count
+      @required = [0] * @count
     end
 
     def required_dims
@@ -24,15 +25,14 @@ module Crabfarm::Utils::Shell
 
     def solve(_iterations=1)
       # TODO: iterate until required sum converges?
-      new_dims = @minimum.clone
       while _iterations > 0
-        excess = @available - new_dims.inject(&:+)
-        excess = distribute excess, new_dims, required_limits if excess > 0
-        distribute excess, new_dims, maximum_limits if excess > 0
-        @required = yield new_dims
+        @dims = @minimum.clone
+        excess = @available - @dims.inject(&:+)
+        excess = distribute excess, @dims, required_limits if excess > 0
+        distribute excess, @dims, maximum_limits if excess > 0
+        @required = yield @dims if _iterations > 1
         _iterations -= 1
       end
-      @dims = new_dims
       self
     end
 
@@ -43,7 +43,7 @@ module Crabfarm::Utils::Shell
 
       while _amount > 0
         selected = @count.times.inject(nil) do |r, i|
-          next r if _dims[i] >= _limits[i]
+          next r if !_limits[i].nil? and _dims[i] >= _limits[i]
           if r.nil? or (_dims[r] / @weight[r]) > (_dims[i] / @weight[i])
             i
           else
@@ -60,7 +60,11 @@ module Crabfarm::Utils::Shell
     end
 
     def required_limits
-      @count.times.map { |i| @required[i] < @maximum[i] ? @required[i] : @maximum[i] }
+      @count.times.map do |i|
+        next @required[i] if @maximum[i].nil?
+        next @required[i] if @required[i] < @maximum[i]
+        @maximum[i]
+      end
     end
 
     def maximum_limits

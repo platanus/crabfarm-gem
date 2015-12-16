@@ -4,7 +4,8 @@ require 'zlib'
 require 'base64'
 require 'nokogiri'
 require 'crabfarm/utils/shell/app'
-require 'crabfarm/utils/shell/layout_frame'
+require 'crabfarm/utils/shell/vertical_layout_frame'
+require 'crabfarm/utils/shell/horizontal_layout_frame'
 require 'crabfarm/utils/shell/list_frame'
 require 'crabfarm/utils/shell/banner_frame'
 require 'crabfarm/utils/shell/viewer_frame'
@@ -64,8 +65,8 @@ module Crabfarm
       private
 
         def build_ui
-          @ui_details = Crabfarm::Utils::Shell::LayoutFrame.new
-          @ui_banner = Crabfarm::Utils::Shell::BannerFrame.new 'Analizer v0.1'
+          @ui_details = Crabfarm::Utils::Shell::VerticalLayoutFrame.new
+          @ui_banner = Crabfarm::Utils::Shell::BannerFrame.new 'Analizer v0.1 ´éáñ``'
 
           @ui_all = Crabfarm::Utils::Shell::ListFrame.new
           @ui_all.item_action('select item', "a") { |i| @ui_selected << i }
@@ -77,10 +78,10 @@ module Crabfarm
           @ui_selected.render_header = false
           prepare_request_list_view @ui_selected
 
-          @ui_dashboard = Crabfarm::Utils::Shell::LayoutFrame.new
-          @ui_dashboard.add_frame @ui_banner, min_lines: 2
+          @ui_dashboard = Crabfarm::Utils::Shell::VerticalLayoutFrame.new
+          @ui_dashboard.add_frame @ui_banner, min_lines: 2, max_lines: 2
           @ui_dashboard.add_frame @ui_all
-          @ui_dashboard.add_frame @ui_selected, min_lines: 10, weight: 0.5
+          @ui_dashboard.add_frame @ui_selected, min_lines: 10
 
           @ui_dashboard.action('search', "s") { add_search_filter }
           @ui_dashboard.action('undo filter', "u") { remove_last_filter }
@@ -94,12 +95,23 @@ module Crabfarm
           @ui_response_viewer = Crabfarm::Utils::Shell::ViewerFrame.new
           @ui_response_viewer.title = "-- Response Content"
 
-          @ui_details = Crabfarm::Utils::Shell::LayoutFrame.new
-          @ui_details.add_frame @ui_banner, min_lines: 2
-          @ui_details.add_frame @ui_sent_header_viewer
-          @ui_details.add_frame @ui_header_viewer
-          @ui_details.add_frame @ui_response_viewer
-          @ui_details.add_frame @ui_request_viewer
+          @ui_details = Crabfarm::Utils::Shell::VerticalLayoutFrame.new fluid: false
+          @ui_details.add_frame @ui_banner, min_lines: 2, max_lines: 2
+
+          @ui_request_details = Crabfarm::Utils::Shell::VerticalLayoutFrame.new
+          @ui_request_details.add_frame @ui_sent_header_viewer
+          @ui_request_details.add_frame @ui_request_viewer
+
+          @ui_response_details = Crabfarm::Utils::Shell::VerticalLayoutFrame.new
+          @ui_response_details.add_frame @ui_header_viewer
+          @ui_response_details.add_frame @ui_response_viewer
+
+          @ui_details_contents = Crabfarm::Utils::Shell::HorizontalLayoutFrame.new fluid: false
+          @ui_details_contents.add_frame @ui_request_details
+          @ui_details_contents.add_separator
+          @ui_details_contents.add_frame @ui_response_details
+
+          @ui_details.add_frame @ui_details_contents
           @ui_details.action('back to list', "\e") { load_dashboard }
 
           @ui_app = Crabfarm::Utils::Shell::App.new

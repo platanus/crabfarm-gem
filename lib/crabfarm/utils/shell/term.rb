@@ -13,6 +13,7 @@ module Crabfarm::Utils::Shell
     end
 
     def write(_str)
+      # $stdout.raw!
       $stdout.write _str
     end
 
@@ -100,7 +101,8 @@ module Crabfarm::Utils::Shell
         return nil if IO.select([$stdin], nil, nil, _timeout).nil?
       end
 
-      input = $stdin.read_nonblock(1)
+      input = $stdin.readchar
+
       if input == "\e" then
         input << $stdin.read_nonblock(3) rescue nil
         input << $stdin.read_nonblock(2) rescue nil

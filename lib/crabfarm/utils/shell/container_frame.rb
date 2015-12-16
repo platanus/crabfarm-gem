@@ -5,38 +5,7 @@ module Crabfarm::Utils::Shell
 
   class ContainerFrame < Frame
 
-    class Child
-      extend Forwardable
-
-      attr_reader :frame
-
-      def_delegators :@frame, :prepare, :render, :grows?, :action_map
-
-      def initialize(_frame, _options)
-        @frame = _frame
-        @options = _options
-      end
-
-      def min_lines
-        @options.fetch(:min_lines, @frame.min_lines)
-      end
-
-      def req_lines
-        [@frame.req_lines, min_lines].max
-      end
-
-      def min_columns
-        @options.fetch(:min_columns, @frame.min_columns)
-      end
-
-      def req_columns
-        [@frame.req_columns, min_columns].max
-      end
-
-      def weight
-        @options.fetch(:weight, 1.0)
-      end
-    end
+    class Child < Struct.new(:frame, :options); end
 
     def initialize
       super
@@ -64,8 +33,6 @@ module Crabfarm::Utils::Shell
       else
         @children.index { |c| c.frame == @focused }
       end
-
-      # binding.pry
 
       while not @focused.focus_next
         focus_idx += 1

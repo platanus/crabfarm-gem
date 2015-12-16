@@ -56,7 +56,7 @@ module Crabfarm::Utils::Shell
   private
 
     def min_content_columns(_columns)
-      min_columns
+      min_table_columns
     end
 
     def required_content_lines(_lines, _columns)
@@ -69,15 +69,15 @@ module Crabfarm::Utils::Shell
 
     def reset_column_stats
       @total_weight = nil
-      @min_columns = nil
+      @min_table_columns = nil
     end
 
     def total_weight
       @total_weight ||= @columns.inject(0) { |r,c| if c[:width] then r else r + c.fetch(:weight, 1.0) end }
     end
 
-    def min_columns
-      @min_columns ||= @columns.inject(0) { |r,c| if c[:width] then r + c[:width] else r end }
+    def min_table_columns
+      @min_table_columns ||= @columns.inject(0) { |r,c| if c[:width] then r + c[:width] else r end }
     end
 
     def render_content(_context)
@@ -109,7 +109,7 @@ module Crabfarm::Utils::Shell
     def load_widths(_context)
       space = _context.columns - (@columns.length - 1) - count_column # consider separators and numbering
       @columns.map do |column|
-        width = column.fetch(:width, (column.fetch(:weight, 1.0) * (space - min_columns) / total_weight))
+        width = column.fetch(:width, (column.fetch(:weight, 1.0) * (space - min_table_columns) / total_weight))
         width.round
       end
     end

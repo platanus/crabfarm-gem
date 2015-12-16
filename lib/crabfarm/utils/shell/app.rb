@@ -59,9 +59,14 @@ module Crabfarm::Utils::Shell
 
           char = term.read_char timeout # TODO: writing a lot will prevent refresh
           break if char.nil?
-          return prompt.buffer if char == "\r"
-          return nil if char == "\e"
-          prompt.feed char
+
+          while !char.nil?
+            # attempt to read additional characters using a non blocking method
+            return prompt.buffer if char == "\r"
+            return nil if char == "\e"
+            prompt.feed char
+            char = term.read_char 0.0
+          end
         end
       end
     end
@@ -73,7 +78,7 @@ module Crabfarm::Utils::Shell
   private
 
     def timeout
-      0.5
+      0.2
     end
 
     def screen

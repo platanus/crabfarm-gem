@@ -9,22 +9,16 @@ module Crabfarm::Utils::Shell
     def initialize(_text="")
       super()
       @text = _text
+      @count = 0
     end
 
     def focus_next
       false
     end
 
-    def min_lines(_lines)
-      2
-    end
-
-    def max_lines(_lines)
-      2
-    end
-
     def render(_context)
-      _context.write_line @text
+      @count += 1
+      _context.write_line @text + @count.to_s
       _context.write_line '*' * _context.columns
     end
   end
