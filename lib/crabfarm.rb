@@ -1,6 +1,8 @@
 require "logger"
 require "forwardable"
 require "active_support/inflector"
+require "active_support/core_ext/object/blank"
+require "active_support/core_ext/numeric/time"
 
 require "crabfarm/version"
 require "crabfarm/errors"
