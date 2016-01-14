@@ -6,6 +6,7 @@ module Crabfarm
     class Context < Crabfarm::Context
 
       def initialize(_manager)
+        super()
         @manager = _manager
       end
 
