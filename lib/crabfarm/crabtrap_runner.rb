@@ -1,4 +1,5 @@
 require 'timeout'
+require 'net/http'
 require 'crabfarm/utils/processes'
 
 module Crabfarm
