@@ -32,6 +32,7 @@ module Crabfarm
           path(_name, 'spec', 'mementos', '.gitkeep').render('dot_gitkeep')
           path(_name, 'spec', 'integration', '.gitkeep').render('dot_gitkeep')
           path(_name, 'logs', '.gitkeep').render('dot_gitkeep')
+          path(_name, 'README.md').render('README.md', binding)
         end
       end
 
