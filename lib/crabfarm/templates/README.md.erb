@@ -1,0 +1,44 @@
+![Crabfarm](http://crabfarm.io/img/teaser-bg-3.png)
+
+## <%= name %>
+
+This is a crawler created using the [Crabfarm framework](http://crabfarm.io/#/teaser). It is composed of navigators which allow you to access different sections of a website to extract infomation or perform actions.
+
+To learn more about how this crawler was put together read the [documentation](http://github.com/platanus/crabfarm-gem).
+
+### Deploy
+
+To deploy <%= name %> first you must have an active account for the [Crabfarm Grid](https://grid.crabfarm.io).
+
+If you already have an account, simply do:
+```shell
+crabfarm p
+```
+
+This will ask you for you credentials if it haven't and upload it to the grid.
+
+### Use
+
+To use the crawler from Ruby you can install cangrejo-gem:
+
+```
+gem install 'cangrejo'
+```
+
+and then
+
+```ruby
+require 'cangrejo'
+Cangrejo.connect 'org/repo' do |session|
+  session.navigate(:navigator_name, parameter_name: 'hello')
+end
+```
+
+For more information, visit the [cangrejo-gem repository](https://github.com/platanus/cangrejo-gem).
+
+If you prefer NodeJS instead, there is [Camaron](https://github.com/platanus/camaron)
+
+
+### Navigators
+
+Take a look at the [usage examples](tree/master/spec/navigators)
