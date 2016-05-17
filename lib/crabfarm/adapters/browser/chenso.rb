@@ -22,10 +22,9 @@ module Crabfarm
 
         def load_chenso_config
           {
-            # nothing for now
+            user_agent: Crabfarm.config.user_agent
           }
         end
-
       end
     end
   end
