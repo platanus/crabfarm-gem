@@ -15,9 +15,13 @@ module Crabfarm
         "127.0.0.1:#{@manager.proxy_port}"
       end
 
+      def proxy_auth
+        nil
+      end
+
     private
 
-      def build_browser_adapter(_proxy)
+      def build_browser_adapter(_proxy, _proxy_auth)
         # use a special browser adapter to override primary driver
         return BrowserAdapter.new @manager
       end

@@ -4,14 +4,12 @@ module Crabfarm
   module Adapters
     module Browser
       class Noop < Base
-
-        def initialize(_proxy=nil)
+        def initialize(_proxy = nil, _proxy_user = nil)
         end
 
         def build_driver(_session_id)
           _session_id || :noop
         end
-
       end
     end
   end
