@@ -11,6 +11,7 @@ module Crabfarm
       [:log_path, :string, 'Path where logs should be stored'],
       [:proxy, :string, 'If given, a proxy is used to connect to the internet if driver supports it'],
       [:proxy_auth, :string, 'Proxy authentication parameters as user:password'],
+      [:user_agent, :string, 'Allows overriding default driver user agent, only available in chenso'],
 
       # Webdriver configuration parameters
       [:webdriver_host, :string, 'Remote host, only available in driver: remote'],
@@ -58,6 +59,7 @@ module Crabfarm
         log_path: nil,
         proxy: nil,
         proxy_auth: nil,
+        user_agent: nil,
         webdriver_capabilities: nil,
         webdriver_host: 'localhost',
         webdriver_port: '8080',
