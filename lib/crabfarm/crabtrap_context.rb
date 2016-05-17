@@ -2,7 +2,6 @@ require 'crabfarm/crabtrap_runner'
 
 module Crabfarm
   class CrabtrapContext < Context
-
     attr_accessor :mode
 
     def initialize(_mode=:pass, _path=nil)
@@ -78,13 +77,15 @@ module Crabfarm
     end
 
     def proxy
-      # just step over configuration proxy
       proxy_address
+    end
+
+    def proxy_auth
+      nil
     end
 
     def proxy_address
       "127.0.0.1:#{@port}"
     end
-
   end
 end

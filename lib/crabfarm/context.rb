@@ -48,7 +48,7 @@ module Crabfarm
 
     def init_browser_adapter
       if @browser_adapter.nil?
-        @browser_adapter = build_browser_adapter proxy
+        @browser_adapter = build_browser_adapter proxy, proxy_auth
         @browser_adapter.prepare_driver_services
       end
     end
@@ -67,12 +67,16 @@ module Crabfarm
       @pool = nil
     end
 
-    def build_browser_adapter(_proxy)
-      Strategies.load(:browser, config.browser).new _proxy
+    def build_browser_adapter(_proxy, _proxy_auth)
+      Strategies.load(:browser, config.browser).new(_proxy, _proxy_auth)
     end
 
     def proxy
       config.proxy
+    end
+
+    def proxy_auth
+      config.proxy_auth
     end
 
     def config

@@ -10,6 +10,7 @@ module Crabfarm
       [:parser, :string, 'Default parser engine used by reducers'],
       [:log_path, :string, 'Path where logs should be stored'],
       [:proxy, :string, 'If given, a proxy is used to connect to the internet if driver supports it'],
+      [:proxy_auth, :string, 'Proxy authentication parameters as user:password'],
 
       # Webdriver configuration parameters
       [:webdriver_host, :string, 'Remote host, only available in driver: remote'],
@@ -56,6 +57,7 @@ module Crabfarm
         driver_factory: nil,
         log_path: nil,
         proxy: nil,
+        proxy_auth: nil,
         webdriver_capabilities: nil,
         webdriver_host: 'localhost',
         webdriver_port: '8080',
@@ -87,8 +89,7 @@ module Crabfarm
     def crabtrap_config
       {
         bin_path: crabtrap_bin_path,
-        log_level: crabtrap_log_level,
-        proxy: proxy
+        log_level: crabtrap_log_level
       }
     end
 

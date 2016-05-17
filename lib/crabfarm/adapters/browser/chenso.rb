@@ -4,10 +4,10 @@ module Crabfarm
   module Adapters
     module Browser
       class Chenso < Base
-
-        def initialize(_proxy=nil)
+        def initialize(_proxy = nil, _proxy_auth = nil)
           @config = load_chenso_config
           @config[:proxy] = _proxy
+          @config[:proxy_auth] = _proxy_auth
         end
 
         def build_driver(_session_id)
